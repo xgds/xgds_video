@@ -6,6 +6,8 @@
 
 from django.conf.urls.defaults import url, patterns
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    'xgds_video',
+
     url(r'^$', 'views.index', name='index'),
 )
