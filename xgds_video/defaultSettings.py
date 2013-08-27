@@ -4,23 +4,18 @@
 # All Rights Reserved.
 # __END_LICENSE__
 
-"""
-This app may define some new parameters that can be modified in the
-Django settings module.  Let's say one such parameter is FOO.  The
-default value for FOO is defined in this file, like this:
+XGDS_VIDEO_RECORDING_URL_BASE = "*** Set me in siteSettings.py ***"
+XGDS_VIDEO_RECORDING_DIR_BASE = "*** Set me in siteSettings.py ***"
 
-  FOO = 'my default value'
+XGDS_VIDEO_NEW_DIR_PERMISSIONS = 0777
+XGDS_VIDEO_MAX_EPISODE_DURATION_MINUTES = 180
 
-If the admin for the site doesn't like the default value, they can
-override it in the site-level settings module, like this:
+XGDS_VIDEO_TRACK_MODEL = 'xgds_video.VideoTrack'
+XGDS_VIDEO_SEGMENT_MODEL = 'xgds_video.VideoSegment'
+XGDS_VIDEO_EPISODE_MODEL = 'xgds_video.VideoEpisode'
 
-  FOO = 'a better value'
-
-Other modules can access the value of FOO like this:
-
-  from xgds_video import settings
-  print settings.FOO
-
-Don't try to get the value of FOO from django.conf.settings.  That
-settings object will not know about the default value!
-"""
+XGDS_VIDEO_INDEX_FILE_NAME = "prog_index.m3u8"
+XGDS_VIDEO_INDEX_FILE_END_TAG = "#EXT-X-ENDLIST"
+XGDS_VIDEO_VLC_PATH = "/Applications/VLC.app/Contents/MacOS/VLC"
+XGDS_VIDEO_VLC_PARAMETERS = "--intf=dummy --sout='#std{access=file,mux=ts,dst=-}'"
+XGDS_VIDEO_MEDIASTREAMSEGMENTER_PATH = "/usr/bin/mediastreamsegmenter"
