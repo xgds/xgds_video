@@ -38,7 +38,6 @@ class VideoSource(AbstractVideoSource):
 
 
 class AbstractVideoSettings(models.Model):
-    liveVideoUrl = models.CharField(max_length=512, blank=False)
     width = models.IntegerField()
     height = models.IntegerField()
     compressionRate = models.FloatField(null=True, blank=True)
@@ -56,6 +55,33 @@ class VideoSettings(AbstractVideoSettings):
     """
     A VideoSettings object records all of the metadata about a VideoSegment
     that we need for playback.
+    """
+    pass
+
+
+class AbstractVideoFeed(models.Model):
+    # name: human-readable title
+    name = models.CharField(max_length=128, blank=True, null=True)
+    # shortName: a short mnemonic code suitable to embed in a URL
+    shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True)
+    # url: the url where you can watch the live video
+    url = models.CharField(max_length=512, blank=False)
+    active = models.BooleanField(default=False)
+    settings = models.ForeignKey(settings.XGDS_VIDEO_SETTINGS_MODEL)
+    uuid = UuidField(db_index=True)
+
+    class Meta:
+        abstract = True
+
+    def __unicode__(self):
+        return (u'VideoFeed(%s, %s)' %
+                (self.liveVideoUrl,
+                 self.active))
+
+
+class VideoFeed(AbstractVideoFeed):
+    """
+    A VideoFeed gives you enough information to watch a live video.
     """
     pass
 

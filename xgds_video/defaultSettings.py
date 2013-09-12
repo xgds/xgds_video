@@ -12,6 +12,7 @@ XGDS_VIDEO_MAX_EPISODE_DURATION_MINUTES = 180
 
 XGDS_VIDEO_SOURCE_MODEL = 'xgds_video.VideoSource'
 XGDS_VIDEO_SETTINGS_MODEL = 'xgds_video.VideoSettings'
+XGDS_VIDEO_FEED_MODULE = 'xgds_video.VideoFeed'
 XGDS_VIDEO_SEGMENT_MODEL = 'xgds_video.VideoSegment'
 XGDS_VIDEO_EPISODE_MODEL = 'xgds_video.VideoEpisode'
 
