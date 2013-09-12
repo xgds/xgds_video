@@ -11,73 +11,139 @@ from geocamUtil.models import UuidField
 from xgds_video import settings
 
 
-class VideoTrack(models.Model):
-    """
-    A VideoTrack represents video from a particular camera.
-    """
-    # name: human-readable title for the track
+class AbstractVideoSource(models.Model):
+    # name: human-readable title
     name = models.CharField(max_length=128, blank=True, null=True)
-    # trackCode: a short mnemonic code for the track suitable to embed in a URL
-    trackCode = models.CharField(max_length=32, blank=True, null=True)
-    url = models.CharField(max_length=512, blank=False)
-    width = models.IntegerField()
-    height = models.IntegerField()
-    uuid = UuidField()
+    # shortName: a short mnemonic code suitable to embed in a URL
+    shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True)
+    uuid = UuidField(db_index=True)
+
+    class Meta:
+        abstract = True
 
     def __unicode__(self):
         return u'%s: %s' % (self.id, self.name)
 
 
-class VideoSegment(models.Model):
+class VideoSource(AbstractVideoSource):
     """
-    A VideoSegment represents the data from a particular video track
-    over a time interval with continuous video data. It points to a file
-    on disk that contains the data.
+    A VideoSource represents a persistent source of video. It is used for grouping
+    video data together.
 
-    Several (not necessarily contiguous) VideoSegments can belong to a
-    VideoEpisode.
+    Depending on the application, this could be an asset role such as
+    "research diver 1", or a particular camera, or something else. Driven
+    by the needs of the application.
     """
-    path = models.CharField(max_length=256)  # directoryName
-    startTime = models.DateTimeField(null=True, blank=True)  # second precision, utc
-    endTime = models.DateTimeField(null=True, blank=True)
-    segNumber = models.PositiveIntegerField(null=True, blank=True)
+    pass
+
+
+class AbstractVideoSettings(models.Model):
+    liveVideoUrl = models.CharField(max_length=512, blank=False)
+    width = models.IntegerField()
+    height = models.IntegerField()
     compressionRate = models.FloatField(null=True, blank=True)
     playbackDataRate = models.FloatField(null=True, blank=True)
-    episode = models.ForeignKey(settings.XGDS_VIDEO_EPISODE_MODEL, null=True)
-    indexFileName = models.CharField(max_length=50)  # prog_index.m3u8
     uuid = UuidField()
 
+    class Meta:
+        abstract = True
+
     def __unicode__(self):
-	return (u'VideoSegment(%s, %s, %s, %s, %s)' %
-                (self.id,
-                 self.path,
-                 self.startTime,
-                 self.endTime,
-                 self.segNumber))
+        return u'%s: %s' % (self.id,)
 
 
-class VideoEpisode(models.Model):
+class VideoSettings(AbstractVideoSettings):
     """
-    A VideoEpisode represents the data from a particular video track
-    over a time interval that has some operational meaning (such as a PLRP
-    flight).
-
-    A single VideoEpisode can contain many VideoSegments. We might not
-    have continuous video data over the entire VideoEpisode time
-    interval.
+    A VideoSettings object records all of the metadata about a VideoSegment
+    that we need for playback.
     """
-    # episodeCode: a short mnemonic code for the episode, suitable for embedding in a url
-    episodeCode = models.CharField(max_length=256, null=True, blank=True)
+    pass
+
+
+class AbstractVideoSegment(models.Model):
+    directoryName = models.CharField(max_length=256)  # directoryName
+    segNumber = models.PositiveIntegerField(null=True, blank=True)
+    indexFileName = models.CharField(max_length=50)  # prog_index.m3u8
     startTime = models.DateTimeField(null=True, blank=True)  # second precision, utc
     endTime = models.DateTimeField(null=True, blank=True)
-    height = models.PositiveIntegerField(null=True, blank=True)
-    width = models.PositiveIntegerField(null=True, blank=True)
+    settings = models.ForeignKey(settings.XGDS_VIDEO_SETTINGS_MODEL, null=True, blank=True)
     uuid = UuidField()
 
+    class Meta:
+        abstract = True
+
     def __unicode__(self):
-	return (u'VideoEpisode(%s, %s, %s, %s, %s)' %
+	return (u'VideoSegment(%s, %s, %s, %s)' %
                 (self.id,
+                 self.directoryName,
+                 self.segNumber,
+                 self.indexFileName))
+
+
+class VideoSegment(AbstractVideoSegment):
+    """
+    A VideoSegment represents the data from a particular video source
+    over a time interval with continuous video data. It points to a file
+    on disk that contains the data.
+    """
+    pass
+
+
+class AbstractVideoEpisode(models.Model):
+    # shortName: a short mnemonic code for the episode, suitable for embedding in a url
+    shortName = models.CharField(max_length=256, null=True, blank=True)
+    startTime = models.DateTimeField(null=True, blank=True)  # second precision, utc
+    endTime = models.DateTimeField(null=True, blank=True)
+    uuid = UuidField()
+
+    class Meta:
+        abstract = True
+
+    def __unicode__(self):
+	return (u'VideoEpisode(%s, %s, %s, %s)' %
+                (self.id,
+                 self.shortName,
                  self.startTime,
-                 self.endTime,
-                 self.height,
-                 self.width))
+                 self.endTime))
+
+
+class VideoEpisode(AbstractVideoEpisode):
+    """
+    A VideoEpisode represents a time interval that has some operational
+    meaning (such as a PLRP flight).
+
+    A single VideoEpisode can span multiple VideoSources and each of
+    those sources can contain many VideoSegments over the given time
+    interval. We might not have continuous video data over the entire
+    VideoEpisode time interval for any of the sources.
+    """
+    pass
+
+
+######################################################################
+# non-extensible classes
+
+class VideoSourceGroup(models.Model):
+    """
+    A VideoSourceGroup represents an ordered list of VideoSource objects.
+    """
+    # name: human-readable title
+    name = models.CharField(max_length=128, blank=True, null=True)
+    # shortName: a short mnemonic code suitable to embed in a URL
+    shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True)
+    sources = models.ManyToManyField('VideoSource', through='VideoSourceGroupEntry')
+    uuid = UuidField(db_index=True)
+
+
+class VideoSourceGroupEntry(models.Model):
+    """
+    An entry in the ordered list of the VideoSourceGroup.
+    """
+    rank = models.PositiveIntegerField()
+    source = models.ForeignKey(settings.XGDS_VIDEO_SOURCE_MODEL)
+    group = models.ForeignKey('VideoSourceGroup')
+
+    class Meta:
+        ordering = ['rank']
+
+

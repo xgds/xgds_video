@@ -10,7 +10,8 @@ XGDS_VIDEO_RECORDING_DIR_BASE = "*** Set me in siteSettings.py ***"
 XGDS_VIDEO_NEW_DIR_PERMISSIONS = 0777
 XGDS_VIDEO_MAX_EPISODE_DURATION_MINUTES = 180
 
-XGDS_VIDEO_TRACK_MODEL = 'xgds_video.VideoTrack'
+XGDS_VIDEO_SOURCE_MODEL = 'xgds_video.VideoSource'
+XGDS_VIDEO_SETTINGS_MODEL = 'xgds_video.VideoSettings'
 XGDS_VIDEO_SEGMENT_MODEL = 'xgds_video.VideoSegment'
 XGDS_VIDEO_EPISODE_MODEL = 'xgds_video.VideoEpisode'
 
