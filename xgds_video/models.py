@@ -68,6 +68,7 @@ class AbstractVideoFeed(models.Model):
     url = models.CharField(max_length=512, blank=False)
     active = models.BooleanField(default=False)
     settings = models.ForeignKey(settings.XGDS_VIDEO_SETTINGS_MODEL)
+    source = models.ForeignKey(settings.XGDS_VIDEO_SOURCE_MODEL)
     uuid = UuidField(db_index=True)
 
     class Meta:
