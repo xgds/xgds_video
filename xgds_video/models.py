@@ -94,6 +94,7 @@ class AbstractVideoSegment(models.Model):
     startTime = models.DateTimeField(null=True, blank=True)  # second precision, utc
     endTime = models.DateTimeField(null=True, blank=True)
     settings = models.ForeignKey(settings.XGDS_VIDEO_SETTINGS_MODEL, null=True, blank=True)
+    source = models.ForeignKey(settings.XGDS_VIDEO_SOURCE_MODEL, null=True, blank=True)
     uuid = UuidField()
 
     class Meta:
