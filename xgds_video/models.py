@@ -11,12 +11,18 @@ from geocamUtil.models import UuidField
 from xgds_video import settings
 
 
+#incase settings is shadowed
+videoSettings = settings
+
 class AbstractVideoSource(models.Model):
     # name: human-readable title
     name = models.CharField(max_length=128, blank=True, null=True)
     # shortName: a short mnemonic code suitable to embed in a URL
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True)
     uuid = UuidField(db_index=True)
+
+    def getDict(self):
+	return {"name": self.name, "shortName": self.shortName, "uuid": self.uuid}
 
     class Meta:
         abstract = True
@@ -44,6 +50,9 @@ class AbstractVideoSettings(models.Model):
     playbackDataRate = models.FloatField(null=True, blank=True)
     uuid = UuidField()
 
+    def getDict(self):
+	return {"width": self.width, "height": self.height, "compressionRate": self.compressionRate, "playbackDataRate": self.playbackDataRate}
+
     class Meta:
         abstract = True
 
@@ -58,7 +67,6 @@ class VideoSettings(AbstractVideoSettings):
     """
     pass
 
-
 class AbstractVideoFeed(models.Model):
     # name: human-readable title
     name = models.CharField(max_length=128, blank=True, null=True)
@@ -67,8 +75,8 @@ class AbstractVideoFeed(models.Model):
     # url: the url where you can watch the live video
     url = models.CharField(max_length=512, blank=False)
     active = models.BooleanField(default=False)
-    settings = models.ForeignKey(settings.XGDS_VIDEO_SETTINGS_MODEL)
-    source = models.ForeignKey(settings.XGDS_VIDEO_SOURCE_MODEL)
+    settings = models.ForeignKey(videoSettings.XGDS_VIDEO_SETTINGS_MODEL)
+    source = models.ForeignKey(videoSettings.XGDS_VIDEO_SOURCE_MODEL)
     uuid = UuidField(db_index=True)
 
     class Meta:
@@ -93,9 +101,12 @@ class AbstractVideoSegment(models.Model):
     indexFileName = models.CharField(max_length=50)  # prog_index.m3u8
     startTime = models.DateTimeField(null=True, blank=True)  # second precision, utc
     endTime = models.DateTimeField(null=True, blank=True)
-    settings = models.ForeignKey(settings.XGDS_VIDEO_SETTINGS_MODEL, null=True, blank=True)
-    source = models.ForeignKey(settings.XGDS_VIDEO_SOURCE_MODEL, null=True, blank=True)
+    settings = models.ForeignKey(videoSettings.XGDS_VIDEO_SETTINGS_MODEL, null=True, blank=True)
+    source = models.ForeignKey(videoSettings.XGDS_VIDEO_SOURCE_MODEL, null=True, blank=True)
     uuid = UuidField()
+
+    def getJson(self):
+	return {"directoryName": self.directoryName, "segNumber": self.segNumber, "indexFileName": self.indexFileName, "source": self.source.getDict(), "settings": self.settings.getDict()}
 
     class Meta:
         abstract = True

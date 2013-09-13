@@ -1,0 +1,11 @@
+{% block sitemenu-content-secondary %}
+{% load nav %}
+<form id="streamForm">
+<div class="sitemenu-nav-secondary">
+	<ul>
+		<li {% currentnav liveVideoFeed %}><a href="{% url liveVideoFeed 'All' %}">Live</a></li>
+		<li {% currentnav activeSegments %}><a href="{% url activeSegments %}">Recorded</a></li>
+  	</ul>
+</div>
+</form>
+{% endblock %}

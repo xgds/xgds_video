@@ -1,13 +1,18 @@
-# __BEGIN_LICENSE__
-# Copyright (C) 2008-2010 United States Government as represented by
-# the Administrator of the National Aeronautics and Space Administration.
-# All Rights Reserved.
-# __END_LICENSE__
 
-from django.conf.urls.defaults import url, patterns
+from django.conf.urls.defaults import *
+
+from plrpExplorer import settings
+from plrpExplorer import views
 
 urlpatterns = patterns(
-    'xgds_video',
-
-    url(r'^$', 'views.index', name='index'),
+    '',
+    (r'liveVideoFeed/(?P<shortName>\w+)$', views.liveVideoFeed, {}, 'liveVideoFeed'),
+    (r'activeSegments/(?P<asset_role_name>\w+)$',views.getActiveRecordedSegments, {}, 'activeSegments'),
+    (r'activeSegments/$',views.getActiveRecordedSegments, {}, 'activeSegments'),
+    (r'playRecordedVideo/(?P<flightName>\w+)/(?P<segmentNumber>\d+)/$', views.playRecordedVideo, {}, 'playRecordedVideo'),
+    
 )
+
+
+#    (r'^$', 'django.views.generic.simple.redirect_to',
+#     {'url': settings.SCRIPT_NAME + 'plrpExplorer/'}),

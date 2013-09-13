@@ -21,3 +21,5 @@ XGDS_VIDEO_INDEX_FILE_END_TAG = "#EXT-X-ENDLIST"
 XGDS_VIDEO_VLC_PATH = "/Applications/VLC.app/Contents/MacOS/VLC"
 XGDS_VIDEO_VLC_PARAMETERS = "--intf=dummy --sout='#std{access=file,mux=ts,dst=-}'"
 XGDS_VIDEO_MEDIASTREAMSEGMENTER_PATH = "/usr/bin/mediastreamsegmenter"
+
+XGDS_VIDEO_TIME_ZONE = {'name': 'Pacfic', 'code':'America/Los_Angeles'}
