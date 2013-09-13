@@ -12,7 +12,7 @@ XGDS_VIDEO_MAX_EPISODE_DURATION_MINUTES = 180
 
 XGDS_VIDEO_SOURCE_MODEL = 'xgds_video.VideoSource'
 XGDS_VIDEO_SETTINGS_MODEL = 'xgds_video.VideoSettings'
-XGDS_VIDEO_FEED_MODULE = 'xgds_video.VideoFeed'
+XGDS_VIDEO_FEED_MODEL = 'xgds_video.VideoFeed'
 XGDS_VIDEO_SEGMENT_MODEL = 'xgds_video.VideoSegment'
 XGDS_VIDEO_EPISODE_MODEL = 'xgds_video.VideoEpisode'
 
@@ -22,4 +22,4 @@ XGDS_VIDEO_VLC_PATH = "/Applications/VLC.app/Contents/MacOS/VLC"
 XGDS_VIDEO_VLC_PARAMETERS = "--intf=dummy --sout='#std{access=file,mux=ts,dst=-}'"
 XGDS_VIDEO_MEDIASTREAMSEGMENTER_PATH = "/usr/bin/mediastreamsegmenter"
 
-XGDS_VIDEO_TIME_ZONE = {'name': 'Pacfic', 'code':'America/Los_Angeles'}
+XGDS_VIDEO_TIME_ZONE = {'name': 'Pacific', 'code':'America/Los_Angeles'}

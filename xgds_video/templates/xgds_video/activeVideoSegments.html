@@ -86,12 +86,10 @@
     var earliestSegTime = HMStoSeconds("{{ earliestTime }}");
     var latestSegTime = HMStoSeconds("{{ latestTime }}");
 
-    var episodeName = "{{ episode.shortName }}"
-    var episodeStartTime = HMStoSeconds("{{ episode.startTime }}");
-    var episodeEndTime = ({{ episode.endTime }} == null) ? latestSegTime : HMStoSeconds("{{ episode.endTime}}");
+    var episodeDict = "{{ episodeDict }}"
 
-    setupSlider(episodeStartTime, episodeEndTime);
-    setupJWplayer(displaySegments, earliestSegTime, episodeName);
+    setupSlider(episode);
+    setupJWplayer(displaySegments, earliestSegTime, episode);
 
 </script>
 {% endblock %}

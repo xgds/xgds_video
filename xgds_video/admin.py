@@ -1,7 +1,13 @@
-# __BEGIN_LICENSE__
-# Copyright (C) 2008-2010 United States Government as represented by
-# the Administrator of the National Aeronautics and Space Administration.
-# All Rights Reserved.
-# __END_LICENSE__
 
-# from django.contrib import admin
+from django.contrib import admin
+
+from xgds_video.models import *
+
+admin.site.register(VideoSource)
+admin.site.register(VideoSettings)
+admin.site.register(VideoFeed)
+admin.site.register(VideoSegment)
+admin.site.register(VideoEpisode)
+admin.site.register(VideoSourceGroup)
+admin.site.register(VideoSourceGroupEntry)
+

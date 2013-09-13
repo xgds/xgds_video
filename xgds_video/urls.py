@@ -1,14 +1,13 @@
 
 from django.conf.urls.defaults import *
 
-from plrpExplorer import settings
-from plrpExplorer import views
+from xgds_video import settings
+from xgds_video import views
 
 urlpatterns = patterns(
     '',
-    (r'liveVideoFeed/(?P<shortName>\w+)$', views.liveVideoFeed, {}, 'liveVideoFeed'),
-    (r'activeSegments/(?P<asset_role_name>\w+)$',views.getActiveRecordedSegments, {}, 'activeSegments'),
-    (r'activeSegments/$',views.getActiveRecordedSegments, {}, 'activeSegments'),
+    (r'liveVideoFeed/(?P<feedName>\w+)$', views.liveVideoFeed, {}, 'liveVideoFeed'),
+    (r'recorded/(?P<episodeName>\w+)$',views.displayEpisodeRecordedVideo, {}, 'recorded'),
     (r'playRecordedVideo/(?P<flightName>\w+)/(?P<segmentNumber>\d+)/$', views.playRecordedVideo, {}, 'playRecordedVideo'),
     
 )

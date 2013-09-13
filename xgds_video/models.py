@@ -57,7 +57,7 @@ class AbstractVideoSettings(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return u'%s: %s' % (self.id,)
+        return u'%s: (%s: %s)' % (self.id, self.width, self.height)
 
 
 class VideoSettings(AbstractVideoSettings):
@@ -83,8 +83,9 @@ class AbstractVideoFeed(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return (u'VideoFeed(%s, %s)' %
-                (self.liveVideoUrl,
+        return (u'VideoFeed(%s, %s, %s)' %
+                (self.url,
+		 self.shortName,
                  self.active))
 
 
@@ -134,6 +135,9 @@ class AbstractVideoEpisode(models.Model):
     startTime = models.DateTimeField(null=True, blank=True)  # second precision, utc
     endTime = models.DateTimeField(null=True, blank=True)
     uuid = UuidField()
+
+    def getDict(self):
+	return {"shortName": self.shortName, "startTime": self.startTime, "endTime": self.endTime}
 
     class Meta:
         abstract = True

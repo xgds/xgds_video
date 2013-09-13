@@ -93,7 +93,7 @@ SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
 SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
-TIMEZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
+TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
 
 def liveVideoFeed(request, feedName):
  
@@ -182,7 +182,7 @@ def firstSegmentForSource(source, episode):
 """
 Returns first segment of all sources that are part of a given episode.
 """
-def displayEpisodedRecordedVideo(request, episodeName, sourceName=None):
+def displayEpisodeRecordedVideo(request, episodeName, sourceName=None):
 
     episode = EPISODE_MODEL.objects.get(shortName=episodeName)
     
@@ -197,18 +197,20 @@ def displayEpisodedRecordedVideo(request, episodeName, sourceName=None):
     for segment in segments:
 	segment.localStartTime = convertUtcToLocal(segment.startTime)	
 	segment.localEndTime = convertUtcToLocal(segment.endTime)
+	segment.timeZone = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['name'])
 
     earliestTime = getEarliestTime(segments)
     latestTime = getLatestSegmentTime(segments)
 
     segmentsJson = json.dumps([seg.getJson() for seg in segments], sort_keys=True, indent=4) 
     sourcesJson = json.dumps([source.getJson() for source in sources], sort_keys=True, indent=4)
+    episodeDict = episode.getDict();
 
-    return render_to_response('activeVideoSegments.html',
+    return render_to_response('xgds_video/activeVideoSegments.html',
 			{'segmentsJson': segmentsJson,
 			 'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
 			 'videoFeeds':videofeeds,
-			 'episode': episode,
+			 'episodeDict': episodeDict,
 			 'earliestTime': earliestTime,
 			 'latestTime': latestTime,
 			 'sourcesJson': sourcesJson,

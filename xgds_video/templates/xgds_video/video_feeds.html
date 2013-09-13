@@ -18,16 +18,40 @@
 	
 {% block contents %}
 
+<script language="javascript" type="text/javascript">
+function getMaxWidth() {
+	  var width = window.innerWidth ||
+    document.documentElement.clientWidth ||
+    document.body.clientWidth;
+	  {% if videoFeedData|length > 1 %}
+	  width = Math.round(width/2);
+	  {% endif %}
+	  width = width - 50;
+	  return width;
+}
+
+function calculateHeight(newWidth, defaultHeight, defaultWidth) {
+	  var newHeight = defaultHeight;
+     if (defaultWidth > newWidth){
+         ratio = newWidth / defaultWidth
+         newHeight = Math.round(defaultHeight * ratio)
+     }
+     return newHeight;
+}
+
+var maxWidth = getMaxWidth();
+</script>
+
 <div id="container" class="js-masonry" data-masonry-options='{  "itemSelector": ".item", "gutter":5}'>
-{% for data in videoFeedData %}
+{% for feed, form in videoFeedData %}
 <script language="javascript" type="text/javascript">
 	  var feedHeight = calculateHeight(maxWidth, {{ feed.settings.height }}, {{ feed.settings.width  }});
 </script>
 <div class="item" id="item{{ forloop.counter }}" style="background:#CACACA;  margin-bottom: 5px; padding: 8px;border-style:solid; border-width:2px;">
 	<div style="float:left; text-align: left"><b>Live feed: {{ feed.name }}</b></div>
 	<div style="float:right; text-align: right; padding-bottom:3px;"><a class="mybutton" href="{% url liveVideoFeed feed.shortName %}" target="{{ feed.shortName }}">New Window</a>&nbsp;&nbsp;
-		<a class="mybutton" href="{% url activeSegments feed.shortName %}">Recorded</a></div>
-	{% include "video_notes.html" with data=data %}
+		<a class="mybutton" href="{% url liveVideoFeed feed.shortName %}">Recorded</a></div>
+	{% include "video_notes.html" with data=form %}
 	<script language="javascript" type="text/javascript">
 	  $("#item{{ forloop.counter }}").css({"width":maxWidth,"height":feedHeight+120}); 
 	  QT_WriteOBJECT('https://plrp.xgds.org/static/{{ feed.name }}Stream.mov', /* maxWidth */'100%', /* feedHeight */'100%', '', 'AUTOPLAY',
