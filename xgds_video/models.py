@@ -14,6 +14,10 @@ from xgds_video import settings
 #incase settings is shadowed
 videoSettings = settings
 
+def getShortTimeString(dateTime):
+    return dateTime.strftime("%H:%M:%S")
+
+
 class AbstractVideoSource(models.Model):
     # name: human-readable title
     name = models.CharField(max_length=128, blank=True, null=True)
@@ -106,7 +110,7 @@ class AbstractVideoSegment(models.Model):
     source = models.ForeignKey(videoSettings.XGDS_VIDEO_SOURCE_MODEL, null=True, blank=True)
     uuid = UuidField()
 
-    def getJson(self):
+    def getDict(self):
 	return {"directoryName": self.directoryName, "segNumber": self.segNumber, "indexFileName": self.indexFileName, "source": self.source.getDict(), "settings": self.settings.getDict()}
 
     class Meta:
@@ -137,7 +141,9 @@ class AbstractVideoEpisode(models.Model):
     uuid = UuidField()
 
     def getDict(self):
-	return {"shortName": self.shortName, "startTime": self.startTime, "endTime": self.endTime}
+	return {"shortName": self.shortName, 
+		"startTime": getShortTimeString(self.startTime), 
+		"endTime": getShortTimeString(self.endTime)}
 
     class Meta:
         abstract = True

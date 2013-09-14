@@ -5,12 +5,12 @@ var isPlayButtonPressed = true;
 //resize the jwplayers when window is resized.
 window.onresize = function() {
     if (displaySegmentsGlobal != null) {
-	var maxWidth = getMaxWidth(displaySegments);
+	var maxWidth = getMaxWidth(displaySegmentsGlobal);
         $.each(displaySegmentsGlobal, function(segIdx) {
-	    var segment = displaySegments[segIdx];
-	    var height = calculateHeight(maxWidth, segment.flightVideo.height, segment.flightVideo.width);
-	    var assetRoleName = segment.flightVideo.assetRoleName;   
-	    jwplayer("myPlayer"+assetRoleName).resize(maxWidth, height);
+	    var segment = displaySegmentsGlobal[segIdx];
+	    var height = calculateHeight(maxWidth, segment.settings.height, segment.settings.width);
+	    var sourceName = segment.source.shortName;   
+	    jwplayer("myPlayer"+sourceName).resize(maxWidth, height);
 	});
     } 
 }
@@ -127,34 +127,17 @@ function setupSlider(episode) {
 }
 
 
-/**
- * In list of dictionaries, 
- * Find a dictionary that contains dictionary[key] == value 
- * and get the Value of "getValueOf" in that dictionary.
-function listOfDictHelper(dictionaryList, key, value, getValueOf) {
-    var result="";
-    $.each(dictionaryList, function(idx) {   
-	var dictionary = dictionaryList[idx];
-	if (dictionary[key] == value) {
-	    result = dictionary[getValueOf];
-	}	 
-    });	
-    return result;
-}
-**/
-
-
-/**
+/** XXX
  * Callback function for play/pause button
 **/
 function playPauseButtonCallBack() {
     var playPause = document.getElementById("addPlayPauseButton");
     isPlayButtonPressed = !isPlayButtonPressed;
- 
-    $.each(testSiteTimesAndZonesGlobal, function(segIdx) {
-	var assetRole = testSiteTimesAndZonesGlobal[segIdx]["assetRoleName"];
-	var player = jwplayer("myPlayer"+assetRole);		
-	
+
+    $.each(displaySegmentsGlobal, function(idx) {
+	var sourceName = displaySegmentsGlobal[idx].source.shortName;
+	var player = jwplayer("myPlayer"+sourceName);
+
 	if ((player.getState() == "PLAYING") ||
 	    (player.getState() == "PAUSED")) {
  
@@ -272,16 +255,16 @@ function updateValues(episode, earliestSourceName) {
     var sliderTime = HMStoSeconds(episode.startTime) + playerPosition;    //update the slider value    
     masterSliderGlobal.slider("value",sliderTime);
     //update slider time text
-    var sliderTimeInHMS = secondsToHMS(sliderTime;
+    var sliderTimeInHMS = secondsToHMS(sliderTime);
     $("#sliderTimeLabel").val(sliderTimeInHMS + " Zone: UTC");
 
     //if slider time >= start time of other videos and they are paused, awake them 
-    $.each(displaySegmentsGlobal, function(idx)) {
+    $.each(displaySegmentsGlobal, function(idx) {
 	var segment = displaySegmentsGlobal[idx];
 	var sourceName = segment.source.shortName;
 	var player = jwplayer("myPlayer"+sourceName);
 
-	if ((sliderTime >= HMStoSeconds(segment.startTime) &&
+	if ((sliderTime >= HMStoSeconds(segment.startTime)) &&
 	    (player.getState() == "IDLE")) {
 	    player.play(true);
 	}	

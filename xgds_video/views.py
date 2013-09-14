@@ -86,7 +86,7 @@ from xgds_planner2 import (models,
 
 from geocamUtil.loader import getModelByName
 from xgds_video import settings
-
+from xgds_video.models import getShortTimeString
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -120,7 +120,8 @@ def liveVideoFeed(request, feedName):
 
 
 def convertUtcToLocal(time):
-    return time.astimezone(TIME_ZONE).strftime("%H:%M:%S")
+    time = time.replace(tzinfo=pytz.UTC)
+    return getShortTimeString(time.astimezone(TIME_ZONE)) # strftime("%H:%M:%S")
 
 """
 Helper for getActiveRecordedSegments
@@ -168,7 +169,7 @@ def getLatestTime(endTimesAndZone):
 """
 
 def getEarliestSegmentTime(segments):
-    return min([seg.starTime for seg in segments])
+    return min([seg.startTime for seg in segments])
 
 def getLatestSegmentTime(segments):
     return max([seg.endTime for seg in segments])
@@ -197,23 +198,23 @@ def displayEpisodeRecordedVideo(request, episodeName, sourceName=None):
     for segment in segments:
 	segment.localStartTime = convertUtcToLocal(segment.startTime)	
 	segment.localEndTime = convertUtcToLocal(segment.endTime)
-	segment.timeZone = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['name'])
+	segment.timeZone = settings.XGDS_VIDEO_TIME_ZONE['name']
 
-    earliestTime = getEarliestTime(segments)
-    latestTime = getLatestSegmentTime(segments)
+    earliestTime = getShortTimeString(getEarliestSegmentTime(segments))
+    latestTime = getShortTimeString(getLatestSegmentTime(segments))
 
-    segmentsJson = json.dumps([seg.getJson() for seg in segments], sort_keys=True, indent=4) 
-    sourcesJson = json.dumps([source.getJson() for source in sources], sort_keys=True, indent=4)
-    episodeDict = episode.getDict();
+    segmentsJson = json.dumps([seg.getDict() for seg in segments], sort_keys=True, indent=4) 
+    sourcesJson = json.dumps([source.getDict() for source in sources], sort_keys=True, indent=4)
+    episodeJson = json.dumps(episode.getDict())
 
     return render_to_response('xgds_video/activeVideoSegments.html',
 			{'segmentsJson': segmentsJson,
 			 'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
-			 'videoFeeds':videofeeds,
-			 'episodeDict': episodeDict,
+			 'episode': episode,
+			 'episodeJson': episodeJson,
 			 'earliestTime': earliestTime,
 			 'latestTime': latestTime,
-			 'sourcesJson': sourcesJson,
+		         'sources': sources,
 		        },
 			context_instance=RequestContext(request)
 			)	
