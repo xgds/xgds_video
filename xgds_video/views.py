@@ -17,7 +17,6 @@ import string
 import pprint
 import multiprocessing
 
-import pytz
 from pyproj import Proj
 
 try:
@@ -74,9 +73,7 @@ if logEnabled() :
 
 from xgds_notes.forms import NoteForm
 
-from pytz import timezone
 from operator import attrgetter
-from pytz import timezone
 
 from xgds_notes.diggpaginator import *
 
@@ -86,14 +83,13 @@ from xgds_planner2 import (models,
 
 from geocamUtil.loader import getModelByName
 from xgds_video import settings
-from xgds_video.models import getShortTimeString
+from xgds_video import util
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
 SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
-TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
 
 def liveVideoFeed(request, feedName):
  
@@ -119,60 +115,13 @@ def liveVideoFeed(request, feedName):
     )
 
 
-def convertUtcToLocal(time):
-    time = time.replace(tzinfo=pytz.UTC)
-    return getShortTimeString(time.astimezone(TIME_ZONE)) # strftime("%H:%M:%S")
-
-"""
-Helper for getActiveRecordedSegments
-def getRecordedVideoSegment(flight, segIdx=None):
-    flightVid = FlightVideo.objects.filter(flight=flight)
-    segment = None
-    if flightVid:
-        segments = flightVid[0].videosegment_set.all()
-    if segIdx == None:
-        if len(segments) != 0:
-            segment = segments.reverse()[0]
-        else:
-            segment = segments[segIdx]
-    return segment
-
-"""
-
-#XXX just use the episode startTime
-""" 
-Helper: gets earliest time given list of times
-returns in strf "%H:%M:%S" format
-def getEarliestTime(startTimesAndZones):
-    earliestTime = startTimesAndZones[0]["time"]  
-    for timeAndZone in startTimesAndZones:
-	if (timeAndZone["time"] < earliestTime):
-	    earliestTime = timeAndZone["time"]
-    print earliestTime
-    return earliestTime
-
-"""
-    
-"""
-Helper: gets latest time given list of times
-returns in strf "%H:%M:%S" format
-
-def getLatestTime(endTimesAndZone):
-    latestTime = -1
-    for timeAndZone in endTimesAndZone:
-	if (latestTime == -1):
-	    latestTime = timeAndZone["time"]
-	else: 
-	    if (timeAndZone["time"] > latestTime):
-		latestTime = timeAndZone["time"]
-    return latestTime
-"""
-
 def getEarliestSegmentTime(segments):
     return min([seg.startTime for seg in segments])
 
+
 def getLatestSegmentTime(segments):
     return max([seg.endTime for seg in segments])
+
 
 def firstSegmentForSource(source, episode):
     segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime,
@@ -194,14 +143,8 @@ def displayEpisodeRecordedVideo(request, episodeName, sourceName=None):
 
     segments = [firstSegmentForSource(source,episode) for source in sources]  
  
-    
-    for segment in segments:
-	segment.localStartTime = convertUtcToLocal(segment.startTime)	
-	segment.localEndTime = convertUtcToLocal(segment.endTime)
-	segment.timeZone = settings.XGDS_VIDEO_TIME_ZONE['name']
-
-    earliestTime = getShortTimeString(getEarliestSegmentTime(segments))
-    latestTime = getShortTimeString(getLatestSegmentTime(segments))
+    earliestTime = util.convertUtcToLocal(getEarliestSegmentTime(segments))
+    latestTime = util.convertUtcToLocal(getLatestSegmentTime(segments))
 
     segmentsJson = json.dumps([seg.getDict() for seg in segments], sort_keys=True, indent=4) 
     sourcesJson = json.dumps([source.getDict() for source in sources], sort_keys=True, indent=4)

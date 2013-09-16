@@ -52,7 +52,7 @@
 {% for source in sources %}
     <td>  
 	<div style="width:38%; float:left; text-align:left">Recorded Segment: {{ source.name }}</div> 
-	<div style="width:60%; float:left; text-align:right"><a class="mybutton" href="{% url recorded episode.shortName %}" target="new">New Window</a>&nbsp;&nbsp;<a class="mybutton" href="{% url liveVideoFeed source.shortName %}">Live</a></div>
+	<div style="width:60%; float:left; text-align:right"><a class="mybutton" href="{% url recorded episode.shortName source.shortName %}" target="new">New Window</a>&nbsp;&nbsp;<a class="mybutton" href="{% url liveVideoFeed source.shortName %}">Live</a></div>
 	<br>	
 	<br>
 

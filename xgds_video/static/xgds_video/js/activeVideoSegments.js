@@ -1,6 +1,7 @@
 var displaySegmentsGlobal = null;
 var masterSliderGlobal ="";
 var isPlayButtonPressed = true;
+var earliestSegmentGlobal = null;
 
 //resize the jwplayers when window is resized.
 window.onresize = function() {
@@ -58,7 +59,7 @@ function calculateHeight(newWidth, defaultHeight, defaultWidth) {
     return newHeight;
 }
 
-/** XXX
+/** 
  * Seek Video from time.
  * If "isTimeFromURL" is true, get the time value from url hash
  * else, get the time value from the seekToTime textbox.
@@ -80,7 +81,7 @@ function seekToTime(isTimeFromURL) {
 
     //update slider 
     masterSliderGlobal.slider("value",seekTimeInSeconds);
-    $("#sliderTimeLabel").val(seekTime + " Zone:UTC");
+    $("#sliderTimeLabel").val(seekTime);
    
     $.each(displaySegmentsGlobal, function(idx) {
 	var segment = displaySegmentsGlobal[idx];
@@ -88,7 +89,7 @@ function seekToTime(isTimeFromURL) {
 	var offset =  seekTimeInSeconds - HMStoSeconds(segment.startTime);
 	var player = jwplayer("myPlayer"+sourceName);
 
-	var testSiteTime = SecondsToHMS(HMStoSeconds(segment.localStartTime) + offset);
+	var testSiteTime = secondsToHMS(HMStoSeconds(segment.startTime) + offset);
 	
 	//update test site time of each video
 	setText("testSiteTime"+sourceName, testSiteTime + " "+segment.timeZone);
@@ -111,7 +112,7 @@ function seekToTime(isTimeFromURL) {
     });
 }
 
-/** XXX
+/** 
  * initialize master slider with range (episode start time-> episode end time)
 **/
 function setupSlider(episode) {
@@ -123,11 +124,11 @@ function setupSlider(episode) {
 	slide: uponSliderMove,
 	range: "min"
     });
-    $("#sliderTimeLabel").val(secondsToHMS($("#masterSlider").slider("value"))+" Zone: UTC");
+    $("#sliderTimeLabel").val(secondsToHMS($("#masterSlider").slider("value")));
 }
 
 
-/** XXX
+/** 
  * Callback function for play/pause button
 **/
 function playPauseButtonCallBack() {
@@ -152,7 +153,7 @@ function playPauseButtonCallBack() {
     });
 }
 
-/** XXX
+/** 
  * Initialize jw player and call update values
 **/ 
 function setupJWplayer(displaySegments, earliestSegTime, episode) {
@@ -164,8 +165,8 @@ function setupJWplayer(displaySegments, earliestSegTime, episode) {
 	var segment = displaySegmentsGlobal[segIdx];
 	var sourceName = segment.source.shortName;
 	
-	var filePath = baseUrl+"/"+episode.shortName+sourceName+"/Video/Recordings/"+
-			segment.path+segment.segNumber+"/"+segment.indexFileName;
+	var filePath = baseUrl+"/"+episode.shortName+"/"+sourceName+"/Video/Recordings/"+
+			segment.directoryName+segment.segNumber+"/"+segment.indexFileName;
 	var height = calculateHeight(maxWidth, segment.settings.height, segment.settings.width);
 	
 	jwplayer("myPlayer"+sourceName).setup(
@@ -179,6 +180,8 @@ function setupJWplayer(displaySegments, earliestSegTime, episode) {
 	    events:  {
     		onReady: function() {	    
 		    if (earliestSegTime == HMStoSeconds(segment.startTime)) {
+			//set earliest segment global 
+			earliestSegmentGlobal = segment;	
 
 			//if there is an offset in the url itself, start there.
 			if (window.location.hash) { //in the format #t=HH:MM:SS
@@ -187,7 +190,7 @@ function setupJWplayer(displaySegments, earliestSegTime, episode) {
 	
 			//play the video with earliest time
 			jwplayer("myPlayer"+sourceName).play(true);
-			updateValues(episode, sourceName);
+			updateValues();
 		    }
 		}
 	    }  
@@ -200,10 +203,10 @@ function setupJWplayer(displaySegments, earliestSegTime, episode) {
  * update slider time text when moving slider.
 **/
 function uponSliderMove(event, ui) {
-    $("#sliderTimeLabel").val(secondsToHMS(ui.value)+" Zone: UTC");
+    $("#sliderTimeLabel").val(secondsToHMS(ui.value));
 }
 
-/** XXX 
+/**  
  * Slider Callback: 
  * For each displaySegment, 
  *    get the current slider position and do
@@ -239,24 +242,21 @@ function uponSliderStop(event, ui) {
 	    player.stop();
 	}
 
-	var testSiteTime = SecondsToHMS(HMStoSeconds(segment.localStartTime) + offset);
+	var testSiteTime = secondsToHMS(HMStoSeconds(segment.startTime) + offset);
 	setText("testSiteTime"+sourceName, testSiteTime+ " "+segment.timeZone);
     }); 
 } 
 
-/** XXX
- * Runs every second. 
- * Set slider time:
- *  sliderTime = earliest's video's start time + elapsed time (video.getPosition)  
-**/
-function updateValues(episode, earliestSourceName) {
+function updateValues() {
     //calculate slider time
-    var elapsedSeconds = jwplayer("myPlayer"+earliestSourceName).getPosition();
-    var sliderTime = HMStoSeconds(episode.startTime) + playerPosition;    //update the slider value    
+    var elapsedSeconds = jwplayer("myPlayer"+earliestSegmentGlobal.source.shortName).getPosition();
+   
+    var sliderTime = HMStoSeconds(earliestSegmentGlobal.startTime) + elapsedSeconds;
     masterSliderGlobal.slider("value",sliderTime);
+    
     //update slider time text
     var sliderTimeInHMS = secondsToHMS(sliderTime);
-    $("#sliderTimeLabel").val(sliderTimeInHMS + " Zone: UTC");
+    $("#sliderTimeLabel").val(sliderTimeInHMS);
 
     //if slider time >= start time of other videos and they are paused, awake them 
     $.each(displaySegmentsGlobal, function(idx) {
@@ -273,8 +273,8 @@ function updateValues(episode, earliestSourceName) {
 	    player.pause(true);
 	}
 
-	var testSiteTime = SecondsToHMS(HMStoSeconds(segment.localStartTime) + elapsedSeconds);
-	setText("testSiteTime"+sourceName, testSiteTime+" "+segment.timeZone);
+	//should all be synced to earliestSegment
+	setText("testSiteTime"+sourceName, sliderTimeInHMS+" "+segment.timeZone);
     });
     setTimeout(updateValues,1000);
 }

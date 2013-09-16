@@ -5,17 +5,12 @@
 # __END_LICENSE__
 
 from django.db import models
-
 from geocamUtil.models import UuidField
-
 from xgds_video import settings
-
+from xgds_video import util
 
 #incase settings is shadowed
 videoSettings = settings
-
-def getShortTimeString(dateTime):
-    return dateTime.strftime("%H:%M:%S")
 
 
 class AbstractVideoSource(models.Model):
@@ -111,7 +106,12 @@ class AbstractVideoSegment(models.Model):
     uuid = UuidField()
 
     def getDict(self):
-	return {"directoryName": self.directoryName, "segNumber": self.segNumber, "indexFileName": self.indexFileName, "source": self.source.getDict(), "settings": self.settings.getDict()}
+	return {"directoryName": self.directoryName, "segNumber": self.segNumber, 
+		"indexFileName": self.indexFileName, "source": self.source.getDict(), 
+		"startTime": util.convertUtcToLocal(self.startTime), 
+		"endTime": util.convertUtcToLocal(self.endTime),
+		"timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'], 
+		"settings": self.settings.getDict()}
 
     class Meta:
         abstract = True
@@ -142,8 +142,8 @@ class AbstractVideoEpisode(models.Model):
 
     def getDict(self):
 	return {"shortName": self.shortName, 
-		"startTime": getShortTimeString(self.startTime), 
-		"endTime": getShortTimeString(self.endTime)}
+		"startTime": util.convertUtcToLocal(self.startTime), 
+		"endTime": util.convertUtcToLocal(self.endTime)}
 
     class Meta:
         abstract = True
