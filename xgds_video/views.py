@@ -93,6 +93,7 @@ EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
 def liveVideoFeed(request, feedName):
     feedData = []
+
     if feedName.lower() != 'all':
         videofeeds = FEED_MODEL.objects.filter(shortName=feedName)
         if videofeeds:
@@ -107,9 +108,13 @@ def liveVideoFeed(request, feedName):
             form.index = index
             index += 1
             feedData.append((feed,form))
-    
+   
+    #get the active episodes
+    currentEpisodes = EPISODE_MODEL.objects.filter(endTime = None)
+ 
     return render_to_response("xgds_video/video_feeds.html",
-        {'videoFeedData': feedData},
+        {'videoFeedData': feedData,
+	 'currentEpisodes': currentEpisodes},
         context_instance=RequestContext(request)
     )
 
@@ -143,11 +148,16 @@ def makedirsIfNeeded(path):
 """
 Returns first segment of all sources that are part of a given episode.
 """
-def displayEpisodeRecordedVideo(request, episodeName, sourceName=None):
-
-    episode = EPISODE_MODEL.objects.get(shortName=episodeName)
+def displayEpisodeRecordedVideo(request):#, episodeName, sourceName=None):
+    episodeName = request.GET.get("episode")
+    sourceName = request.GET.get("source")
     
-    if sourceName == None:
+    if not episodeName:
+	episode = EPISODE_MODEL.objects.filter(endTime=None)[0]
+    else:
+	episode = EPISODE_MODEL.objects.get(shortName=episodeName)
+    
+    if sourceName is None:
 	sources = SOURCE_MODEL.objects.all()
     else: 
 	sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]

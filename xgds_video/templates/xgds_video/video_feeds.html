@@ -50,7 +50,7 @@ var maxWidth = getMaxWidth();
 <div class="item" id="item{{ forloop.counter }}" style="background:#CACACA;  margin-bottom: 5px; padding: 8px;border-style:solid; border-width:2px;">
 	<div style="float:left; text-align: left"><b>Live feed: {{ feed.name }}</b></div>
 	<div style="float:right; text-align: right; padding-bottom:3px;"><a class="mybutton" href="{% url xgds_video_live feed.shortName %}">New Window</a>&nbsp;&nbsp;
-		<!--a class="mybutton" href="{#% url xgds_video_recorded episode.shortName feed.source.shortName %#}">Recorded</a--></div>
+		<a class="mybutton" href="{% url xgds_video_recorded %}?source={{ feed.source.shortName }}">Recorded</a></div>
 	{% include "xgds_video/video_notes.html" with data=form %}
 	<script language="javascript" type="text/javascript">
 	  $("#item{{ forloop.counter }}").css({"width":maxWidth,"height":feedHeight+120}); 
