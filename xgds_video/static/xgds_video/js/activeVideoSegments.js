@@ -115,11 +115,16 @@ function seekToTime(isTimeFromURL) {
 /** 
  * initialize master slider with range (episode start time-> episode end time)
 **/
-function setupSlider(episode) {
+function setupSlider(episode, latestSegEndTime) {
+    var endTime = latestSegEndTime;
+    if (episode.endTime != null) {
+	endTime = episode.endTime; 
+    }  
+
     masterSliderGlobal = $("#masterSlider").slider({
 	step:1,
 	min: HMStoSeconds(episode.startTime), 
-	max: HMStoSeconds(episode.endTime),
+	max: HMStoSeconds(endTime),
 	stop: uponSliderStop,
 	slide: uponSliderMove,
 	range: "min"

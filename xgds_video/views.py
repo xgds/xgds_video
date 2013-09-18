@@ -92,7 +92,6 @@ SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
 def liveVideoFeed(request, feedName):
- 
     feedData = []
     if feedName.lower() != 'all':
         videofeeds = FEED_MODEL.objects.filter(shortName=feedName)
@@ -124,9 +123,21 @@ def getLatestSegmentTime(segments):
 
 
 def firstSegmentForSource(source, episode):
-    segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime,
-				endTime__lte=episode.endTime)
+    if episode.endTime:
+	segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime,
+						endTime__lte=episode.endTime)
+    else:  #endTime of segment might be null if flight has not been stopped. 
+	segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime) #XXX double check
     return segments[:1][0]
+
+
+"""
+Helper for displayEpisodeRecordedVideo
+"""
+def makedirsIfNeeded(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+        os.chmod(path, (stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU))
 
 
 """
@@ -166,62 +177,63 @@ def displayEpisodeRecordedVideo(request, episodeName, sourceName=None):
 def getActiveFlights():
     return ActiveFlight.objects.all()
 
-def getRecordedVideoDir(flight, segmentNumber):
-    recordedVideoDir = "%s/%s/Video/Recordings/Segment%s" % \
-        (settings.RECORDED_VIDEO_DIR_BASE,
-         flight.name,
-         segmentNumber)
-    return recordedVideoDir
 
+def startRecording(source, recordingDir, recordingUrl, startTime, endTime, maxFlightDuration):
+    if not source.videofeed_set.all():
+	print "video feeds set is empty"
+	return
+ 
+    videoFeed = source.videofeed_set.all()[0]
 
-def startRecording(flight):
-    videoFeed = flight.assetRole.videofeed_set.all()[0]
-    segmentNumber = 0
-    recordedVideoDir = getRecordedVideoDir(flight, segmentNumber)
+    print videoFeed
+    recordedVideoDir = None
+    segmentNumber = None
+    for i in xrange(1000):
+	trySegDir = os.path.join(recordingDir, 'Segment%03d' % i)
+	if not os.path.exists(trySegDir):
+	    recordedVideoDir = trySegDir
+	    segmentNumber = i
+	    break
+    assert segmentNumber is not None
+
     print "Recorded video dir:", recordedVideoDir
     makedirsIfNeeded(recordedVideoDir)
 
-    flightVideo = FlightVideo.objects.filter(flight=flight)
-    if flightVideo.count() == 0:
-        flightVideo = FlightVideo(flight=flight,
-                                  startTime=datetime.datetime.now(),
-                                  endTime=None,
-                                  height=videoFeed.height,
-                                  width=videoFeed.width)
-        flightVideo.save()
-    else:
-        flightVideo = flightVideo[0]
-    videoSegment = VideoSegment(path="Segment",
-                                startTime=flightVideo.startTime,
-                                endTime=flightVideo.endTime,
-                                segNumber=0,
-                                compressionRate=None,
-                                playbackDataRate=None,
-                                flightVideo=flightVideo,
-                                indexFileName="prog_index.m3u8")
+    videoSettings = SETTINGS_MODEL(width=videoFeed.settings.width,
+				  height=videoFeed.settings.height,
+				  compressionRate=None,
+				  playbackDataRate=None)
+
+    videoSegment = SEGMENT_MODEL(directoryName="Segment",
+				segNumber= segmentNumber,
+				indexFileName="prog_index.m3u8",
+				startTime=startTime,
+				endTime=endTime,
+				settings=videoSettings,
+				source=source)
     videoSegment.save()
    
     if settings.PYRAPTORD_SERVICE is True:
 	pyraptord = getZerorpcClient('pyraptord')
 
-    assetName = flight.assetRole.name
+    assetName = source.shortName #flight.assetRole.name
 
     vlcSvc = '%s_vlc' % assetName
     vlcCmd = ('%s %s %s'
-              % (settings.VLC_PATH,
+              % (settings.XGDS_VIDEO_VLC_PATH,
                  videoFeed.url,
-                 settings.VLC_PARAMETERS))
+                 settings.XGDS_VIDEO_VLC_PARAMETERS))
 
     print vlcCmd
 
     segmenterSvc = '%s_segmenter' % assetName
-    segmenterCmd = ('%s -b %s/%s/Video/Recordings/Segment%s -f %s -t 5 -S 3 -p -program-duration %s'
-                    % (settings.MEDIASTREAMSEGMENTER_PATH,
-                       settings.RECORDED_VIDEO_URL_BASE,
-                       flight.name,
-                       segmentNumber,
+
+    segmenterCmd = ('%s -b %sSegment%s -f %s -t 5 -S 3 -p -program-duration %s'
+                    % (settings.XGDS_VIDEO_MEDIASTREAMSEGMENTER_PATH,
+                       recordingUrl,
+		       segmentNumber,
                        recordedVideoDir,
-                       settings.MAX_FLIGHT_DURATION))
+                       maxFlightDuration))
 
     print segmenterCmd
 
@@ -238,22 +250,10 @@ def startRecording(flight):
 	pyraptord.restart(segmenterSvc)
 
 
-def playRecordedVideo(request, flightName, segmentNumber=0):
-    flight = NewFlight.objects.get(name=flightName)
-    recordedVideoDir = getRecordedVideoDir(flight, segmentNumber)
-    indexFileHandle = open("%s/%s" % \
-                               (recordedVideoDir, settings.VIDEO_INDEX_FILE_NAME),
-                           "r")
-    indexFileData = indexFileHandle.read()
-    indexFileData = "%s%s\n" % (indexFileData, settings.VIDEO_INDEX_FILE_END_TAG)
-    
-    return HttpResponse(indexFileData, mimetype='application/x-mpegurl')
-       
-
-def stopRecording(flight):
+def stopRecording(source):
     if settings.PYRAPTORD_SERVICE is True:
 	pyraptord = getZerorpcClient('pyraptord')
-    assetName = flight.assetRole.name
+    assetName = source.shortName #flight.assetRole.name
     vlcSvc = '%s_vlc' % assetName
     segmenterSvc = '%s_segmenter' % assetName
     
@@ -261,4 +261,3 @@ def stopRecording(flight):
 	stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
 	stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
 
-    

@@ -141,9 +141,13 @@ class AbstractVideoEpisode(models.Model):
     uuid = UuidField()
 
     def getDict(self):
+	episodeEndTime = None
+	if self.endTime: #if endTime is none (when live stream has not ended) 
+	   episodeEndTime = util.convertUtcToLocal(self.endTime) 
+
 	return {"shortName": self.shortName, 
 		"startTime": util.convertUtcToLocal(self.startTime), 
-		"endTime": util.convertUtcToLocal(self.endTime)}
+		"endTime": episodeEndTime}
 
     class Meta:
         abstract = True

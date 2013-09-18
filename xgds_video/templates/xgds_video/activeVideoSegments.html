@@ -7,7 +7,7 @@
     {% endblock %}
     
     {% block sitemenu-content-secondary %}
-	{% include "video_subnav.html" %}
+	{% include "xgds_video/video_subnav.html" %}
     {% endblock %}
 
 {% block headExtras %}
@@ -33,7 +33,7 @@
 
 {% block contents %}
     <p>
-	<label for="sliderTimeLabel">Flight Time:</label>
+	<label for="sliderTimeLabel">Local Flight Time:</label>
 	<input type="text" id="sliderTimeLabel" style="border:0; color:#f6931f; font-weight:bold;"/>
     </p>
     <div id="masterSlider" style="width:70%; float:left;"></div> 
@@ -52,7 +52,7 @@
 {% for source in sources %}
     <td>  
 	<div style="width:38%; float:left; text-align:left">Recorded Segment: {{ source.name }}</div> 
-	<div style="width:60%; float:left; text-align:right"><a class="mybutton" href="{% url recorded episode.shortName source.shortName %}" target="new">New Window</a>&nbsp;&nbsp;<a class="mybutton" href="{% url liveVideoFeed source.shortName %}">Live</a></div>
+	<div style="width:60%; float:left; text-align:right"><a class="mybutton" href="{% url xgds_video_recorded episode.shortName source.shortName %}" target="new">New Window</a>&nbsp;&nbsp;<a class="mybutton" href="{% url xgds_video_live source.shortName %}">Live</a></div>
 	<br>	
 	<br>
 
@@ -88,7 +88,7 @@
 
     var episode = {{ episodeJson|safe }};
 
-    setupSlider(episode);
+    setupSlider(episode, "{{ latestTime }}");
     setupJWplayer(displaySegments, earliestSegTime, episode);
 
 </script>

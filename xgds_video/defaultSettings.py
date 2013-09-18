@@ -4,9 +4,6 @@
 # All Rights Reserved.
 # __END_LICENSE__
 
-XGDS_VIDEO_RECORDING_URL_BASE = "*** Set me in siteSettings.py ***"
-XGDS_VIDEO_RECORDING_DIR_BASE = "*** Set me in siteSettings.py ***"
-
 XGDS_VIDEO_NEW_DIR_PERMISSIONS = 0777
 XGDS_VIDEO_MAX_EPISODE_DURATION_MINUTES = 180
 
