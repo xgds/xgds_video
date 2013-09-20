@@ -120,15 +120,11 @@ def liveVideoFeed(request, feedName):
 
 
 def getEarliestSegmentTime(segments):
-    for seg in segments:
-	print seg.startTime
-    
-    print min([seg.startTime for seg in segments])
-
     return min([seg.startTime for seg in segments])
 
 
 def getLatestSegmentTime(segments):
+    
     return max([seg.endTime for seg in segments])
 
 
@@ -205,7 +201,7 @@ def getActiveFlights():
     return ActiveFlight.objects.all()
 
 
-def startRecording(source, recordingDir, recordingUrl, startTime, endTime, maxFlightDuration):
+def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDuration):
     if not source.videofeed_set.all():
         logging.info("video feeds set is empty")
         return
@@ -235,7 +231,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, endTime, maxFl
 				segNumber= segmentNumber,
 				indexFileName="prog_index.m3u8",
 				startTime=startTime,
-				endTime=endTime,
+				endTime=None,
 				settings=videoSettings,
 				source=source)
     videoSegment.save()
@@ -282,9 +278,10 @@ def stopRecording(source, endTime):
     segmenterSvc = '%s_segmenter' % assetName
    
     #we need to set the endtime
-    videoSegment = source.videosegment_set.all()[0]
-    videoSegment.endTime = endTime
-    videoSegment.save()
+    if source.videosegment_set.all().count() != 0:
+	videoSegment = source.videosegment_set.all()[0]
+	videoSegment.endTime = endTime
+	videoSegment.save()
  
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
