@@ -120,6 +120,8 @@ function setupSlider(episode, latestSegEndTime) {
     if (episode.endTime != null) {
 	endTime = episode.endTime; 
     }  
+    
+    console.log("episode's start time: "+ episode.startTime)
 
     masterSliderGlobal = $("#masterSlider").slider({
 	step:1,

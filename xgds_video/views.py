@@ -120,6 +120,11 @@ def liveVideoFeed(request, feedName):
 
 
 def getEarliestSegmentTime(segments):
+    for seg in segments:
+	print seg.startTime
+    
+    print min([seg.startTime for seg in segments])
+
     return min([seg.startTime for seg in segments])
 
 
@@ -169,6 +174,7 @@ def displayEpisodeRecordedVideo(request):#, episodeName, sourceName=None):
         found = firstSegmentForSource(source,episode)
         if found:
             segments.append(found)
+    
     earliestTime = None
     latestTime = None
     segmentsJson = None
@@ -189,8 +195,8 @@ def displayEpisodeRecordedVideo(request):#, episodeName, sourceName=None):
 			 'episodeJson': episodeJson,
 			 'earliestTime': earliestTime,
 			 'latestTime': latestTime,
-		     'sources': sources,
-		    },
+			 'sources': sources,
+			},
 			context_instance=RequestContext(request)
 			)	
     
@@ -223,6 +229,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, endTime, maxFl
 				  height=videoFeed.settings.height,
 				  compressionRate=None,
 				  playbackDataRate=None)
+    videoSettings.save()
 
     videoSegment = SEGMENT_MODEL(directoryName="Segment",
 				segNumber= segmentNumber,
@@ -244,7 +251,6 @@ def startRecording(source, recordingDir, recordingUrl, startTime, endTime, maxFl
                  videoFeed.url,
                  settings.XGDS_VIDEO_VLC_PARAMETERS))
 
-    print vlcCmd
 
     segmenterSvc = '%s_segmenter' % assetName
 
@@ -255,28 +261,31 @@ def startRecording(source, recordingDir, recordingUrl, startTime, endTime, maxFl
                        recordedVideoDir,
                        maxFlightDuration))
 
-    print segmenterCmd
+    print vlcCmd + "|" +segmenterCmd
 
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(vlcSvc)
         stopPyraptordServiceIfRunning(segmenterSvc)
-
-    pyraptord.updateServiceConfig(vlcSvc,
-                                  {'command': vlcCmd})
-    pyraptord.updateServiceConfig(segmenterSvc,
-                                  {'command': segmenterCmd})
-
-    pyraptord.restart(vlcSvc)
-    pyraptord.restart(segmenterSvc)
+	pyraptord.updateServiceConfig(vlcSvc,
+				      {'command': vlcCmd})
+	pyraptord.updateServiceConfig(segmenterSvc,
+				      {'command': segmenterCmd})
+	pyraptord.restart(vlcSvc)
+	pyraptord.restart(segmenterSvc)
 
 
-def stopRecording(source):
+def stopRecording(source, endTime):
     if settings.PYRAPTORD_SERVICE is True:
         pyraptord = getZerorpcClient('pyraptord')
     assetName = source.shortName #flight.assetRole.name
     vlcSvc = '%s_vlc' % assetName
     segmenterSvc = '%s_segmenter' % assetName
-    
+   
+    #we need to set the endtime
+    videoSegment = source.videosegment_set.all()[0]
+    videoSegment.endTime = endTime
+    videoSegment.save()
+ 
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
