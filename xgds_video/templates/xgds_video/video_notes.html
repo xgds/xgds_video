@@ -7,26 +7,26 @@
 
 {% with form=data %}
 <div style="float:left; padding-top:2px; padding-bottom:2px; ">
-	<form id="create_note{{ form.index }}" action="{% url record_notes %}" method="post">
+	<form id="create_note{{ form.index }}" action="" method="">
         <label for="id_content">Note:</label>
         <input id="id_content" type="text" name="content" maxlength="500" size="20"/>
         <label for="id_label">Label:</label>
         {{ form.label }}
         <label for="id_tag">Tags:</label>
         {{ form.tags }}
-     <input id="save_note{{ form.index }}" type="submit" value="Save" class="mybutton">
+     <input id="save_note{{ form.index }}" type="submit" value="Save" class="mybutton noteSubmit">
 </form>
 </div>
 {% endwith %}
 
 {% block jsInit %}
-$(document).ready(function(){
-    {# include "video_notes_form.js" #}
-});
+<script type="text/javascript">
+var submitNoteUrl = "{% url record_notes %}";
+</script>
+<script type="text/javascript" src="{{STATIC_URL}}/xgds_video/js/video_notes_form.js"></script>
 {% endblock jsInit %}
 
 {% block scripts %}
 <script type="text/javascript" src="{{STATIC_URL}}/javascript/jquery-ui-1.8.18.custom.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}/javascript/jquery.tagsinput.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}/javascript/xgds.notes.js"></script>
 {% endblock scripts %}
