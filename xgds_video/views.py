@@ -81,7 +81,7 @@ from xgds_planner2 import (models,
                            planImporter,
                            choosePlanExporter)
 
-from geocamUtil.loader import getModelByName
+from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
 
@@ -91,14 +91,32 @@ FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
 SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
+# NOTE_EXTRAS_FUNCTION = getClassByName(settings.XGS_VIDEO_NOTE_EXTRAS_FUNCTION)
+
+# put a setting for the name of the function to call to generate extra text to insert in the form
+# and then add the name of the plrpExplorer.views.getFlightFromFeed (context function)  extraNoteFormDataFunction
+# feed has a source, look up active episode, (find episode with endtime of none) -- or use a known episode
+# activeEpisode = EPISODE_MODEL.objects.filter(endTime=none)
+# can find the groupflight that points to that episode
+# and then find the flight in the group flight that has the same source.
+def getNoteExtras(feed=None, episode=None, source=None):
+    return None
+    
+
 def liveVideoFeed(request, feedName):
     feedData = []
 
+    #get the active episodes
+    currentEpisodes = EPISODE_MODEL.objects.filter(endTime = None)
     if feedName.lower() != 'all':
-        videofeeds = FEED_MODEL.objects.filter(shortName=feedName)
+        videofeeds = FEED_MODEL.objects.filter(shortName=feedName).select_related('source')
         if videofeeds:
             form = NoteForm()
             form.index = 0
+            form.source = videofeeds[0].source
+            if form.source:
+                form.update(form.source.getNoteExtras(currentEpisodes))
+#             form.extras = NOTE_EXTRAS_FUNCTION(videofeeds[0], form.activeEpisode, videofeeds[0].source);
         feedData.append((videofeeds[0],form))
     else:
         videofeeds = FEED_MODEL.objects.filter(active=True)
@@ -106,15 +124,15 @@ def liveVideoFeed(request, feedName):
         for feed in videofeeds:
             form = NoteForm()
             form.index = index
+            form.source = feed.source
+            if form.source:
+                form.update(form.source.getNoteExtras(currentEpisodes))
             index += 1
             feedData.append((feed,form))
-   
-    #get the active episodes
-    currentEpisodes = EPISODE_MODEL.objects.filter(endTime = None)
  
     return render_to_response("xgds_video/video_feeds.html",
         {'videoFeedData': feedData,
-	 'currentEpisodes': currentEpisodes},
+	     'currentEpisodes': currentEpisodes},
         context_instance=RequestContext(request)
     )
 

@@ -19,9 +19,15 @@ class AbstractVideoSource(models.Model):
     # shortName: a short mnemonic code suitable to embed in a URL
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True)
     uuid = UuidField(db_index=True)
+    
+    #todo we may want to modify this
+    #override this method in your model to append stuff to your notes form based on the source & episode
+    def getNoteExtras(self, episodes):
+        print "in base get note extras"
+        return None
 
     def getDict(self):
-	return {"name": self.name, "shortName": self.shortName, "uuid": self.uuid}
+        return {"name": self.name, "shortName": self.shortName, "uuid": self.uuid}
 
     class Meta:
         abstract = True
@@ -50,7 +56,7 @@ class AbstractVideoSettings(models.Model):
     uuid = UuidField()
 
     def getDict(self):
-	return {"width": self.width, "height": self.height, "compressionRate": self.compressionRate, "playbackDataRate": self.playbackDataRate}
+        return {"width": self.width, "height": self.height, "compressionRate": self.compressionRate, "playbackDataRate": self.playbackDataRate}
 
     class Meta:
         abstract = True
@@ -106,7 +112,7 @@ class AbstractVideoSegment(models.Model):
     uuid = UuidField()
 
     def getDict(self):
-	return {"directoryName": self.directoryName, "segNumber": self.segNumber, 
+        return {"directoryName": self.directoryName, "segNumber": self.segNumber, 
 		"indexFileName": self.indexFileName, "source": self.source.getDict(), 
 		"startTime": util.convertUtcToLocal(self.startTime), 
 		"endTime": util.convertUtcToLocal(self.endTime),
@@ -117,7 +123,7 @@ class AbstractVideoSegment(models.Model):
         abstract = True
 
     def __unicode__(self):
-	return (u'VideoSegment(%s, %s, %s, %s)' %
+        return (u'VideoSegment(%s, %s, %s, %s)' %
                 (self.id,
                  self.directoryName,
                  self.segNumber,
@@ -141,19 +147,19 @@ class AbstractVideoEpisode(models.Model):
     uuid = UuidField()
 
     def getDict(self):
-	episodeEndTime = None
-	if self.endTime: #if endTime is none (when live stream has not ended) 
-	   episodeEndTime = util.convertUtcToLocal(self.endTime) 
-
-	return {"shortName": self.shortName, 
-		"startTime": util.convertUtcToLocal(self.startTime), 
-		"endTime": episodeEndTime}
+        episodeEndTime = None
+        if self.endTime: #if endTime is none (when live stream has not ended) 
+            episodeEndTime = util.convertUtcToLocal(self.endTime) 
+        
+        return {"shortName": self.shortName, 
+        	"startTime": util.convertUtcToLocal(self.startTime), 
+        	"endTime": episodeEndTime}
 
     class Meta:
         abstract = True
 
     def __unicode__(self):
-	return (u'VideoEpisode(%s, %s, %s, %s)' %
+        return (u'VideoEpisode(%s, %s, %s, %s)' %
                 (self.id,
                  self.shortName,
                  self.startTime,
@@ -184,7 +190,7 @@ class VideoSourceGroup(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True)
     # shortName: a short mnemonic code suitable to embed in a URL
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True)
-    sources = models.ManyToManyField('VideoSource', through='VideoSourceGroupEntry')
+    sources = models.ManyToManyField(settings.XGDS_VIDEO_SOURCE_MODEL, through='VideoSourceGroupEntry')
     uuid = UuidField(db_index=True)
 
 

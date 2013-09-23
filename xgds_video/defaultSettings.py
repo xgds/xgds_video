@@ -20,3 +20,5 @@ XGDS_VIDEO_VLC_PARAMETERS = "--intf=dummy --sout='#std{access=file,mux=ts,dst=-}
 XGDS_VIDEO_MEDIASTREAMSEGMENTER_PATH = "/usr/bin/mediastreamsegmenter"
 
 XGDS_VIDEO_TIME_ZONE = {'name': 'Pacific', 'code':'America/Los_Angeles'}
+
+XGS_VIDEO_NOTE_EXTRAS_FUNCTION = 'xgds_video.views.getNoteExtras'
