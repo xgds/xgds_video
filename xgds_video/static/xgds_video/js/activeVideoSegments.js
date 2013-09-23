@@ -126,7 +126,7 @@ function setupSlider(episode, latestSegEndTime) {
     masterSliderGlobal = $("#masterSlider").slider({
 	step:1,
 	min: HMStoSeconds(episode.startTime), 
-	max: HMStoSeconds(endTime), //63000,
+	max: HMStoSeconds(endTime), 
 	stop: uponSliderStop,
 	slide: uponSliderMove,
 	range: "min"
@@ -178,7 +178,7 @@ function setupJWplayer(displaySegments, earliestSegTime, episode) {
 	var segment = displaySegmentsGlobal[segIdx];
 	var sourceName = segment.source.shortName;
 	
-	var filePath = baseUrl+"/"+episode.shortName+"_"+sourceName+"/Video/Recordings/"+
+	var filePath = baseUrl+episode.shortName+"_"+sourceName+"/Video/Recordings/"+
 			segment.directoryName+padNum(segment.segNumber,3)+"/"+segment.indexFileName; 
 	var height = calculateHeight(maxWidth, segment.settings.height, segment.settings.width);
 

@@ -1,4 +1,5 @@
 
+
 {% block cssExtras %}
 <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}style/jquery-ui.css"></link>
 <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}style/jquery.tagsinput.css"></link>
@@ -8,6 +9,7 @@
 {% with form=data %}
 <div style="float:left; padding-top:2px; padding-bottom:2px; ">
 	<form id="create_note{{ form.index }}" action="" method="">
+		<input type="hidden" id="id_index" value="{{form.index}}"/>
         <label for="id_content">Note:</label>
         <input id="id_content" type="text" name="content" maxlength="500" size="20"/>
         <label for="id_label">Label:</label>
@@ -24,9 +26,17 @@
 var submitNoteUrl = "{% url record_notes %}";
 </script>
 <script type="text/javascript" src="{{STATIC_URL}}/xgds_video/js/video_notes_form.js"></script>
+<!-- 
+$(document).ready(function(){
+    {# include {{STATIC_URL}}"/xgds_video/js/notes_tags.js" #}
+});
+-->
 {% endblock jsInit %}
 
 {% block scripts %}
 <script type="text/javascript" src="{{STATIC_URL}}/javascript/jquery-ui-1.8.18.custom.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}/javascript/jquery.tagsinput.js"></script>
+<script type="text/javascript">
+var submitNoteUrl = "{% url record_simple %}";
+</script>
 {% endblock scripts %}
