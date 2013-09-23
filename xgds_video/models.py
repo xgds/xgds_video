@@ -8,6 +8,7 @@ from django.db import models
 from geocamUtil.models import UuidField
 from xgds_video import settings
 from xgds_video import util
+from geocamUtil.loader import getClassByName
 
 #incase settings is shadowed
 videoSettings = settings
@@ -20,20 +21,23 @@ class AbstractVideoSource(models.Model):
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True)
     uuid = UuidField(db_index=True)
     
-    #todo we may want to modify this
-    #override this method in your model to append stuff to your notes form based on the source & episode
-    def getNoteExtras(self, episodes):
-        print "in base get note extras"
-        return None
-
-    def getDict(self):
-        return {"name": self.name, "shortName": self.shortName, "uuid": self.uuid}
-
     class Meta:
         abstract = True
 
     def __unicode__(self):
         return u'%s: %s' % (self.id, self.name)
+
+    def getDict(self):
+        return {"name": self.name, "shortName": self.shortName, "uuid": self.uuid}
+
+    def getNoteExtras(self, episodes):
+        print "in base get note extras"
+        if settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION:
+            noteExtrasFn = getClassByName(settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION)
+            return noteExtrasFn(self, episodes)
+        else:
+            return None
+
 
 
 class VideoSource(AbstractVideoSource):

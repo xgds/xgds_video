@@ -21,4 +21,5 @@ XGDS_VIDEO_MEDIASTREAMSEGMENTER_PATH = "/usr/bin/mediastreamsegmenter"
 
 XGDS_VIDEO_TIME_ZONE = {'name': 'Pacific', 'code':'America/Los_Angeles'}
 
-XGS_VIDEO_NOTE_EXTRAS_FUNCTION = 'xgds_video.views.getNoteExtras'
+# set this in siteSettings.py. example: 'plrpExplorer.views.getNoteExtras'
+XGDS_VIDEO_NOTE_EXTRAS_FUNCTION = None
