@@ -120,11 +120,13 @@ function setupSlider(episode, latestSegEndTime) {
     if (episode.endTime != null) {
 	endTime = episode.endTime; 
     }  
+    
+    console.log("episode's start time: "+ episode.startTime)
 
     masterSliderGlobal = $("#masterSlider").slider({
 	step:1,
 	min: HMStoSeconds(episode.startTime), 
-	max: HMStoSeconds(endTime),
+	max: HMStoSeconds(endTime), 
 	stop: uponSliderStop,
 	slide: uponSliderMove,
 	range: "min"
@@ -158,6 +160,12 @@ function playPauseButtonCallBack() {
     });
 }
 
+function padNum(num,size) {
+    var s = num+"";
+    while (s.length < size) s="0"+s;
+    return s;
+}
+
 /** 
  * Initialize jw player and call update values
 **/ 
@@ -170,10 +178,11 @@ function setupJWplayer(displaySegments, earliestSegTime, episode) {
 	var segment = displaySegmentsGlobal[segIdx];
 	var sourceName = segment.source.shortName;
 	
-	var filePath = baseUrl+"/"+episode.shortName+"/"+sourceName+"/Video/Recordings/"+
-			segment.directoryName+segment.segNumber+"/"+segment.indexFileName;
+	var filePath = baseUrl+episode.shortName+"_"+sourceName+"/Video/Recordings/"+
+			segment.directoryName+padNum(segment.segNumber,3)+"/"+segment.indexFileName; 
 	var height = calculateHeight(maxWidth, segment.settings.height, segment.settings.width);
-	
+
+	console.log("file path: "+filePath);	
 	jwplayer("myPlayer"+sourceName).setup(
 	{
 	    file:filePath,
