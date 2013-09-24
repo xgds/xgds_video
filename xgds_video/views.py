@@ -57,6 +57,8 @@ from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
 
+from plrpExplorer.views import *
+
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
@@ -94,6 +96,7 @@ def liveVideoFeed(request, feedName):
             form.source = videofeeds[0].source
             if form.source:
                 form.extras = callGetNoteExtras(currentEpisodes, form.source)
+#                 print form.extras
 #             form.extras = NOTE_EXTRAS_FUNCTION(videofeeds[0], form.activeEpisode, videofeeds[0].source);
         feedData.append((videofeeds[0],form))
     else:
