@@ -49,37 +49,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.views.decorators.cache import cache_control
 
-from geocamPycroraptor2 import prexceptions
-from geocamUtil.KmlUtil import wrapKmlDjango
-from xgds_planner import exportPlanKml
-from plrpUtil import kmlTools, spreadsheetTools
 from geocamUtil import anyjson as json
 
-from plrpExplorer.models import *
-from plrpExplorer import flightTools, settings
-from plrpExplorer.FlightTimeOffset import flightTimeOffset
-from plrpExplorer.flightTools import secondsToTime
-from plrpExplorer.flightTools import decimalDegreesToDegreesMinutes
-from plrpExplorer.flightTools import degreesMinutesWithHemisphereCode
-from plrpExplorer.forms import *
-
-from xgds_planner.exportPlan import getWaypointNumber, getRecordDict, \
-    getPointRecord, getSegmentRecord
-from xgds_data.views import specializedSearchForm, sortFormula, makeFilters, \
-    recordRequest, log_and_render
-from xgds_data.models import logEnabled
-if logEnabled() :
-    from xgds_data.models import RequestLog, RequestArgument, ResponseLog, ResponseArgument, ResponseList
-
 from xgds_notes.forms import NoteForm
-
-from operator import attrgetter
-
-from xgds_notes.diggpaginator import *
-
-from xgds_planner2 import (models,
-                           planImporter,
-                           choosePlanExporter)
 
 from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
@@ -220,10 +192,6 @@ def displayEpisodeRecordedVideo(request):#, episodeName, sourceName=None):
 			context_instance=RequestContext(request)
 			)	
     
-
-def getActiveFlights():
-    return ActiveFlight.objects.all()
-
 
 def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDuration):
     if not source.videofeed_set.all():
