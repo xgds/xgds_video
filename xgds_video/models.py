@@ -30,15 +30,6 @@ class AbstractVideoSource(models.Model):
     def getDict(self):
         return {"name": self.name, "shortName": self.shortName, "uuid": self.uuid}
 
-    def getNoteExtras(self, episodes):
-        print "in base get note extras"
-        if settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION:
-            noteExtrasFn = getClassByName(settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION)
-            return noteExtrasFn(self, episodes)
-        else:
-            return None
-
-
 
 class VideoSource(AbstractVideoSource):
     """

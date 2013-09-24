@@ -99,10 +99,16 @@ EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 # activeEpisode = EPISODE_MODEL.objects.filter(endTime=none)
 # can find the groupflight that points to that episode
 # and then find the flight in the group flight that has the same source.
-def getNoteExtras(feed=None, episode=None, source=None):
+def getNoteExtras( episodes=None, source=None):
     return None
     
-
+def callGetNoteExtras(episodes, source):
+    if settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION:
+            noteExtrasFn = getClassByName(settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION)
+            return noteExtrasFn(episodes, source)
+    else:
+        return None
+        
 def liveVideoFeed(request, feedName):
     feedData = []
 
@@ -115,7 +121,7 @@ def liveVideoFeed(request, feedName):
             form.index = 0
             form.source = videofeeds[0].source
             if form.source:
-                form.extras = form.source.getNoteExtras(currentEpisodes)
+                form.extras = callGetNoteExtras(currentEpisodes, form.source)
 #             form.extras = NOTE_EXTRAS_FUNCTION(videofeeds[0], form.activeEpisode, videofeeds[0].source);
         feedData.append((videofeeds[0],form))
     else:
@@ -126,7 +132,7 @@ def liveVideoFeed(request, feedName):
             form.index = index
             form.source = feed.source
             if form.source:
-                form.extras = form.source.getNoteExtras(currentEpisodes)
+                form.extras = callGetNoteExtras(currentEpisodes, form.source)
             index += 1
             feedData.append((feed,form))
  

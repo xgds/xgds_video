@@ -21,22 +21,30 @@
 <script language="javascript" type="text/javascript">
 function getMaxWidth() {
 	  var width = window.innerWidth ||
-    document.documentElement.clientWidth ||
-    document.body.clientWidth;
+    			  document.documentElement.clientWidth ||
+    			  document.body.clientWidth;
 	  {% if videoFeedData|length > 1 %}
-	  width = Math.round(width/2);
+	  			width = Math.round(width/2);
 	  {% endif %}
-	  width = width - 50;
+	  
+	  width = width - 100;
 	  return width;
 }
 
-function calculateHeight(newWidth, defaultHeight, defaultWidth) {
-	  var newHeight = defaultHeight;
-     if (defaultWidth > newWidth){
-         ratio = newWidth / defaultWidth
-         newHeight = Math.round(defaultHeight * ratio)
-     }
-     return newHeight;
+function calculateSize(newWidth, defaultHeight, defaultWidth) {
+	 var resultHeight = defaultHeight;
+	 var resultWidth = newWidth;
+	 // the default size of the video is bigger than the new size so we have to scale up.
+    if (defaultWidth > newWidth){
+        ratio = newWidth / defaultWidth
+        resultHeight = Math.round(defaultHeight * ratio)
+        resultWidth = Math.round(defaultWidth * ratio)
+    } else if (newWidth > defaultWidth) {
+   	 // the default size of the video is bigger than the new size so we have to cap it
+        resultHeight = defaultHeight
+        resultWidth = defaultWidth
+    }
+    return [resultWidth, resultHeight];
 }
 
 var maxWidth = getMaxWidth();
@@ -45,16 +53,16 @@ var maxWidth = getMaxWidth();
 <div id="container" class="js-masonry" data-masonry-options='{  "itemSelector": ".item", "gutter":5}'>
 {% for feed, form in videoFeedData %}
 <script language="javascript" type="text/javascript">
-	  var feedHeight = calculateHeight(maxWidth, {{ feed.settings.height }}, {{ feed.settings.width  }});
+	  var size = calculateSize(maxWidth, {{ feed.settings.height }}, {{ feed.settings.width  }});
 </script>
 <div class="item" id="item{{ forloop.counter }}" style="background:#CACACA;  margin-bottom: 5px; padding: 8px;border-style:solid; border-width:2px;">
 	<div style="float:left; text-align: left"><b>Live feed: {{ feed.name }}</b></div>
 	<div style="float:right; text-align: right; padding-bottom:3px;"><a class="mybutton" href="{% url xgds_video_live feed.shortName %}">New Window</a>&nbsp;&nbsp;
 		<a class="mybutton" href="{% url xgds_video_recorded %}?source={{ feed.source.shortName }}">Recorded</a></div>
-	{% include "xgds_video/video_notes.html" with data=form %}
+	{# include "xgds_video/video_notes.html" with data=form #}
 	<script language="javascript" type="text/javascript">
-	  $("#item{{ forloop.counter }}").css({"width":maxWidth,"height":feedHeight+120}); 
-	  QT_WriteOBJECT('https://plrp.xgds.org/static/{{ feed.name }}Stream.mov', /* maxWidth */'100%', /* feedHeight */'100%', '', 'AUTOPLAY',
+	  $("#item{{ forloop.counter }}").css({"width":size[0],"height":size[1]+100}); 
+	  QT_WriteOBJECT('https://plrp.xgds.org/static/{{ feed.name }}Stream.mov',  '100%', /* feedHeight */'100%', '', 'AUTOPLAY',
 	                 'True', 'qtsrc', '{{ feed.url }}', 'AutoHREF', 'True', 'SCALE', 'Aspect', 'EnableJavaScript', 'True', 'Controller', 'False', 'TARGET', 'Myself',
 	                 'emb#NAME' , 'movie{{ forloop.counter }}');
 	</script>
@@ -67,3 +75,17 @@ var maxWidth = getMaxWidth();
 {% block scripts %}
 <script type="text/javascript" src="{{STATIC_URL}}/xgds_video/js/video_notes_form.js"></script>
 {% endblock %}
+
+ {% block jsInit %}
+<script type="text/javascript">
+var $container = $('#container');
+$container.masonry('bindResize')
+/* $(window).resize(function(){
+    if(detector.outerWidth(true)!=curWidth){
+        curWidth = detector.outerWidth(true);
+        $wall.masonry( 'option', { columnWidth: curWidth });
+    }
+}); */
+</script>
+{% endblock %}
+

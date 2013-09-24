@@ -10,14 +10,14 @@
     	var label = $("input#id_label").val();
     	var tags = $("input#id_tags").val();
     	var index = $("input#id_index").val();
-    	alert("clicked " + index);
+    	var extras = $("input#id_extras").val();
     	
     	 if (content == "") {
     		 $("input#content").focus();
     		 return false;
     	 }
-    	var dataString = 'content='+ content + '&label=' + label + '&tags=' + tags;  
-    	//alert (dataString);return false;  
+    	var dataString = 'content='+ content + '&label=' + label + '&tags=' + tags + '&extras=' + extras;  
+    	alert (dataString);return false;  
     	$.ajax({  
     	  type: "POST",  
     	  url: submitNoteUrl,  
