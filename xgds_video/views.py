@@ -95,8 +95,6 @@ def liveVideoFeed(request, feedName):
             form.source = videofeeds[0].source
             if form.source:
                 form.extras = callGetNoteExtras(currentEpisodes, form.source)
-#                 print form.extras
-#             form.extras = NOTE_EXTRAS_FUNCTION(videofeeds[0], form.activeEpisode, videofeeds[0].source);
         feedData.append((videofeeds[0],form))
     else:
         videofeeds = FEED_MODEL.objects.filter(active=True)
