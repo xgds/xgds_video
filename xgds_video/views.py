@@ -256,12 +256,12 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(vlcSvc)
         stopPyraptordServiceIfRunning(segmenterSvc)
-	pyraptord.updateServiceConfig(vlcSvc,
-				      {'command': vlcCmd})
-	pyraptord.updateServiceConfig(segmenterSvc,
-				      {'command': segmenterCmd})
-	pyraptord.restart(vlcSvc)
-	pyraptord.restart(segmenterSvc)
+        pyraptord.updateServiceConfig(vlcSvc,
+        			      {'command': vlcCmd})
+        pyraptord.updateServiceConfig(segmenterSvc,
+        			      {'command': segmenterCmd})
+        pyraptord.restart(vlcSvc)
+        pyraptord.restart(segmenterSvc)
 
 
 def stopRecording(source, endTime):
@@ -273,9 +273,9 @@ def stopRecording(source, endTime):
    
     #we need to set the endtime
     if source.videosegment_set.all().count() != 0:
-	videoSegment = source.videosegment_set.all()[0]
-	videoSegment.endTime = endTime
-	videoSegment.save()
+        videoSegment = source.videosegment_set.all()[0]
+        videoSegment.endTime = endTime
+        videoSegment.save()
  
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
