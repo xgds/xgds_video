@@ -8,9 +8,10 @@
 
 {% with form=data %}
 <div style="float:left; padding-top:2px; padding-bottom:2px; ">
-	<form id="create_note{{ form.index }}" action="" method="">
+	<form id="create_note{{ form.index }}" action="" method="POST">
 		<input type="hidden" id="id_index" value="{{form.index}}"/>
         <input type="hidden" id="id_extras" value="{{form.extras}}"/>
+        <input type="hidden" id="id_eventTie" value="now"/>
         <label for="id_content">Note:</label>
         <input id="id_content" type="text" name="content" maxlength="500" size="20"/>
         <label for="id_label">Label:</label>
@@ -23,9 +24,40 @@
 {% endwith %}
 
 {% block jsInit %}
-<script type="text/javascript">
-var submitNoteUrl = "{% url record_notes %}";
-</script>
+<!--  
+//prepare the form when the DOM is ready 
+$(document).ready(function() { 
+
+ 	var options = { 
+        //target:        '#output0',   // target element(s) to be updated with server response 
+        beforeSubmit:  showRequest,  // pre-submit callback 
+        //success:       showResponse,  // post-submit callback 
+ 
+        // other available options: 
+        url:       submitNoteUrl,        // override for form's 'action' attribute 
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type) 
+        clearForm: true        // clear all form fields after successful submit 
+        //resetForm: true        // reset the form after successful submit 
+ 
+        // $.ajax options can be used here too, for example: 
+        //timeout:   3000 
+    }; 
+    // bind form using 'ajaxForm' 
+    $('#create_note0').ajaxForm(options);
+    
+ // bind to the form's submit event 
+    $('#create_note0').submit(function() { 
+        // inside event callbacks 'this' is the DOM element so we first 
+        // wrap it in a jQuery object and then invoke ajaxSubmit 
+        $(this).ajaxSubmit(options);
+ 
+        // !!! Important !!! 
+        // always return false to prevent standard browser submit and page navigation 
+        return false; 
+    }); 
+}); 
+-->
 <!-- 
 $(document).ready(function(){
     {# include {{STATIC_URL}}"/xgds_video/js/notes_tags.js" #}
@@ -34,9 +66,8 @@ $(document).ready(function(){
 {% endblock jsInit %}
 
 {% block scripts %}
+<script type="text/javascript">var submitNoteUrl = "{% url record_simple %}";</script>
+<script type="text/javascript" src="{{STATIC_URL}}/javascript/jquery.form.min.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}/javascript/jquery-ui-1.8.18.custom.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}/javascript/jquery.tagsinput.js"></script>
-<script type="text/javascript">
-var submitNoteUrl = "{% url record_simple %}";
-</script>
 {% endblock scripts %}

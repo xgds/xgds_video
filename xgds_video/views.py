@@ -57,6 +57,7 @@ from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
 
+
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
@@ -109,7 +110,6 @@ def liveVideoFeed(request, feedName):
             form.source = videofeeds[0].source
             if form.source:
                 form.extras = callGetNoteExtras(currentEpisodes, form.source)
-#             form.extras = NOTE_EXTRAS_FUNCTION(videofeeds[0], form.activeEpisode, videofeeds[0].source);
         feedData.append((videofeeds[0],form))
     else:
         videofeeds = FEED_MODEL.objects.filter(active=True)
@@ -269,12 +269,12 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(vlcSvc)
         stopPyraptordServiceIfRunning(segmenterSvc)
-	pyraptord.updateServiceConfig(vlcSvc,
-				      {'command': vlcCmd})
-	pyraptord.updateServiceConfig(segmenterSvc,
-				      {'command': segmenterCmd})
-	pyraptord.restart(vlcSvc)
-	pyraptord.restart(segmenterSvc)
+        pyraptord.updateServiceConfig(vlcSvc,
+        			      {'command': vlcCmd})
+        pyraptord.updateServiceConfig(segmenterSvc,
+        			      {'command': segmenterCmd})
+        pyraptord.restart(vlcSvc)
+        pyraptord.restart(segmenterSvc)
 
 
 def stopRecording(source, endTime):
@@ -286,9 +286,9 @@ def stopRecording(source, endTime):
    
     #we need to set the endtime
     if source.videosegment_set.all().count() != 0:
-	videoSegment = source.videosegment_set.all()[0]
-	videoSegment.endTime = endTime
-	videoSegment.save()
+        videoSegment = source.videosegment_set.all()[0]
+        videoSegment.endTime = endTime
+        videoSegment.save()
  
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
