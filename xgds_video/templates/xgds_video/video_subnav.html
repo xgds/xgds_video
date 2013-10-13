@@ -1,10 +1,11 @@
+{% load url from future %}
 {% block sitemenu-content-secondary %}
 {% load nav %}
 <form id="streamForm">
 <div class="sitemenu-nav-secondary">
 	<ul>
-		<li{% currentnav xgds_video_live %}><a href="{% url xgds_video_live 'all' %}">Live</a></li>
-		<li {% currentnav xgds_video_recorded %}><a href="{% url xgds_video_recorded %}">Recorded</a></li>
+		<li{% currentnav xgds_video_live %}><a href="{% url 'xgds_video_live' 'all' %}">Live</a></li>
+		<li {% currentnav xgds_video_recorded %}><a href="{% url 'xgds_video_recorded' %}">Recorded</a></li>
   	</ul>
 </div>
 </form>

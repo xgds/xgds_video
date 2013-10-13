@@ -1,3 +1,4 @@
+{% load url from future %}
 
 
 {% block cssExtras %}
@@ -66,7 +67,7 @@ $(document).ready(function(){
 {% endblock jsInit %}
 
 {% block scripts %}
-<script type="text/javascript">var submitNoteUrl = "{% url record_simple %}";</script>
+<script type="text/javascript">var submitNoteUrl = "{% url 'record_simple' %}";</script>
 <script type="text/javascript" src="{{STATIC_URL}}/javascript/jquery.form.min.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}/javascript/jquery-ui-1.8.18.custom.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}/javascript/jquery.tagsinput.js"></script>

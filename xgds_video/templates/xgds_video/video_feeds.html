@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load url from future %}
 {% block headExtras %}
  {{ block.super }}
  <script src="{{ STATIC_URL }}javascript/AC_QuickTime.js" language="javascript" type="text/javascript"></script>
@@ -57,8 +58,8 @@ var maxWidth = getMaxWidth();
 </script>
 <div class="item" id="item{{ forloop.counter }}" style="background:#CACACA;  margin-bottom: 5px; padding: 8px;border-style:solid; border-width:2px;">
 	<div style="float:left; text-align: left"><b>Live feed: {{ feed.name }}</b></div>
-	<div style="float:right; text-align: right; padding-bottom:3px;"><a class="mybutton" href="{% url xgds_video_live feed.shortName %}">New Window</a>&nbsp;&nbsp;
-		<a class="mybutton" href="{% url xgds_video_recorded %}?source={{ feed.source.shortName }}">Recorded</a></div>
+	<div style="float:right; text-align: right; padding-bottom:3px;"><a class="mybutton" href="{% url 'xgds_video_live' feed.shortName %}">New Window</a>&nbsp;&nbsp;
+		<a class="mybutton" href="{% url 'xgds_video_recorded' %}?source={{ feed.source.shortName }}">Recorded</a></div>
 	{# include "xgds_video/video_notes.html" with data=form #}
 	<script language="javascript" type="text/javascript">
 	  $("#item{{ forloop.counter }}").css({"width":size[0],"height":size[1]+100}); 
