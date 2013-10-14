@@ -20,7 +20,7 @@ class AbstractVideoSource(models.Model):
     # shortName: a short mnemonic code suitable to embed in a URL
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True)
     uuid = UuidField(db_index=True)
-    
+
     class Meta:
         abstract = True
 
@@ -85,7 +85,7 @@ class AbstractVideoFeed(models.Model):
     def __unicode__(self):
         return (u'VideoFeed(%s, %s, %s)' %
                 (self.url,
-		 self.shortName,
+                 self.shortName,
                  self.active))
 
 
@@ -107,12 +107,12 @@ class AbstractVideoSegment(models.Model):
     uuid = UuidField()
 
     def getDict(self):
-        return {"directoryName": self.directoryName, "segNumber": self.segNumber, 
-		"indexFileName": self.indexFileName, "source": self.source.getDict(), 
-		"startTime": util.convertUtcToLocal(self.startTime), 
-		"endTime": util.convertUtcToLocal(self.endTime),
-		"timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'], 
-		"settings": self.settings.getDict()}
+        return {"directoryName": self.directoryName, "segNumber": self.segNumber,
+                "indexFileName": self.indexFileName, "source": self.source.getDict(),
+                "startTime": util.convertUtcToLocal(self.startTime),
+                "endTime": util.convertUtcToLocal(self.endTime),
+                "timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'],
+                "settings": self.settings.getDict()}
 
     class Meta:
         abstract = True
@@ -143,12 +143,12 @@ class AbstractVideoEpisode(models.Model):
 
     def getDict(self):
         episodeEndTime = None
-        if self.endTime: #if endTime is none (when live stream has not ended) 
-            episodeEndTime = util.convertUtcToLocal(self.endTime) 
-        
-        return {"shortName": self.shortName, 
-        	"startTime": util.convertUtcToLocal(self.startTime), 
-        	"endTime": episodeEndTime}
+        if self.endTime: #if endTime is none (when live stream has not ended)
+            episodeEndTime = util.convertUtcToLocal(self.endTime)
+
+        return {"shortName": self.shortName,
+                "startTime": util.convertUtcToLocal(self.startTime),
+                "endTime": episodeEndTime}
 
     class Meta:
         abstract = True
@@ -199,5 +199,3 @@ class VideoSourceGroupEntry(models.Model):
 
     class Meta:
         ordering = ['rank']
-
-

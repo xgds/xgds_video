@@ -74,14 +74,14 @@ EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 # and then find the flight in the group flight that has the same source.
 def getNoteExtras( episodes=None, source=None):
     return None
-    
+
 def callGetNoteExtras(episodes, source):
     if settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION:
-            noteExtrasFn = getClassByName(settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION)
-            return noteExtrasFn(episodes, source)
+        noteExtrasFn = getClassByName(settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION)
+        return noteExtrasFn(episodes, source)
     else:
         return None
-        
+
 def liveVideoFeed(request, feedName):
     feedData = []
 
@@ -107,10 +107,10 @@ def liveVideoFeed(request, feedName):
                 form.extras = callGetNoteExtras(currentEpisodes, form.source)
             index += 1
             feedData.append((feed,form))
- 
+
     return render_to_response("xgds_video/video_feeds.html",
         {'videoFeedData': feedData,
-	     'currentEpisodes': currentEpisodes},
+             'currentEpisodes': currentEpisodes},
         context_instance=RequestContext(request)
     )
 
@@ -120,14 +120,14 @@ def getEarliestSegmentTime(segments):
 
 
 def getLatestSegmentTime(segments):
-    
+
     return max([seg.endTime for seg in segments])
 
 
 def firstSegmentForSource(source, episode):
     if episode.endTime:
         segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime,
-						endTime__lte=episode.endTime)
+                                                endTime__lte=episode.endTime)
     else:  #endTime of segment might be null if flight has not been stopped.
         segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime) #XXX double check
     if segments:
@@ -150,15 +150,15 @@ Returns first segment of all sources that are part of a given episode.
 def displayEpisodeRecordedVideo(request):#, episodeName, sourceName=None):
     episodeName = request.GET.get("episode")
     sourceName = request.GET.get("source")
-    
+
     if not episodeName:
         episode = EPISODE_MODEL.objects.filter(endTime=None)[0]
     else:
         episode = EPISODE_MODEL.objects.get(shortName=episodeName)
-    
+
     if sourceName is None:
         sources = SOURCE_MODEL.objects.all()
-    else: 
+    else:
         sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]
 
     segments = []
@@ -166,7 +166,7 @@ def displayEpisodeRecordedVideo(request):#, episodeName, sourceName=None):
         found = firstSegmentForSource(source,episode)
         if found:
             segments.append(found)
-    
+
     earliestTime = None
     latestTime = None
     segmentsJson = None
@@ -176,28 +176,28 @@ def displayEpisodeRecordedVideo(request):#, episodeName, sourceName=None):
         earliestTime = util.convertUtcToLocal(getEarliestSegmentTime(segments))
         latestTime = util.convertUtcToLocal(getLatestSegmentTime(segments))
 
-        segmentsJson = json.dumps([seg.getDict() for seg in segments], sort_keys=True, indent=4) 
+        segmentsJson = json.dumps([seg.getDict() for seg in segments], sort_keys=True, indent=4)
         sourcesJson = json.dumps([source.getDict() for source in sources], sort_keys=True, indent=4)
         episodeJson = json.dumps(episode.getDict())
 
     return render_to_response('xgds_video/activeVideoSegments.html',
-			{'segmentsJson': segmentsJson,
-			 'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
-			 'episode': episode,
-			 'episodeJson': episodeJson,
-			 'earliestTime': earliestTime,
-			 'latestTime': latestTime,
-			 'sources': sources,
-			},
-			context_instance=RequestContext(request)
-			)	
-    
+                        {'segmentsJson': segmentsJson,
+                         'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
+                         'episode': episode,
+                         'episodeJson': episodeJson,
+                         'earliestTime': earliestTime,
+                         'latestTime': latestTime,
+                         'sources': sources,
+                        },
+                        context_instance=RequestContext(request)
+                        )
+
 
 def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDuration):
     if not source.videofeed_set.all():
         logging.info("video feeds set is empty")
         return
- 
+
     videoFeed = source.videofeed_set.all()[0]
 
     recordedVideoDir = None
@@ -214,20 +214,20 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
     makedirsIfNeeded(recordedVideoDir)
 
     videoSettings = SETTINGS_MODEL(width=videoFeed.settings.width,
-				  height=videoFeed.settings.height,
-				  compressionRate=None,
-				  playbackDataRate=None)
+                                  height=videoFeed.settings.height,
+                                  compressionRate=None,
+                                  playbackDataRate=None)
     videoSettings.save()
 
     videoSegment = SEGMENT_MODEL(directoryName="Segment",
-				segNumber= segmentNumber,
-				indexFileName="prog_index.m3u8",
-				startTime=startTime,
-				endTime=None,
-				settings=videoSettings,
-				source=source)
+                                segNumber= segmentNumber,
+                                indexFileName="prog_index.m3u8",
+                                startTime=startTime,
+                                endTime=None,
+                                settings=videoSettings,
+                                source=source)
     videoSegment.save()
-   
+
     if settings.PYRAPTORD_SERVICE is True:
         pyraptord = getZerorpcClient('pyraptord')
 
@@ -245,7 +245,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
     segmenterCmd = ('%s -b %sSegment%s -f %s -t 5 -S 3 -p -program-duration %s'
                     % (settings.XGDS_VIDEO_MEDIASTREAMSEGMENTER_PATH,
                        recordingUrl,
-		       segmentNumber,
+                       segmentNumber,
                        recordedVideoDir,
                        maxFlightDuration))
 
@@ -255,9 +255,9 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
         stopPyraptordServiceIfRunning(vlcSvc)
         stopPyraptordServiceIfRunning(segmenterSvc)
         pyraptord.updateServiceConfig(vlcSvc,
-        			      {'command': vlcCmd})
+                                      {'command': vlcCmd})
         pyraptord.updateServiceConfig(segmenterSvc,
-        			      {'command': segmenterCmd})
+                                      {'command': segmenterCmd})
         pyraptord.restart(vlcSvc)
         pyraptord.restart(segmenterSvc)
 
@@ -268,13 +268,13 @@ def stopRecording(source, endTime):
     assetName = source.shortName #flight.assetRole.name
     vlcSvc = '%s_vlc' % assetName
     segmenterSvc = '%s_segmenter' % assetName
-   
+
     #we need to set the endtime
     if source.videosegment_set.all().count() != 0:
         videoSegment = source.videosegment_set.all()[0]
         videoSegment.endTime = endTime
         videoSegment.save()
- 
+
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)

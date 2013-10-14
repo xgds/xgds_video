@@ -10,4 +10,3 @@ admin.site.register(VideoSegment)
 admin.site.register(VideoEpisode)
 admin.site.register(VideoSourceGroup)
 admin.site.register(VideoSourceGroupEntry)
-

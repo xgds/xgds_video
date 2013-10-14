@@ -13,5 +13,3 @@ def getShortTimeString(dateTime):
 def convertUtcToLocal(time):
     time = time.replace(tzinfo=pytz.UTC)
     return getShortTimeString(time.astimezone(TIME_ZONE)) # strftime("%H:%M:%S")
-
-
