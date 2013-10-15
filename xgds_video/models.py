@@ -8,7 +8,8 @@ from django.db import models
 from geocamUtil.models import UuidField
 from xgds_video import settings
 from xgds_video import util
-from geocamUtil.loader import getClassByName
+
+# pylint: disable=C1001,E1101
 
 #incase settings is shadowed
 videoSettings = settings
@@ -66,6 +67,7 @@ class VideoSettings(AbstractVideoSettings):
     that we need for playback.
     """
     pass
+
 
 class AbstractVideoFeed(models.Model):
     # name: human-readable title
@@ -143,7 +145,7 @@ class AbstractVideoEpisode(models.Model):
 
     def getDict(self):
         episodeEndTime = None
-        if self.endTime: #if endTime is none (when live stream has not ended)
+        if self.endTime:  # if endTime is none (when live stream has not ended)
             episodeEndTime = util.convertUtcToLocal(self.endTime)
 
         return {"shortName": self.shortName,

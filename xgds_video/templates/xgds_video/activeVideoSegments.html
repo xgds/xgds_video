@@ -12,14 +12,14 @@
     {% endblock %}
 
 {% block headExtras %}
-    <script type="text/javascript" src="/static/jquery/js/jquery.js"></script>
-    <script type="text/javascript" src="/static/jquery/js/jquery-ui.js"></script>
-    <link rel="stylesheet" href="/static/jquery/css/jquery-ui.css"/>
+    <script type="text/javascript" src="{{ STATIC_URL }}jquery/js/jquery.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}jquery/js/jquery-ui.js"></script>
+    <link rel="stylesheet" href="{{ STATIC_URL }}jquery/css/jquery-ui.css"/>
 
     <script src="{{ STATIC_URL }}jquery/js/masonry.pkgd.min.js" type="text/javascript"></script>
     
-    <script type="text/javascript" src="/static/javascript/jwplayer/jwplayer.js"></script>
-    <script type="text/javascript" src="/static/xgds_video/js/activeVideoSegments.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}javascript/jwplayer/jwplayer.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/activeVideoSegments.js"></script>
     <script type="text/javascript">jwplayer.key="Wu88H+wZ8jZd7qICLr7IEKSmml1/EOMXWYcblA/CJVk=";</script>
 
 {% endblock headExtras %}
