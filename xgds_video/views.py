@@ -45,20 +45,6 @@ def stopPyraptordServiceIfRunning(pyraptord, svcName):
 # NOTE_EXTRAS_FUNCTION = getClassByName(settings.XGS_VIDEO_NOTE_EXTRAS_FUNCTION)
 
 
-def getZerorpcClient(clientName):
-    ports = json.loads(file(settings.ZEROMQ_PORTS, 'r').read())
-    rpcPort = ports[clientName]['rpc']
-    client = zerorpc.Client(rpcPort)
-    return client
-
-
-def stopPyraptordServiceIfRunning(pyraptord, svcName):
-    try:
-        pyraptord.stop(svcName)
-    except zerorpc.RemoteError:
-        pass
-
-
 # put a setting for the name of the function to call to generate extra text to insert in the form
 # and then add the name of the plrpExplorer.views.getFlightFromFeed (context function)  extraNoteFormDataFunction
 # feed has a source, look up active episode, (find episode with endtime of none) -- or use a known episode
