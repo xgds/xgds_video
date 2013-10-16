@@ -23,3 +23,5 @@ XGDS_VIDEO_TIME_ZONE = {'name': 'Pacific', 'code': 'America/Los_Angeles'}
 
 # set this in siteSettings.py. example: 'plrpExplorer.views.getNoteExtras'
 XGDS_VIDEO_NOTE_EXTRAS_FUNCTION = None
+
+ZEROMQ_PORTS = 'path to ports.json file -- set this in siteSettings.py'
