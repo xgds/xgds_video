@@ -132,42 +132,56 @@ def displayEpisodeRecordedVideo(request):
     sourceName = request.GET.get("source")
 
     if not episodeName:
-        episode = EPISODE_MODEL.objects.filter(endTime=None)[0]
+        searchCriteria = 'episodes'
+        episodes = EPISODE_MODEL.objects.filter(endTime=None)[:1]
+        if episodes:
+            episode = episodes[0]
+        else:
+            episode = None
     else:
-        episode = EPISODE_MODEL.objects.get(shortName=episodeName)
+        searchCriteria = 'episodes named "%s"' % episodeName
+        try:
+            episode = EPISODE_MODEL.objects.get(shortName=episodeName)
+        except EPISODE_MODEL.DoesNotExist:
+            episode = None
 
     if sourceName is None:
         sources = SOURCE_MODEL.objects.all()
     else:
         sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]
 
-    segments = []
-    for source in sources:
-        found = firstSegmentForSource(source, episode)
-        if found:
-            segments.append(found)
+    if episode:
+        segments = []
+        for source in sources:
+            found = firstSegmentForSource(source, episode)
+            if found:
+                segments.append(found)
 
-    earliestTime = None
-    latestTime = None
-    segmentsJson = None
-    episodeJson = None
-    if segments:
-        earliestTime = util.convertUtcToLocal(getEarliestSegmentTime(segments))
-        latestTime = util.convertUtcToLocal(getLatestSegmentTime(segments))
+        earliestTime = None
+        latestTime = None
+        segmentsJson = None
+        episodeJson = None
+        if segments:
+            earliestTime = util.convertUtcToLocal(getEarliestSegmentTime(segments))
+            latestTime = util.convertUtcToLocal(getLatestSegmentTime(segments))
 
-        segmentsJson = json.dumps([seg.getDict() for seg in segments], sort_keys=True, indent=4)
-        episodeJson = json.dumps(episode.getDict())
+            segmentsJson = json.dumps([seg.getDict() for seg in segments], sort_keys=True, indent=4)
+            episodeJson = json.dumps(episode.getDict())
 
+        ctx = {
+            'segmentsJson': segmentsJson,
+            'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
+            'episode': episode,
+            'episodeJson': episodeJson,
+            'earliestTime': earliestTime,
+            'latestTime': latestTime,
+            'sources': sources,
+        }
+    else:
+        ctx = {'episode': None,
+               'searchCriteria': searchCriteria}
     return render_to_response('xgds_video/activeVideoSegments.html',
-                              {
-                                  'segmentsJson': segmentsJson,
-                                  'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
-                                  'episode': episode,
-                                  'episodeJson': episodeJson,
-                                  'earliestTime': earliestTime,
-                                  'latestTime': latestTime,
-                                  'sources': sources,
-                              },
+                              ctx,
                               context_instance=RequestContext(request))
 
 

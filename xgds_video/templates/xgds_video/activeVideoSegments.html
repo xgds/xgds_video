@@ -29,10 +29,13 @@
 {% endblock %}
 
 {% block jsInit %}
-{% endblock %} 
+{% endblock %}
 </script>
 
 {% block contents %}
+{% if not episode %}
+    <div style="font-size: 1.5em; margin: 20px;">Couldn't find any {{ searchCriteria }}.</div>
+{% else %}
     <p>
 	<label for="sliderTimeLabel">Local Flight Time:</label>
 	<input type="text" id="sliderTimeLabel" style="border:0; color:#f6931f; font-weight:bold;"/>
@@ -102,4 +105,5 @@
     setupJWplayer(displaySegments, earliestSegTime, episode);
 
 </script>
-{% endblock %}
+{% endif %}
+{% endblock contents %}
