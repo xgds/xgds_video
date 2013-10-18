@@ -12,4 +12,5 @@ class xgds_videoTest(TestCase):
     Tests for xgds_video
     """
     def test_xgds_video(self):
-        pass
+        assert(False) #for testing git hook        
+        #pass
