@@ -17,9 +17,11 @@ videoSettings = settings
 
 class AbstractVideoSource(models.Model):
     # name: human-readable title
-    name = models.CharField(max_length=128, blank=True, null=True)
+    name = models.CharField(max_length=128, blank=True, null=True, 
+                            help_text='Same as assetrole in NewFlight. ie, ROV')
     # shortName: a short mnemonic code suitable to embed in a URL
-    shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True)
+    shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True,
+                                  help_text='ie, ROV')
     uuid = UuidField(db_index=True)
 
     class Meta:
@@ -99,13 +101,13 @@ class VideoFeed(AbstractVideoFeed):
 
 
 class AbstractVideoSegment(models.Model):
-    directoryName = models.CharField(max_length=256)  # directoryName
-    segNumber = models.PositiveIntegerField(null=True, blank=True)
-    indexFileName = models.CharField(max_length=50)  # prog_index.m3u8
-    startTime = models.DateTimeField(null=True, blank=True)  # second precision, utc
-    endTime = models.DateTimeField(null=True, blank=True)
-    settings = models.ForeignKey(videoSettings.XGDS_VIDEO_SETTINGS_MODEL, null=True, blank=True)
-    source = models.ForeignKey(videoSettings.XGDS_VIDEO_SOURCE_MODEL, null=True, blank=True)
+    directoryName = models.CharField(max_length=256, help_text="ie. Segment") 
+    segNumber = models.PositiveIntegerField(null=True, blank=True, help_text="ie. 1")
+    indexFileName = models.CharField(max_length=50, help_text="ie. prog_index.m3u8")
+    startTime = models.DateTimeField(null=True, blank=True, help_text="Second precision, utc. Start time needs to be later than episode start time")  # second precision, utc
+    endTime = models.DateTimeField(null=True, blank=True, help_text="needs to be earlier than episode end time")
+    settings = models.ForeignKey(videoSettings.XGDS_VIDEO_SETTINGS_MODEL, null=True, blank=True, help_text="usually 32:(640: 360)")
+    source = models.ForeignKey(videoSettings.XGDS_VIDEO_SOURCE_MODEL, null=True, blank=True, help_text="from video source. same as NewFlight's AssetRole.")
     uuid = UuidField()
 
     def getDict(self):
@@ -138,9 +140,9 @@ class VideoSegment(AbstractVideoSegment):
 
 class AbstractVideoEpisode(models.Model):
     # shortName: a short mnemonic code for the episode, suitable for embedding in a url
-    shortName = models.CharField(max_length=256, null=True, blank=True)
-    startTime = models.DateTimeField(null=True, blank=True)  # second precision, utc
-    endTime = models.DateTimeField(null=True, blank=True)
+    shortName = models.CharField(max_length=256, null=True, blank=True, help_text="Same as flight_group name. ie, 20130711B")
+    startTime = models.DateTimeField(null=True, blank=True, help_text="Should be earlier than start times of all video segments associated with this episode. Automatically created when the flight is started.")  # second precision, utc
+    endTime = models.DateTimeField(null=True, blank=True, help_text="Should be later than end times of all video segments associated with this episode. If end time is empty, the flight has not stopped.")
     uuid = UuidField()
 
     def getDict(self):
@@ -184,9 +186,9 @@ class VideoSourceGroup(models.Model):
     A VideoSourceGroup represents an ordered list of VideoSource objects.
     """
     # name: human-readable title
-    name = models.CharField(max_length=128, blank=True, null=True)
+    name = models.CharField(max_length=128, blank=True, null=True, help_text="human-readable title")
     # shortName: a short mnemonic code suitable to embed in a URL
-    shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True)
+    shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True, help_text="a short mnemonic code suitable to embed in a URL")
     sources = models.ManyToManyField(settings.XGDS_VIDEO_SOURCE_MODEL, through='VideoSourceGroupEntry')
     uuid = UuidField(db_index=True)
 

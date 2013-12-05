@@ -94,13 +94,12 @@ def liveVideoFeed(request, feedName):
                                'currentEpisodes': currentEpisodes},
                               context_instance=RequestContext(request))
 
-
+# helper used to set the initial position of slider knob for recorded videos.
 def getEarliestSegmentTime(segments):
     return min([seg.startTime for seg in segments])
 
 
 def getLatestSegmentTime(segments):
-
     return max([seg.endTime for seg in segments])
 
 
