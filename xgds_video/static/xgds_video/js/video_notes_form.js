@@ -1,13 +1,28 @@
+var options = { 
+	        //target:        '#output0',   // target element(s) to be updated with server response 
+	        //beforeSubmit:  showRequest,  // pre-submit callback 
+	        success:       showResponse,  // post-submit callback 
+	 
+	        // other available options: 
+	        url:       submitNoteUrl,        // override for form's 'action' attribute 
+	        type:      'post',        // 'get' or 'post', override for form's 'method' attribute 
+	        dataType:  'json'        // 'xml', 'script', or 'json' (expected server response type) 
+	        //clearForm: false        // clear all form fields after successful submit
+	        //resetForm: true        // reset the form after successful submit 
+	 
+	        // $.ajax options can be used here too, for example: 
+	        //timeout:   3000 
+	    }; 
 
 /*
  * Form submission
  * 
  */
-  /*$(function() {
-    $(".noteSubmit").click(function() {
+  $(function() {
+    $(".noteSubmit").click(function(e) {
       // validate and process form here
     	var content = $("input#id_content").val();
-    	var label = $("input#id_label").val();
+    	var label = $("select#id_label option:selected").val();
     	var tags = $("input#id_tags").val();
     	var index = $("input#id_index").val();
     	var extras = $("input#id_extras").val();
@@ -17,7 +32,7 @@
     		 return false;
     	 }
     	var dataString = 'content='+ content + '&label=' + label + '&tags=' + tags + '&extras=' + extras;  
-    	alert (dataString);return false;  
+    	//alert (submitNoteUrl + ":: " + dataString);
     	$.ajax({  
     	  type: "POST",  
     	  url: submitNoteUrl,  
@@ -28,10 +43,11 @@
     		  $("input#label").reset();
     		  $("input#tags").reset();
     	  }  
-    	});  
+    	}); 
+    	e.preventDefault();
     });
-  }); */
-
+  }); 
+/*
  
 // pre-submit callback 
 function showRequest(formData, jqForm, options) { 
@@ -43,12 +59,13 @@ function showRequest(formData, jqForm, options) {
     // DOM element for the form do this: 
     // var formElement = jqForm[0]; 
  
-//    alert('About to submit: \n\n' + queryString); 
+    alert('About to submit: \n\n' + queryString); 
  
     // here we could return false to prevent the form from being submitted; 
     // returning anything other than false will allow the form submit to continue 
     return true; 
 } 
+*/
  
 // post-submit callback 
 function showResponse(responseText, statusText, xhr, $form)  { 
@@ -63,7 +80,7 @@ function showResponse(responseText, statusText, xhr, $form)  {
     // property set to 'json' then the first argument to the success callback 
     // is the json data object returned by the server 
  
-//    alert('status: ' + statusText + '\n\nresponseText: \n' + responseText + 
-//        '\n\nThe output div should have already been updated with the responseText.'); 
+    alert('status: ' + statusText + '\n\nresponseText: \n' + responseText + 
+        '\n\nThe output div should have already been updated with the responseText.'); 
 } 
   
