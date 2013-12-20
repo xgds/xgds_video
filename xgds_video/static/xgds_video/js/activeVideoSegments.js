@@ -41,17 +41,15 @@ function HMStoSeconds(hmsString) {
 
 // find max width of the jwplayer
 function getMaxWidth(displaySegments) {
-    console.log('inside get max width');
     var width = window.innerWidth ||
         document.documentElement.clientWidth ||
         document.body.clientWidth;
 
-    width = width - 100;
-
     if (displaySegments.length > 1) {
         width = Math.round(width / 2);
     }
-    width = width;
+
+    width = width - 100;
     return width;
 }
 
@@ -66,39 +64,26 @@ function calculateHeight(newWidth, defaultHeight, defaultWidth) {
 
 /**
  * Seek Video from time.
- * If "isTimeFromURL" is true, get the time value from url hash
- * else, get the time value from the seekToTime textbox.
- *
- * Update the slider value, slider text
+* Update the slider value, slider text
  * update the jwplayer position
  *    offset = seek time - video start time.
  **/
-function seekToTime(isTimeFromURL) {
-    // get time from url hash tag "#t=HH:MM:SS
-    if (isTimeFromURL) {
-        var seekTime = window.location.hash.substr(3);
-        var seekTimeInSeconds = HMStoSeconds(seekTime);
-    } else {
-        // get value from the button box
-        var seekTime = document.getElementById('seekTime').value;
+
+function seekToTime() {
+    var seekTime = document.getElementById('seekTime');
+    if (seekTime != null) {
         var seekTimeInSeconds = HMStoSeconds(seekTime);
     }
-
-    // update slider
-    masterSliderGlobal.slider('value', seekTimeInSeconds);
-    $('#sliderTimeLabel').val(seekTime);
-
+    console.log("seekTime", seekTime);
     $.each(displaySegmentsGlobal, function(idx) {
         var segment = displaySegmentsGlobal[idx];
         var sourceName = segment.source.shortName;
         var offset = seekTimeInSeconds - HMStoSeconds(segment.startTime);
         var player = jwplayer('myPlayer' + sourceName);
-
         var testSiteTime = secondsToHMS(HMStoSeconds(segment.startTime) + offset);
 
-        //update test site time of each video
-        setText('testSiteTime' + sourceName,
-                testSiteTime + ' ' + segment.timeZone);
+        //update the test site time of each video
+        setText('testSiteTime' + sourceName, testSiteTime + ' ' + segment.timeZone);
         if (offset >= 0) {
             var doSeek = true;
             var state = player.getState();
@@ -145,9 +130,8 @@ function setupSlider(episode, latestSegEndTime) {
  * Callback function for play/pause button
  **/
 function playPauseButtonCallBack() {
-    var playPause = document.getElementById('addPlayPauseButton');
+    
     isPlayButtonPressed = !isPlayButtonPressed;
-
     $.each(displaySegmentsGlobal, function(idx) {
         var sourceName = displaySegmentsGlobal[idx].source.shortName;
         var player = jwplayer('myPlayer' + sourceName);
@@ -156,12 +140,10 @@ function playPauseButtonCallBack() {
             (player.getState() == 'PAUSED')) {
 
             if (isPlayButtonPressed == true) {
-                playPause.style.backgroundImage =
-                    "url('/static/play_pause_buttons/pause.png')";
+                document.getElementById("playbutton").className="fa fa-play fa-2x"
                 player.play(true);
             } else {
-                playPause.style.backgroundImage =
-                    "url('/static/play_pause_buttons/play.png')";
+                document.getElementById("playbutton").className="fa fa-pause fa-2x"
                 player.pause(true);
             }
         }
@@ -209,11 +191,11 @@ function setupJWplayer(displaySegments, earliestSegTime, episode) {
                     if (earliestSegTime == HMStoSeconds(segment.startTime)) {
                         // set earliest segment global
                         earliestSegmentGlobal = segment;
-
+                        /*
                         // if there is an offset in the url itself, start there.
                         if (window.location.hash) { //in the format #t=HH:MM:SS
                             seekToTime(true);
-                        }
+                        }*/
 
                         // play the video with earliest time
                         jwplayer('myPlayer' + sourceName).play(true);
@@ -307,3 +289,14 @@ function updateValues() {
     });
     setTimeout(updateValues, 1000);
 }
+
+
+/**************************************************************
+For unit testing with node unit
+***************************************************************/
+
+/*
+if (typeof exports !== 'undefined') {
+    exports.secondsToHMS = secondsToHMS
+}
+*/
