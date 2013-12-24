@@ -100,6 +100,13 @@ class VideoFeed(AbstractVideoFeed):
     pass
 
 
+
+#XXX this is a helper. Duplicated in views.py (fix this)
+def pythonDatetimeToJSON(pyDateTime):
+    return {"year":pyDateTime.year, "month":pyDateTime.month, "day":pyDateTime.day, 
+            "hour":pyDateTime.hour, "min":pyDateTime.minute, "seconds":pyDateTime.second}
+
+
 class AbstractVideoSegment(models.Model):
     directoryName = models.CharField(max_length=256, help_text="ie. Segment") 
     segNumber = models.PositiveIntegerField(null=True, blank=True, help_text="ie. 1")
@@ -113,8 +120,8 @@ class AbstractVideoSegment(models.Model):
     def getDict(self):
         return {"directoryName": self.directoryName, "segNumber": self.segNumber,
                 "indexFileName": self.indexFileName, "source": self.source.getDict(),
-                "startTime": util.convertUtcToLocal(self.startTime),
-                "endTime": util.convertUtcToLocal(self.endTime),
+                "startTime": pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime)),                
+                "endTime": pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime)),  
                 "timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'],
                 "settings": self.settings.getDict()}
 
@@ -146,12 +153,17 @@ class AbstractVideoEpisode(models.Model):
     uuid = UuidField()
 
     def getDict(self):
+        episodeStartTime = None
         episodeEndTime = None
+
+        if self.startTime:
+            episodeStartTime = pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime))
+       
         if self.endTime:  # if endTime is none (when live stream has not ended)
-            episodeEndTime = util.convertUtcToLocal(self.endTime)
+            episodeEndTime = pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime))
 
         return {"shortName": self.shortName,
-                "startTime": util.convertUtcToLocal(self.startTime),
+                "startTime": episodeStartTime,
                 "endTime": episodeEndTime}
 
     class Meta:

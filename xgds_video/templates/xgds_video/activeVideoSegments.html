@@ -44,13 +44,13 @@
         <div>
             <div id="sliderGroup">
                 <div id="sliderLabel">
-                    Local Flight Time: <input type="time" id="sliderTimeLabel" readonly>
+                    Local Flight Time: <input type="text" id="sliderTimeLabel" readonly>
                 </div>
                 
                 <div id="masterSlider"></div>
                 <div> 
                     <a class="btn btn-small btn-info" href="#" onclick=playPauseButtonCallBack()>
-                        <i id="playbutton" class="fa fa-play fa-2x"></i>
+                        <i id="playbutton" class="fa fa-pause fa-2x"></i>
                     </a>
                 </div>
                 <form name="signin" action="#" method="POST">
@@ -88,13 +88,41 @@
         </div>
 
     <script language="javascript" type="text/javascript">
-        var displaySegments = {{ segmentsJson|safe }};
         var baseUrl = "{{ baseUrl }}";
+        
+        function toJsDateTime(jsonDateTime) {
+            if (jsonDateTime) {
+                return new Date(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day, 
+                                jsonDateTime.hour, jsonDateTime.min, jsonDateTime.seconds, 0);  
+            } else { 
+                return null;
+            }
+        }
 
-        var earliestSegTime = HMStoSeconds("{{ earliestTime }}");
+        //convert episode start/end time to javascript dateTime
         var episode = {{ episodeJson|safe }};
+        var eStart = episode.startTime;
+        var eEnd = episode.endTime;
 
-        setupSlider(episode, "{{ latestTime }}");
+        episode.startTime = toJsDateTime(eStart);
+        episode.endTime = toJsDateTime(eEnd);
+      
+        var earliestTimeJson = {{ earliestTime|safe }};
+        var earliestSegTime = toJsDateTime(earliestTimeJson);
+        var latestTimeJson = {{ latestTime|safe }};    
+        var latestSegTime = toJsDateTime(latestTimeJson);
+        var displaySegments = {{ segmentsJson|safe }};
+
+        //convert segment start and end times to javascript dateTime
+        $.each(displaySegments, function(idx) {
+            var segment = displaySegments[idx];
+            var start = segment.startTime;
+            segment.startTime = toJsDateTime(start);
+            var end = segment.endTime;
+            segment.endTime = toJsDateTime(end);
+        }); 
+
+        setupSlider(episode, latestSegTime);
         setupJWplayer(displaySegments, earliestSegTime, episode);
     </script>
 {% endif %}

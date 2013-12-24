@@ -123,6 +123,11 @@ def makedirsIfNeeded(path):
         os.chmod(path, (stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU))
 
 
+def pythonDatetimeToJSON(pyDateTime):
+    return {"year":pyDateTime.year, "month":pyDateTime.month, "day":pyDateTime.day, 
+            "hour":pyDateTime.hour, "min":pyDateTime.minute, "seconds":pyDateTime.second}
+
+
 def displayEpisodeRecordedVideo(request):
     """
     Returns first segment of all sources that are part of a given episode.
@@ -172,8 +177,8 @@ def displayEpisodeRecordedVideo(request):
             'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
             'episode': episode,
             'episodeJson': episodeJson,
-            'earliestTime': earliestTime,
-            'latestTime': latestTime,
+            'earliestTime': pythonDatetimeToJSON(earliestTime),
+            'latestTime': pythonDatetimeToJSON(latestTime),
             'sources': sources,
         }
     else:
