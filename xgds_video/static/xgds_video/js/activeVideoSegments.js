@@ -69,32 +69,36 @@ function seekToTime() {
     
     $.each(displaySegmentsGlobal, function(idx) {
         var segment = displaySegmentsGlobal[idx];
-        var sourceName = segment.source.shortName;
-        
-        //for now assume that seekTime has the same date as first segments' endDate.
-        var seekTime = seekTimeParser(seekTimeStr);
-        var seekDateTime = new Date(segment.endTime);
-        seekDateTime.setHours(seekTime[0]);
-        seekDateTime.setMinutes(seekTime[1]);
-        seekDateTime.setSeconds(seekTime[2]);
+        if (segment.endTime != null) { // 
+            var sourceName = segment.source.shortName;
+            
+            //for now assume that seekTime has the same date as first segments' endDate.
+            var seekTime = seekTimeParser(seekTimeStr);
+            var seekDateTime = new Date(segment.endTime);
+            seekDateTime.setHours(parseInt(seekTime[0]));
+            seekDateTime.setMinutes(parseInt(seekTime[1]));
+            seekDateTime.setSeconds(parseInt(seekTime[2]));
 
-        var offset = Math.round((seekDateTime - segment.startTime) / 1000); //in seconds
-        console.log("seekto time offset: ", offset);
-        var player = jwplayer('myPlayer'+sourceName);
-        setText('testSiteTime'+sourceName, seekTimeStr+' '+segment.timeZone);
-        if (offset >= 0) {
-            var doSeek = true;
-            var state = player.getState();
-            if (state == 'IDLE') {
-                player.setMute(true).play(true).onPlay(function() {
-                    if (doSeek) {
-                        doSeek = false;
-                        player.pause(true).seek(offset).play(true);
+            var offset = Math.round((seekDateTime - segment.startTime) / 1000); //in seconds
+            console.log("seekto time offset: ", offset);
+            var player = jwplayer('myPlayer'+sourceName);
+            if (player != undefined) {
+                setText('testSiteTime'+sourceName, seekTimeStr+' '+segment.timeZone);
+                if (offset >= 0) {
+                    var doSeek = true;
+                    var state = player.getState();
+                    if (state == 'IDLE') {
+                        player.setMute(true).play(true).onPlay(function() {
+                            if (doSeek) {
+                                doSeek = false;
+                                player.pause(true).seek(offset).play(true);
+                            }
+                        });
+                    } else {
+                        if (state != 'BUFFERING') {
+                            player.seek(offset).play(true);
+                        }
                     }
-                });
-            } else {
-                if (state != 'BUFFERING') {
-                    player.seek(offset).play(true);
                 }
             }
         }
