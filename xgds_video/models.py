@@ -101,12 +101,6 @@ class VideoFeed(AbstractVideoFeed):
 
 
 
-#XXX this is a helper. Duplicated in views.py (fix this)
-def pythonDatetimeToJSON(pyDateTime):
-    return {"year":pyDateTime.year, "month":pyDateTime.month, "day":pyDateTime.day, 
-            "hour":pyDateTime.hour, "min":pyDateTime.minute, "seconds":pyDateTime.second}
-
-
 class AbstractVideoSegment(models.Model):
     directoryName = models.CharField(max_length=256, help_text="ie. Segment") 
     segNumber = models.PositiveIntegerField(null=True, blank=True, help_text="ie. 1")
@@ -120,8 +114,8 @@ class AbstractVideoSegment(models.Model):
     def getDict(self):
         return {"directoryName": self.directoryName, "segNumber": self.segNumber,
                 "indexFileName": self.indexFileName, "source": self.source.getDict(),
-                "startTime": pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime)),                
-                "endTime": pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime)),  
+                "startTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime)),                
+                "endTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime)),  
                 "timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'],
                 "settings": self.settings.getDict()}
 
@@ -157,10 +151,10 @@ class AbstractVideoEpisode(models.Model):
         episodeEndTime = None
 
         if self.startTime:
-            episodeStartTime = pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime))
+            episodeStartTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime))
        
         if self.endTime:  # if endTime is none (when live stream has not ended)
-            episodeEndTime = pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime))
+            episodeEndTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime))
 
         return {"shortName": self.shortName,
                 "startTime": episodeStartTime,

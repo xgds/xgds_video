@@ -4,21 +4,6 @@ var isPlayButtonPressed = true;
 var earliestSegmentGlobal = null;
 
 
-// resize the jwplayers when window is resized.
-/*
-window.onresize = function() {
-    if (displaySegmentsGlobal != null) {
-        var maxWidth = getMaxWidth(displaySegmentsGlobal);
-        $.each(displaySegmentsGlobal, function(segIdx) {
-            var segment = displaySegmentsGlobal[segIdx];
-            var height = calculateHeight(maxWidth, segment.settings.height, segment.settings.width);
-            var sourceName = segment.source.shortName;
-            jwplayer('myPlayer' + sourceName).resize(maxWidth, height);
-        });
-    }
-};
-*/
-
 function setText(id, messageText) {
     document.getElementById(id).innerHTML = messageText;
 }
@@ -110,18 +95,21 @@ function seekToTime() {
  * initialize master slider with range (episode start time-> episode end time)
  **/
 function setupSlider(episode, latestSegEndTime) {
-    var endTime = (episode.endTime) ? episode.endTime : latestSegEndTime; 
-
-    masterSliderGlobal = $('#masterSlider').slider({
-        step: 1,
-        min: Math.round(episode.startTime.getTime()/1000), //in seconds
-        max: Math.round(endTime.getTime()/1000), //in seconds
-        stop: uponSliderStop,
-        slide: uponSliderMove,
-        range: 'min'
-    });
-    var sliderTime = new Date($('#masterSlider').slider('value')*1000);
-    $('#sliderTimeLabel').val(sliderTime.toTimeString());
+    if (episode) {
+        var endTime = (episode.endTime) ? episode.endTime : latestSegEndTime; 
+        if (endTime) {
+            masterSliderGlobal = $('#masterSlider').slider({
+                step: 1,
+                min: Math.round(episode.startTime.getTime()/1000), //in seconds
+                max: Math.round(endTime.getTime()/1000), //in seconds
+                stop: uponSliderStop,
+                slide: uponSliderMove,
+                range: 'min'
+            });
+            var sliderTime = new Date($('#masterSlider').slider('value')*1000);
+            $('#sliderTimeLabel').val(sliderTime.toTimeString());
+        }
+    }
 }
 
 
@@ -163,41 +151,43 @@ function padNum(num, size) {
  * Initialize jw player and call update values
  **/
 function setupJWplayer(displaySegments, earliestSegTime, episode) {
-    var maxWidth = getMaxWidth(displaySegments);
-    displaySegmentsGlobal = displaySegments; // sets global var
-    $.each(displaySegmentsGlobal, function(segIdx) {
-        var segment = displaySegmentsGlobal[segIdx];
-        var sourceName = segment.source.shortName;
-        var filePath = baseUrl + episode.shortName + '_' + sourceName +
-            '/Video/Recordings/' +
-            segment.directoryName + padNum(segment.segNumber, 3) +
-            '/' + segment.indexFileName;
-        var height = calculateHeight(maxWidth, segment.settings.height,
-                                     segment.settings.width);
+    if (episode) {
+        var maxWidth = getMaxWidth(displaySegments);
+        displaySegmentsGlobal = displaySegments; // sets global var
+        $.each(displaySegmentsGlobal, function(segIdx) {
+            var segment = displaySegmentsGlobal[segIdx];
+            var sourceName = segment.source.shortName;
+            var filePath = baseUrl + episode.shortName + '_' + sourceName +
+                '/Video/Recordings/' +
+                segment.directoryName + padNum(segment.segNumber, 3) +
+                '/' + segment.indexFileName;
+            var height = calculateHeight(maxWidth, segment.settings.height,
+                                         segment.settings.width);
 
-        console.log('file path: ' + filePath);
-        jwplayer('myPlayer' + sourceName).setup(
-        {
-            file: filePath,
-            width: maxWidth,
-            height: height,
-            controls: false,
-            autostart: false,
-            skin: '/static/javascript/jwplayer/jw6-skin-sdk/skins/five/five.xml',
-            events: {
-                onReady: function() {
-                    if (earliestSegTime.toDateString() == segment.startTime.toDateString()) {
-                        earliestSegmentGlobal = segment;
-                        
-                        // play the video with earliest time
-                        jwplayer('myPlayer' + sourceName).play(true);
-                        console.log("about to call update values");
-                        updateValues();
+            console.log('file path: ' + filePath);
+            jwplayer('myPlayer' + sourceName).setup(
+            {
+                file: filePath,
+                width: maxWidth,
+                height: height,
+                controls: false,
+                autostart: false,
+                skin: '/static/javascript/jwplayer/jw6-skin-sdk/skins/five/five.xml',
+                events: {
+                    onReady: function() {
+                        if (earliestSegTime.toDateString() == segment.startTime.toDateString()) {
+                            earliestSegmentGlobal = segment;
+                            
+                            // play the video with earliest time
+                            jwplayer('myPlayer' + sourceName).play(true);
+                            console.log("about to call update values");
+                            updateValues();
+                        }
                     }
                 }
-            }
+            });
         });
-    });
+    }
 }
 
 
@@ -282,13 +272,3 @@ function updateValues() {
     });
     setTimeout(updateValues, 1000);
 }
-
-/**************************************************************
-For unit testing with node unit
-***************************************************************/
-
-/*
-if (typeof exports !== 'undefined') {
-    exports.secondsToHMS = secondsToHMS
-}
-*/

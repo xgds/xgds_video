@@ -11,6 +11,7 @@ except ImportError:
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 #from django.views.generic.list_detail import object_list
+from django.contrib import messages
 
 from geocamUtil import anyjson as json
 
@@ -123,15 +124,11 @@ def makedirsIfNeeded(path):
         os.chmod(path, (stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU))
 
 
-def pythonDatetimeToJSON(pyDateTime):
-    return {"year":pyDateTime.year, "month":pyDateTime.month, "day":pyDateTime.day, 
-            "hour":pyDateTime.hour, "min":pyDateTime.minute, "seconds":pyDateTime.second}
-
-
 def displayEpisodeRecordedVideo(request):
     """
     Returns first segment of all sources that are part of a given episode.
     """
+
     episodeName = request.GET.get("episode")
     sourceName = request.GET.get("source")
 
@@ -161,27 +158,34 @@ def displayEpisodeRecordedVideo(request):
             if found:
                 segments.append(found)
 
-        earliestTime = None
-        latestTime = None
-        segmentsJson = None
-        episodeJson = None
+        earliestTime = "null"
+        latestTime = "null"
+        segmentsJson = "null"
+        episodeJson = "null"
         if segments:
-            earliestTime = util.convertUtcToLocal(getEarliestSegmentTime(segments))
-            latestTime = util.convertUtcToLocal(getLatestSegmentTime(segments))
+            earliestTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(getEarliestSegmentTime(segments)))
+            if getLatestSegmentTime(segments):
+               latestTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(getLatestSegmentTime(segments)))
 
             segmentsJson = json.dumps([seg.getDict() for seg in segments], sort_keys=True, indent=4)
             episodeJson = json.dumps(episode.getDict())
 
-        ctx = {
-            'segmentsJson': segmentsJson,
-            'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
-            'episode': episode,
-            'episodeJson': episodeJson,
-            'earliestTime': pythonDatetimeToJSON(earliestTime),
-            'latestTime': pythonDatetimeToJSON(latestTime),
-            'sources': sources,
-        }
+            ctx = {
+                'segmentsJson': segmentsJson,
+                'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
+                'episode': episode,
+                'episodeJson': episodeJson,
+                'earliestTime': earliestTime,
+                'latestTime': latestTime,
+                'sources': sources,
+            }
+        else: 
+            messages.add_message(request,messages.ERROR, 'No Video Segments Exist')
+            ctx={'episode': episode,
+                 'episodeJson': episodeJson 
+                 }
     else:
+        messages.add_message(request,messages.ERROR, 'No Valid Episodes Exist')
         ctx = {'episode': None,
                'searchCriteria': searchCriteria}
     return render_to_response('xgds_video/activeVideoSegments.html',
