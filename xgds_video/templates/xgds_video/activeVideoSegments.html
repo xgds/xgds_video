@@ -16,9 +16,12 @@
     <script type="text/javascript" src="{{ STATIC_URL }}jquery/js/jquery-ui.js"></script>
     <link rel="stylesheet" href="{{ STATIC_URL }}jquery/css/jquery-ui.css"/>
     <link rel="stylesheet" href="{{ STATIC_URL }}style/xgds_video.css"/>
+    
+    <script src="{{ STATIC_URL }}/external/foundation-5.0.2/js/foundation/foundation.js"></script>
+    <script src="{{ STATIC_URL }}/external/foundation-5.0.2/js/foundation/foundation.alert.js"></script>
+
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
-
 
     <script src="{{ STATIC_URL }}jquery/js/masonry.pkgd.min.js" type="text/javascript"></script>
     
@@ -37,6 +40,7 @@
 </script>
 
 {% block contents %}
+
     {% if messages %}
         <ul class="messages" id="errorMessage" style="color:red;">
         {% for message in messages %}

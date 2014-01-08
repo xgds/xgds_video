@@ -54,7 +54,7 @@ function seekToTime() {
     
     $.each(displaySegmentsGlobal, function(idx) {
         var segment = displaySegmentsGlobal[idx];
-        if (segment.endTime != null) { // 
+        if (segment.endTime != null) {  
             var sourceName = segment.source.shortName;
             
             //for now assume that seekTime has the same date as first segments' endDate.
@@ -95,7 +95,8 @@ function seekToTime() {
  * initialize master slider with range (episode start time-> episode end time)
  **/
 function setupSlider(episode, latestSegEndTime) {
-    if (episode) {
+    console.log("inside setup slider");
+    if (episode) { //video episode needed to set slider range
         var endTime = (episode.endTime) ? episode.endTime : latestSegEndTime; 
         if (endTime) {
             masterSliderGlobal = $('#masterSlider').slider({
@@ -108,7 +109,11 @@ function setupSlider(episode, latestSegEndTime) {
             });
             var sliderTime = new Date($('#masterSlider').slider('value')*1000);
             $('#sliderTimeLabel').val(sliderTime.toTimeString());
+        } else {
+            alert("The end time of video segment not available. Cannot setup slider");
         }
+    } else {
+        alert("The video episode is not available.");
     }
 }
 
@@ -229,9 +234,9 @@ function uponSliderStop(event, ui) {
                     }
                 });
             } else {
-                if (state != 'BUFFERING') {
+                //if (state != 'BUFFERING') {
                     player.seek(offset).play(true);
-                }
+                //}
             }
         } else { // video is not ready to play yet
             player.stop();

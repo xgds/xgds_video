@@ -97,11 +97,18 @@ def liveVideoFeed(request, feedName):
 
 # helper used to set the initial position of slider knob for recorded videos.
 def getEarliestSegmentTime(segments):
-    return min([seg.startTime for seg in segments])
-
+    startTimes = filter(None, [seg.startTime for seg in segments])
+    if (len(startTimes) != 0):
+        return min(startTimes)
+    else:
+        return False;
 
 def getLatestSegmentTime(segments):
-    return max([seg.endTime for seg in segments])
+    endTimes = filter(None, [seg.endTime for seg in segments])
+    if (len(endTimes) != 0): 
+        return max(endTimes)
+    else: 
+        return False;
 
 
 def firstSegmentForSource(source, episode):
