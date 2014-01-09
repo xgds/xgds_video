@@ -1,6 +1,7 @@
 {% with form=data %}
 <div style="float:left; padding-top:2px; padding-bottom:2px; ">
 	<form id="create_note{{ form.index }}" action="" method="POST">
+	{{form.extras}}
 		<input type="hidden" id="id_index" value="{{form.index}}"/>
 		<input type="hidden" id="id_extras" value="{{form.extras}}"/>
         <input type="hidden" id="id_event_time" value="{{form.event_time.value}}"/>
