@@ -95,7 +95,6 @@ function seekToTime() {
  * initialize master slider with range (episode start time-> episode end time)
  **/
 function setupSlider(episode, latestSegEndTime) {
-    console.log("inside setup slider");
     if (episode) { //video episode needed to set slider range
         var endTime = (episode.endTime) ? episode.endTime : latestSegEndTime; 
         if (endTime) {
@@ -122,7 +121,6 @@ function setupSlider(episode, latestSegEndTime) {
  * Callback function for play/pause button
  **/
 function playPauseButtonCallBack() {
-    
     isPlayButtonPressed = !isPlayButtonPressed;
     $.each(displaySegmentsGlobal, function(idx) {
         var sourceName = displaySegmentsGlobal[idx].source.shortName;
@@ -192,6 +190,8 @@ function setupJWplayer(displaySegments, earliestSegTime, episode) {
                 }
             });
         });
+    } else {
+        alert("Cannot setup jwplayer. Video Episode is missing.");
     }
 }
 
@@ -234,9 +234,9 @@ function uponSliderStop(event, ui) {
                     }
                 });
             } else {
-                //if (state != 'BUFFERING') {
+                if (state != 'BUFFERING') {
                     player.seek(offset).play(true);
-                //}
+                }
             }
         } else { // video is not ready to play yet
             player.stop();
