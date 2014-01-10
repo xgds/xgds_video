@@ -1,7 +1,7 @@
 var options = { 
 	        //target:        '#output0',   // target element(s) to be updated with server response 
 	        //beforeSubmit:  showRequest,  // pre-submit callback 
-	        success:       showResponse,  // post-submit callback 
+	        //success:       showResponse,  // post-submit callback 
 	 
 	        // other available options: 
 	        url:       submitNoteUrl,        // override for form's 'action' attribute 
@@ -36,11 +36,22 @@ var options = {
     	  type: "POST",  
     	  url: submitNoteUrl,  
     	  data: dataString,  
-    	  complete: function() {  
+    	  complete: function() {
+    		  alert ("complete")
     		  $("input#id_content").val("");
     		  $("select#id_label").prop('selectedIndex', 0);
     		  $("input#id_tags").val("");
+    	  },
+    	  success: function(response) {
+    		  var response_data = response.response_data;
+              var form_validation = response.form_validation;
+    		  alert (response_data)
+    	  },
+    	  error: function(resp) {
+    		  console.log(resp);
+    		  alert(resp.getAllResponseHeaders());
     	  }
+    	  
     	}); 
     	e.preventDefault();
     });
