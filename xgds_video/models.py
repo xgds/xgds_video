@@ -107,7 +107,7 @@ class AbstractVideoSegment(models.Model):
     indexFileName = models.CharField(max_length=50, help_text="ie. prog_index.m3u8")
     startTime = models.DateTimeField(null=True, blank=True, help_text="Second precision, utc. Start time needs to be later than episode start time")  # second precision, utc
     endTime = models.DateTimeField(null=True, blank=True, help_text="needs to be earlier than episode end time")
-    settings = models.ForeignKey(videoSettings.XGDS_VIDEO_SETTINGS_MODEL, null=True, blank=True, help_text="usually 32:(640: 360)")
+    settings = models.ForeignKey(videoSettings.XGDS_VIDEO_SETTINGS_MODEL, null=True, blank=True, help_text="usually (640: 360)")
     source = models.ForeignKey(videoSettings.XGDS_VIDEO_SOURCE_MODEL, null=True, blank=True, help_text="from video source. same as NewFlight's AssetRole.")
     uuid = UuidField()
 
@@ -145,6 +145,7 @@ class AbstractVideoEpisode(models.Model):
     startTime = models.DateTimeField(null=True, blank=True, help_text="Should be earlier than start times of all video segments associated with this episode. Automatically created when the flight is started.")  # second precision, utc
     endTime = models.DateTimeField(null=True, blank=True, help_text="Should be later than end times of all video segments associated with this episode. If end time is empty, the flight has not stopped.")
     uuid = UuidField()
+    sourceGroup = models.ForeignKey('VideoSourceGroup', null=True, blank=True, help_text="Newly added.")
 
     def getDict(self):
         episodeStartTime = None
