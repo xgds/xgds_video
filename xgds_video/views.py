@@ -51,7 +51,7 @@ from django.views.decorators.cache import cache_control
 
 from geocamUtil import anyjson as json
 
-from xgds_notes.forms import NoteForm
+from xgds_notes.util import  get_form_by_name
 
 from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
@@ -63,6 +63,7 @@ SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
 SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
+NoteForm = get_form_by_name( getattr( settings, 'XGDS_NOTES_NOTE_FORM' ) )
 
 # NOTE_EXTRAS_FUNCTION = getClassByName(settings.XGS_VIDEO_NOTE_EXTRAS_FUNCTION)
 
@@ -75,10 +76,10 @@ EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 def getNoteExtras( episodes=None, source=None):
     return None
     
-def callGetNoteExtras(episodes, source):
+def callGetNoteExtras(episodes, source, form):
     if settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION:
             noteExtrasFn = getClassByName(settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION)
-            return noteExtrasFn(episodes, source)
+            return noteExtrasFn(episodes, source, form)
     else:
         return None
         
@@ -94,7 +95,7 @@ def liveVideoFeed(request, feedName):
             form.index = 0
             form.source = videofeeds[0].source
             if form.source:
-                form.extras = callGetNoteExtras(currentEpisodes, form.source)
+                form.extras = callGetNoteExtras(currentEpisodes, form.source, form)
                 #it returned a dictionary which should match the form
                 
         feedData.append((videofeeds[0],form))
@@ -106,7 +107,7 @@ def liveVideoFeed(request, feedName):
             form.index = index
             form.source = feed.source
             if form.source:
-                form.extras = callGetNoteExtras(currentEpisodes, form.source)
+                form.extras = callGetNoteExtras(currentEpisodes, form.source, form)
             index += 1
             feedData.append((feed,form))
  

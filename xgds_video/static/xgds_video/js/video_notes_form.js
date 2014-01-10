@@ -32,17 +32,15 @@ var options = {
     		 return false;
     	 }
     	var dataString = 'content='+ content + '&label=' + label + '&tags=' + tags + '&extras=' + extras;  
-    	//alert (submitNoteUrl + ":: " + dataString);
     	$.ajax({  
     	  type: "POST",  
     	  url: submitNoteUrl,  
     	  data: dataString,  
-    	  success: function() {  
-    		  alert("you are the WINNER!")
-    		  $("input#content").reset();
-    		  $("input#label").reset();
-    		  $("input#tags").reset();
-    	  }  
+    	  complete: function() {  
+    		  $("input#id_content").val("");
+    		  $("select#id_label").prop('selectedIndex', 0);
+    		  $("input#id_tags").val("");
+    	  }
     	}); 
     	e.preventDefault();
     });
