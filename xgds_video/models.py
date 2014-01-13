@@ -8,7 +8,8 @@ from django.db import models
 from geocamUtil.models import UuidField
 from xgds_video import settings
 from xgds_video import util
-from geocamUtil.loader import getClassByName
+
+# pylint: disable=C1001,E1101
 
 #incase settings is shadowed
 videoSettings = settings
@@ -16,11 +17,13 @@ videoSettings = settings
 
 class AbstractVideoSource(models.Model):
     # name: human-readable title
-    name = models.CharField(max_length=128, blank=True, null=True)
+    name = models.CharField(max_length=128, blank=True, null=True, 
+                            help_text='Same as assetrole in NewFlight. ie, ROV')
     # shortName: a short mnemonic code suitable to embed in a URL
-    shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True)
+    shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True,
+                                  help_text='ie, ROV')
     uuid = UuidField(db_index=True)
-    
+
     class Meta:
         abstract = True
 
@@ -67,6 +70,7 @@ class VideoSettings(AbstractVideoSettings):
     """
     pass
 
+
 class AbstractVideoFeed(models.Model):
     # name: human-readable title
     name = models.CharField(max_length=128, blank=True, null=True)
@@ -85,7 +89,7 @@ class AbstractVideoFeed(models.Model):
     def __unicode__(self):
         return (u'VideoFeed(%s, %s, %s)' %
                 (self.url,
-		 self.shortName,
+                 self.shortName,
                  self.active))
 
 
@@ -96,23 +100,24 @@ class VideoFeed(AbstractVideoFeed):
     pass
 
 
+
 class AbstractVideoSegment(models.Model):
-    directoryName = models.CharField(max_length=256)  # directoryName
-    segNumber = models.PositiveIntegerField(null=True, blank=True)
-    indexFileName = models.CharField(max_length=50)  # prog_index.m3u8
-    startTime = models.DateTimeField(null=True, blank=True)  # second precision, utc
-    endTime = models.DateTimeField(null=True, blank=True)
-    settings = models.ForeignKey(videoSettings.XGDS_VIDEO_SETTINGS_MODEL, null=True, blank=True)
-    source = models.ForeignKey(videoSettings.XGDS_VIDEO_SOURCE_MODEL, null=True, blank=True)
+    directoryName = models.CharField(max_length=256, help_text="ie. Segment") 
+    segNumber = models.PositiveIntegerField(null=True, blank=True, help_text="ie. 1")
+    indexFileName = models.CharField(max_length=50, help_text="ie. prog_index.m3u8")
+    startTime = models.DateTimeField(null=True, blank=True, help_text="Second precision, utc. Start time needs to be later than episode start time")  # second precision, utc
+    endTime = models.DateTimeField(null=True, blank=True, help_text="needs to be earlier than episode end time")
+    settings = models.ForeignKey(videoSettings.XGDS_VIDEO_SETTINGS_MODEL, null=True, blank=True, help_text="usually (640: 360)")
+    source = models.ForeignKey(videoSettings.XGDS_VIDEO_SOURCE_MODEL, null=True, blank=True, help_text="from video source. same as NewFlight's AssetRole.")
     uuid = UuidField()
 
     def getDict(self):
-        return {"directoryName": self.directoryName, "segNumber": self.segNumber, 
-		"indexFileName": self.indexFileName, "source": self.source.getDict(), 
-		"startTime": util.convertUtcToLocal(self.startTime), 
-		"endTime": util.convertUtcToLocal(self.endTime),
-		"timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'], 
-		"settings": self.settings.getDict()}
+        return {"directoryName": self.directoryName, "segNumber": self.segNumber,
+                "indexFileName": self.indexFileName, "source": self.source.getDict(),
+                "startTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime)),                
+                "endTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime)),  
+                "timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'],
+                "settings": self.settings.getDict()}
 
     class Meta:
         abstract = True
@@ -136,19 +141,25 @@ class VideoSegment(AbstractVideoSegment):
 
 class AbstractVideoEpisode(models.Model):
     # shortName: a short mnemonic code for the episode, suitable for embedding in a url
-    shortName = models.CharField(max_length=256, null=True, blank=True)
-    startTime = models.DateTimeField(null=True, blank=True)  # second precision, utc
-    endTime = models.DateTimeField(null=True, blank=True)
+    shortName = models.CharField(max_length=256, null=True, blank=True, help_text="Same as flight_group name. ie, 20130711B")
+    startTime = models.DateTimeField(null=True, blank=True, help_text="Should be earlier than start times of all video segments associated with this episode. Automatically created when the flight is started.")  # second precision, utc
+    endTime = models.DateTimeField(null=True, blank=True, help_text="Should be later than end times of all video segments associated with this episode. If end time is empty, the flight has not stopped.")
     uuid = UuidField()
+    sourceGroup = models.ForeignKey('VideoSourceGroup', null=True, blank=True, help_text="Newly added.")
 
     def getDict(self):
+        episodeStartTime = None
         episodeEndTime = None
-        if self.endTime: #if endTime is none (when live stream has not ended) 
-            episodeEndTime = util.convertUtcToLocal(self.endTime) 
-        
-        return {"shortName": self.shortName, 
-        	"startTime": util.convertUtcToLocal(self.startTime), 
-        	"endTime": episodeEndTime}
+
+        if self.startTime:
+            episodeStartTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime))
+       
+        if self.endTime:  # if endTime is none (when live stream has not ended)
+            episodeEndTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime))
+
+        return {"shortName": self.shortName,
+                "startTime": episodeStartTime,
+                "endTime": episodeEndTime}
 
     class Meta:
         abstract = True
@@ -182,9 +193,9 @@ class VideoSourceGroup(models.Model):
     A VideoSourceGroup represents an ordered list of VideoSource objects.
     """
     # name: human-readable title
-    name = models.CharField(max_length=128, blank=True, null=True)
+    name = models.CharField(max_length=128, blank=True, null=True, help_text="human-readable title")
     # shortName: a short mnemonic code suitable to embed in a URL
-    shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True)
+    shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True, help_text="a short mnemonic code suitable to embed in a URL")
     sources = models.ManyToManyField(settings.XGDS_VIDEO_SOURCE_MODEL, through='VideoSourceGroupEntry')
     uuid = UuidField(db_index=True)
 
@@ -199,5 +210,3 @@ class VideoSourceGroupEntry(models.Model):
 
     class Meta:
         ordering = ['rank']
-
-

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load url from future %}
 {% load nav %}
 {% block siteSection %}Video{% endblock %}
     {% block nav %}
@@ -11,14 +12,21 @@
     {% endblock %}
 
 {% block headExtras %}
-    <script type="text/javascript" src="/static/jquery/js/jquery.js"></script>
-    <script type="text/javascript" src="/static/jquery/js/jquery-ui.js"></script>
-    <link rel="stylesheet" href="/static/jquery/css/jquery-ui.css"/>
+    <script type="text/javascript" src="{{ STATIC_URL }}jquery/js/jquery.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}jquery/js/jquery-ui.js"></script>
+    <link rel="stylesheet" href="{{ STATIC_URL }}jquery/css/jquery-ui.css"/>
+    <link rel="stylesheet" href="{{ STATIC_URL }}style/xgds_video.css"/>
+    
+    <script src="{{ STATIC_URL }}/external/foundation-5.0.2/js/foundation/foundation.js"></script>
+    <script src="{{ STATIC_URL }}/external/foundation-5.0.2/js/foundation/foundation.alert.js"></script>
+
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
 
     <script type="text/javascript" src="{{ STATIC_URL }}jquery/js/masonry.pkgd.min.js" ></script>
     
-    <script type="text/javascript" src="/static/javascript/jwplayer/jwplayer.js"></script>
-    <script type="text/javascript" src="/static/xgds_video/js/activeVideoSegments.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}javascript/jwplayer/jwplayer.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/activeVideoSegments.js"></script>
     <script type="text/javascript">jwplayer.key="Wu88H+wZ8jZd7qICLr7IEKSmml1/EOMXWYcblA/CJVk=";</script>
 
 {% endblock headExtras %}
@@ -28,77 +36,112 @@
 {% endblock %}
 
 {% block jsInit %}
-{% endblock %} 
+    var $container = $('#container');
+    $container.masonry('bindResize')
+{% endblock %}
 </script>
 
 {% block contents %}
-    <p>
-	<label for="sliderTimeLabel">Local Flight Time:</label>
-	<input type="text" id="sliderTimeLabel" style="border:0; color:#f6931f; font-weight:bold;"/>
-    </p>
-    <div id="masterSlider" style="width:70%; float:left;"></div> 
-    <div style="width:30% float:left;"><input type="button" id="addPlayPauseButton" onclick="playPauseButtonCallBack()"></input></div>
-    <br>
-    
-    <fieldset style="width:25%; float:right"> 
-    Play from time (HH:MM:SS) <input type="text" id="seekTime" size="30"><br> 
-    <input type="button" value="seek" onclick=seekToTime(false)></input>
-    </fieldset>
-<br>
 
-<table>
-<tr>
-
-{% for source in sources %}
-    <td>  
-	<div style="width:38%; float:left; text-align:left">Recorded Segment: {{ source.name }}</div> 
-	<div style="width:60%; float:left; text-align:right">
-
-<a class="mybutton" href="{% url xgds_video_recorded %}?source={{ source.shortName }}&episode={{ episode.shortName }}" target="new">New Window</a>&nbsp;&nbsp;
-  {% with feed=source.feed_set.all.0.shortName %}
-    {% if feed %}
-      <a class="mybutton" href="{% url xgds_video_live feed %}">Live</a>
+    {% if messages %}
+        <ul class="messages" id="errorMessage" style="color:red;">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+        </ul>
     {% endif %}
-  {% endwith %}
-</div>
 
-	<br>	
-	<br>
+    {% if not episode %}
+        <div style="font-size: 1.5em; margin: 20px;">Couldn't find any {{ searchCriteria }}.</div>
+    {% else %}
+        {% if segmentsJson %}
+            <div>
+                <div id="sliderGroup">
+                    <div id="sliderLabel">
+                        Local Flight Time: <input type="text" id="sliderTimeLabel" readonly>
+                    </div>
+                    
+                    <div id="masterSlider"></div>
+                    <div> 
+                        <a class="btn btn-small btn-info" href="#" onclick=playPauseButtonCallBack()>
+                            <i id="playbutton" class="fa fa-pause fa-2x"></i>
+                        </a>
+                    </div>
+                    <div>
+                        <input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/><br/>
+                        <input type="submit" value="&#xf01e; seek" class="stylish" onclick=seekToTime() />
+                    </div>
+                </div>
+            </div>
 
-	<div id="myPlayer{{ source.shortName }}">
-	</div>
+            <div id="container" class="js-masonry" data-masonry-options='{  "itemSelector": ".item", "gutter":5}'>
+            {% for source in sources %}
+                <div class="item" id="item{{ forloop.counter }}" style="background:#CACACA; padding:8px; margin-bottom:5px; border-width:2px; border-style:solid;">
 
-	<br>
-	<div id="myPlayer{{ source.shortName }}Label" style="text-align:left;font-family:arial,verdana,helvetica"> </div>
-	
-	<table width=100%>
-	<tr>
-	    <td width=50%>
-		Test Site Time: <span id="testSiteTime{{ source.shortName }}">0</span>
-	    </td>
-	</tr>
-	</table>
-    </td>
-    
-    {% if forloop.counter|divisibleby:2 %}
-	</tr>
-	<tr>
+                <div id="leftButton">Recorded Segment: {{ source.name }}</div> 
+                <div id="rightButton">
+                    <a class="mybutton" href="{% url 'xgds_video_recorded' %}?source={{ source.shortName }}&episode={{ episode.shortName }}" target="new">New Window</a>&nbsp;&nbsp;
+                    {% with feed=source.feed_set.all.0.shortName %}
+                    {% if feed %}
+                        <a class="mybutton" href="{% url 'xgds_video_live' feed %}">Live</a>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                <br>	
+                <br>
+                
+                <!--embed the video-->
+                <div id="myPlayer{{ source.shortName }}"></div>
+                <br>
+                <div id="myPlayer{{ source.shortName }}Label" style="text-align:left;font-family:arial,verdana,helvetica"> </div>
+                <div>
+                    Test Site Time: <span id="testSiteTime{{ source.shortName }}">0</span>
+                </div>
+                </div>
+            {% endfor %}
+            </div>
+
+            <script language="javascript" type="text/javascript">
+                var baseUrl = "{{ baseUrl }}";
+                
+                function toJsDateTime(jsonDateTime) {
+                    if (jsonDateTime) {
+                        return new Date(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day, 
+                                        jsonDateTime.hour, jsonDateTime.min, jsonDateTime.seconds, 0);  
+                    } else { 
+                        return null;
+                    }
+                }
+
+                //convert episode start/end time to javascript dateTime
+                var episode = ({{ episodeJson|safe }}=="None") ? null : {{ episodeJson|safe }};
+                if (episode) { 
+                    var eStart = episode.startTime;
+                    var eEnd = episode.endTime;
+
+                    episode.startTime = toJsDateTime(eStart);
+                    episode.endTime = toJsDateTime(eEnd);
+                }
+
+                var earliestTimeJson = {{ earliestTime|safe }};
+                var earliestSegTime = toJsDateTime(earliestTimeJson);
+                var latestTimeJson = {{ latestTime|safe }};    
+                var latestSegTime = toJsDateTime(latestTimeJson);
+                var displaySegments = {{ segmentsJson|safe }};
+
+                //convert segment start and end times to javascript dateTime
+                $.each(displaySegments, function(idx) {
+                    var segment = displaySegments[idx];
+                    var start = segment.startTime;
+                    segment.startTime = toJsDateTime(start);
+                    var end = segment.endTime;
+                    segment.endTime = toJsDateTime(end);
+                }); 
+
+                setupSlider(episode, latestSegTime);
+                setupJWplayer(displaySegments, earliestSegTime, episode);
+            </script>
+        {% endif %}
     {% endif %}
-{% endfor %}
 
-</table>
-
-<script language="javascript" type="text/javascript">
-    var displaySegments = {{ segmentsJson|safe }};
-    var baseUrl = "{{ baseUrl }}";
-
-    var earliestSegTime = HMStoSeconds("{{ earliestTime }}");
-    var latestSegTime = HMStoSeconds("{{ latestTime }}");
-
-    var episode = {{ episodeJson|safe }};
-
-    setupSlider(episode, "{{ latestTime }}");
-    setupJWplayer(displaySegments, earliestSegTime, episode);
-
-</script>
-{% endblock %}
+{% endblock contents %}

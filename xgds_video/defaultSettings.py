@@ -19,7 +19,9 @@ XGDS_VIDEO_VLC_PATH = "/Applications/VLC.app/Contents/MacOS/VLC"
 XGDS_VIDEO_VLC_PARAMETERS = "--intf=dummy --sout='#std{access=file,mux=ts,dst=-}'"
 XGDS_VIDEO_MEDIASTREAMSEGMENTER_PATH = "/usr/bin/mediastreamsegmenter"
 
-XGDS_VIDEO_TIME_ZONE = {'name': 'Pacific', 'code':'America/Los_Angeles'}
+XGDS_VIDEO_TIME_ZONE = {'name': 'Pacific', 'code': 'America/Los_Angeles'}
 
 # set this in siteSettings.py. example: 'plrpExplorer.views.getNoteExtras'
 XGDS_VIDEO_NOTE_EXTRAS_FUNCTION = None
+
+ZEROMQ_PORTS = 'path to ports.json file -- set this in siteSettings.py'

@@ -37,7 +37,7 @@ var options = {
     	  url: submitNoteUrl,  
     	  data: dataString,  
     	  complete: function() {
-    		  alert ("complete")
+    		  //alert ("complete")
     		  $("input#id_content").val("");
     		  $("select#id_label").prop('selectedIndex', 0);
     		  $("input#id_tags").val("");
@@ -45,18 +45,17 @@ var options = {
     	  success: function(response) {
     		  var response_data = response.response_data;
               var form_validation = response.form_validation;
-    		  alert (response_data)
+    		  //alert (response_data)
     	  },
     	  error: function(resp) {
     		  console.log(resp);
-    		  alert(resp.getAllResponseHeaders());
+    		  //alert(resp.getAllResponseHeaders());
     	  }
     	  
     	}); 
     	e.preventDefault();
     });
   }); 
-  
 /*
  
 // pre-submit callback 

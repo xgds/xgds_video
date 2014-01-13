@@ -1,10 +1,9 @@
 {% with form=data %}
 <div style="float:left; padding-top:2px; padding-bottom:2px;">
 	<form id="create_note{{ form.index }}" action="" method="POST">
-	{{ form.extras }}
-		<input type="hidden" id="id_index" value="{{form.index}}"/>
-		<input type="hidden" id="id_extras" value="{{form.extras}}"/>
-        <input type="hidden" id="id_event_time" value="{{form.event_time.value}}"/>
+		<input type="hidden" id="id_index" value="{{ form.index }}"/>
+        <input type="hidden" id="id_extras" value="{{ form.extras }}"/>
+        <input type="hidden" id="id_eventTie" value="now"/>
         <label for="id_content">Note:</label>
         <input id="id_content" type="text" name="content" maxlength="500" size="20"/>
         <label for="id_label">Label:</label>
@@ -15,3 +14,12 @@
   </form>
 </div>
 {% endwith %}
+
+{#% block scripts %#}
+<!-- 
+<script type="text/javascript">var submitNoteUrl = "{% url 'record_simple' %}";</script>
+<script type="text/javascript" src="{{ STATIC_URL }}external/js/jquery.form.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}javascript/jquery-ui-1.8.18.custom.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}javascript/jquery.tagsinput.js"></script>
+ -->
+ {#% endblock scripts %#}
