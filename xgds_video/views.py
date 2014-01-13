@@ -43,9 +43,6 @@ def stopPyraptordServiceIfRunning(pyraptord, svcName):
         pass
 
 
-# NOTE_EXTRAS_FUNCTION = getClassByName(settings.XGS_VIDEO_NOTE_EXTRAS_FUNCTION)
-
-
 # put a setting for the name of the function to call to generate extra text to insert in the form
 # and then add the name of the plrpExplorer.views.getFlightFromFeed (context function)  extraNoteFormDataFunction
 # feed has a source, look up active episode, (find episode with endtime of none) -- or use a known episode
@@ -53,8 +50,8 @@ def stopPyraptordServiceIfRunning(pyraptord, svcName):
 # can find the groupflight that points to that episode
 # and then find the flight in the group flight that has the same source.
 def getNoteExtras(episodes=None, source=None):
+    print "RETURNING NONE FROM BASE GET NOTE EXTRAS CLASS"
     return None
-
 
 def callGetNoteExtras(episodes, source):
     if settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION:
@@ -74,9 +71,12 @@ def liveVideoFeed(request, feedName):
         if videofeeds:
             form = NoteForm()
             form.index = 0
+            form.fields["index"] = 0
             form.source = videofeeds[0].source
-            if form.source:
-                form.extras = callGetNoteExtras(currentEpisodes, form.source)
+            form.fields["source"] = videofeeds[0].source
+            if form.fields["source"]:
+                form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
+                #form.extras = callGetNoteExtras(currentEpisodes, form.source)
                 #it returned a dictionary which should match the form
                 
         feedData.append((videofeeds[0],form))
@@ -86,9 +86,11 @@ def liveVideoFeed(request, feedName):
         for feed in videofeeds:
             form = NoteForm()
             form.index = index
+            form.fields["index"] = index
             form.source = feed.source
-            if form.source:
-                form.extras = callGetNoteExtras(currentEpisodes, form.source)
+            form.fields["source"] = feed.source
+            if form.fields["source"]:
+                form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
             index += 1
             feedData.append((feed, form))
 

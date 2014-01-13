@@ -31,7 +31,7 @@ var options = {
     		 $("input#content").focus();
     		 return false;
     	 }
-    	var dataString = 'content='+ content + '&label=' + label + '&tags=' + tags + '&extras=' + extras;  
+    	var dataString = 'content='+ content + '&label=' + label + '&tags=' + tags + '&extras=' + extras;
     	$.ajax({  
     	  type: "POST",  
     	  url: submitNoteUrl,  
