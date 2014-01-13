@@ -1,7 +1,7 @@
 var options = { 
 	        //target:        '#output0',   // target element(s) to be updated with server response 
 	        //beforeSubmit:  showRequest,  // pre-submit callback 
-	        success:       showResponse,  // post-submit callback 
+	        //success:       showResponse,  // post-submit callback 
 	 
 	        // other available options: 
 	        url:       submitNoteUrl,        // override for form's 'action' attribute 
@@ -32,17 +32,26 @@ var options = {
     		 return false;
     	 }
     	var dataString = 'content='+ content + '&label=' + label + '&tags=' + tags + '&extras=' + extras;  
-    	//alert (submitNoteUrl + ":: " + dataString);
     	$.ajax({  
     	  type: "POST",  
     	  url: submitNoteUrl,  
     	  data: dataString,  
-    	  success: function() {  
-    		  alert("you are the WINNER!")
-    		  $("input#content").reset();
-    		  $("input#label").reset();
-    		  $("input#tags").reset();
-    	  }  
+    	  complete: function() {
+    		  alert ("complete")
+    		  $("input#id_content").val("");
+    		  $("select#id_label").prop('selectedIndex', 0);
+    		  $("input#id_tags").val("");
+    	  },
+    	  success: function(response) {
+    		  var response_data = response.response_data;
+              var form_validation = response.form_validation;
+    		  alert (response_data)
+    	  },
+    	  error: function(resp) {
+    		  console.log(resp);
+    		  alert(resp.getAllResponseHeaders());
+    	  }
+    	  
     	}); 
     	e.preventDefault();
     });

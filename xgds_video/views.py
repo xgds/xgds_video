@@ -51,7 +51,7 @@ from django.views.decorators.cache import cache_control
 
 from geocamUtil import anyjson as json
 
-from xgds_notes.forms import NoteForm
+from xgds_notes.forms import  NoteForm
 
 from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
@@ -95,6 +95,8 @@ def liveVideoFeed(request, feedName):
             form.source = videofeeds[0].source
             if form.source:
                 form.extras = callGetNoteExtras(currentEpisodes, form.source)
+                #it returned a dictionary which should match the form
+                
         feedData.append((videofeeds[0],form))
     else:
         videofeeds = FEED_MODEL.objects.filter(active=True)
