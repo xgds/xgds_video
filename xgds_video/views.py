@@ -92,9 +92,6 @@ def liveVideoFeed(request, feedName):
             if form.fields["source"]:
                 form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
             index += 1
-            print "debug event time"
-            print form["event_time"]
-            print form["event_time"].__class__.__name__
             feedData.append((feed, form))
 
     return render_to_response("xgds_video/video_feeds.html",

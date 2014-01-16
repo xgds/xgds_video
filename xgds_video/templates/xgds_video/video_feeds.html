@@ -86,15 +86,47 @@ var maxWidth = getMaxWidth();
 <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}jquery/css/jquery-ui.css"></link>
 <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery.tagsinput.css"></link>
 <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery-ui-1.8.18.custom.css"></link>
+<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}xgds_video/style/xgds_video.css"></link>
 {% endblock cssExtras %}
 
 {% block jsInit %}
 //prepare the form when the DOM is ready 
 $(document).ready(function() { 
-	// bind form using 'ajaxForm' 
 	{% for feed, form in videoFeedData %}
-    $('#create_note{{ form.index }}').ajaxForm(options);
+	
+	   // bind form using 'ajaxForm' 
+       $('#create_note{{ form.index }}').ajaxForm(options);
+       
+       // bind the fancy tags for each form
+	    $('form#create_note{{ form.index }} #id_tags').tagsInput({
+		    width: '200px',
+		    height: '12px',
+		    autocomplete_url: '{% url note_tags_list %}'
+			});
+			
+		$('#id_tags_tag').blur(function(e) {
+		    if (! $(this).data('autocomplete_active')) {
+		        if ($(this).attr('value') && $(this).attr('value') != 'add a tag') {
+		            $('form#create_note{{ form.index }} #id_tags').addTag($(this).attr('value'));
+		        }
+		    }
+		});
+
     {% endfor %}
+    
+    $('#page-content').on(
+	    'autocompletefocus',
+	    'input.ui-autocomplete-input',
+	    function() {
+	        $(this).data('autocomplete_active', true);
+	    }
+	).on(
+	    'autocompleteclose',
+	    'input.ui-autocomplete-input',
+	    function() {
+	        $(this).data('autocomplete_active', false);
+	    }
+);
 }); 
 {% endblock jsInit %}
 

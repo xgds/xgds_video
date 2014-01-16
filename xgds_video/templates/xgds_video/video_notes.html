@@ -1,13 +1,10 @@
 {% with form=data %}
 <div style="float:left; padding-top:2px; padding-bottom:2px;" >
 	<form id="create_note{{ form.index }}" action="" method="POST">
-        <label for="id_content">Note:</label>
-        <input id="id_content" type="text" name="content" maxlength="500" size="20">
-        <label for="id_label">Label:</label>
-        {{ form.label }}
-        <label for="id_tag">Tags:</label>
-        {{ form.tags }}
-     	<input type="hidden" id="id_index" value="{{ form.index }}" >
+		<label for="id_content">Note:</label><input id="id_content" type="text" name="content" maxlength="500" size="20">
+        <label for="id_label">Label:</label>{{ form.label }}
+        <label for="id_tags">Tags:</label>{{ form.tags }}
+		<input type="hidden" id="id_index" value="{{ form.index }}" >
      	{{ form.extras }}
         <input type="hidden" id="id_event_time" value="{{ form.event_time.value }}" >
         <input id="save_note{{ form.index }}" type="submit" value="Save" class="mybutton noteSubmit">

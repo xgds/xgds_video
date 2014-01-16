@@ -1,5 +1,29 @@
 /* css for xgds_video */
 
+.tags ul{
+    list-style: none;
+    padding: 0px;
+    color: #66AA66;
+}
+
+.tagsinput {
+	margin-top:2px;
+    width: 100px;
+    height: 18px;
+    padding-top: 0px;
+    padding-bottom: 5px;
+    display: inline-block;
+}
+
+div.tagsinput {
+	margin-top:2px;
+    width: 100px;
+    height: 18px;
+    padding-top: 0px;
+    padding-bottom: 5px;
+    display: inline-block;
+}
+
 /*
 #sliderGroup {
     padding:8px;

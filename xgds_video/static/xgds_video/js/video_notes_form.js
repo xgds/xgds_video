@@ -6,12 +6,12 @@ var options = {
 	        // other available options: 
 	        url:       submitNoteUrl,        // override for form's 'action' attribute 
 	        type:      'post',        // 'get' or 'post', override for form's 'method' attribute 
-	        dataType:  'json'        // 'xml', 'script', or 'json' (expected server response type) 
+	        dataType:  'json',        // 'xml', 'script', or 'json' (expected server response type) 
 	        //clearForm: false        // clear all form fields after successful submit
 	        //resetForm: true        // reset the form after successful submit 
 	 
 	        // $.ajax options can be used here too, for example: 
-	        //timeout:   3000 
+	        timeout:   3000 
 	    }; 
 
 /*
@@ -37,15 +37,16 @@ var options = {
     	  url: submitNoteUrl,  
     	  data: dataString,  
     	  complete: function() {
-    		  //alert ("complete")
+    		  alert ("complete")
     		  $("input#id_content").val("");
     		  $("select#id_label").prop('selectedIndex', 0);
-    		  $("input#id_tags").val("");
+    		  $('#id_tags').tagit('removeAll');
     	  },
     	  success: function(response) {
-    		  var response_data = response.response_data;
-              var form_validation = response.form_validation;
-    		  //alert (response_data)
+    		  alert ("success")
+              $("input#id_content").val("");
+    		  $("select#id_label").prop('selectedIndex', 0);
+    		  $('#id_tags').tagit('removeAll');
     	  },
     	  error: function(resp) {
     		  console.log(resp);
