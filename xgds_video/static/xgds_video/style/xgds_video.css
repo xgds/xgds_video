@@ -6,23 +6,40 @@
     color: #66AA66;
 }
 
-.tagsinput {
-	margin-top:2px;
-    width: 100px;
-    height: 18px;
-    padding-top: 0px;
-    padding-bottom: 5px;
-    display: inline-block;
+div.id_tags_addTag {
+	height: 20px;
+}
+
+input.id_tags_tag { 
+	height: 18px;
 }
 
 div.tagsinput {
-	margin-top:2px;
-    width: 100px;
-    height: 18px;
     padding-top: 0px;
-    padding-bottom: 5px;
+    margin-left: 5px;
     display: inline-block;
+    -webkit-appearance: textfield;
+	padding: 1px;
+	background-color: white;
+	border: 2px inset;
+	border-image-source: initial;
+	border-image-slice: initial;
+	border-image-width: initial;
+	border-image-outset: initial;
+	border-image-repeat: initial;
+	-webkit-rtl-ordering: logical;
+	-webkit-user-select: text;
+	cursor: auto;
+	display: inline-block;
+	vertical-align: top;
+	height: 24px !important;
 }
+
+div.tagsinput[style]{
+    width: 150px !important;
+    height: 24px !important;
+}
+    
 
 /*
 #sliderGroup {

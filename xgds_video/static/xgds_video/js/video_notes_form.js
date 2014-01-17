@@ -40,13 +40,13 @@ var options = {
     		  alert ("complete")
     		  $("input#id_content").val("");
     		  $("select#id_label").prop('selectedIndex', 0);
-    		  $('#id_tags').tagit('removeAll');
+    		  $('#id_tags').importTags('');
     	  },
     	  success: function(response) {
     		  alert ("success")
               $("input#id_content").val("");
     		  $("select#id_label").prop('selectedIndex', 0);
-    		  $('#id_tags').tagit('removeAll');
+    		  $('#id_tags').importTags('');
     	  },
     	  error: function(resp) {
     		  console.log(resp);
