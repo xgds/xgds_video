@@ -36,8 +36,6 @@
 {% endblock %}
 
 {% block jsInit %}
-    var $container = $('#container');
-    $container.masonry('bindResize')
 {% endblock %}
 </script>
 
@@ -68,8 +66,8 @@
                         </a>
                     </div>
                     <div>
-                        <input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/><br/>
-                        <input type="submit" value="&#xf01e; seek" class="stylish" onclick=seekToTime() />
+                        <input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
+                        <input type="submit" value="&#xf01e; seek" class="stylish" id="seekButton" onclick=seekToTime() />
                     </div>
                 </div>
             </div>
@@ -103,7 +101,8 @@
 
             <script language="javascript" type="text/javascript">
                 var baseUrl = "{{ baseUrl }}";
-                
+               
+                //helper for converting json datetime object to javascript date time
                 function toJsDateTime(jsonDateTime) {
                     if (jsonDateTime) {
                         return new Date(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day, 
@@ -116,30 +115,51 @@
                 //convert episode start/end time to javascript dateTime
                 var episode = ({{ episodeJson|safe }}=="None") ? null : {{ episodeJson|safe }};
                 if (episode) { 
-                    var eStart = episode.startTime;
-                    var eEnd = episode.endTime;
-
-                    episode.startTime = toJsDateTime(eStart);
-                    episode.endTime = toJsDateTime(eEnd);
+                    episode.startTime = toJsDateTime(episode.startTime);
+                    episode.endTime = toJsDateTime(episode.endTime);
                 }
-
-                var earliestTimeJson = {{ earliestTime|safe }};
-                var earliestSegTime = toJsDateTime(earliestTimeJson);
-                var latestTimeJson = {{ latestTime|safe }};    
-                var latestSegTime = toJsDateTime(latestTimeJson);
+                   
+                // displaySegments are in json format like this:
+                // displaySegments['RD1'] = {segment1, segment2, segment3}
+                // displaySegments['RD1'][0].startTime would return start time of one of the segments.
                 var displaySegments = {{ segmentsJson|safe }};
 
-                //convert segment start and end times to javascript dateTime
-                $.each(displaySegments, function(idx) {
-                    var segment = displaySegments[idx];
-                    var start = segment.startTime;
-                    segment.startTime = toJsDateTime(start);
-                    var end = segment.endTime;
-                    segment.endTime = toJsDateTime(end);
-                }); 
+                // convert segment start and end times to javascript dateTime
+                var firstSegment = null;
+                var lastSegment = null;
 
-                setupSlider(episode, latestSegTime);
-                setupJWplayer(displaySegments, earliestSegTime, episode);
+                {% for source in sources %}
+                    var segments = displaySegments["{{ source.shortName }}"]; 
+                    if ((segments != undefined) && (segments.length > 0)) {
+                        $.each(segments, function(id) {
+                            var segment = segments[id];
+                            segment.startTime = toJsDateTime(segment.startTime);
+                            segment.endTime = toJsDateTime(segment.endTime);
+
+                            if(firstSegment == null) {
+                                firstSegment = segment;
+                            }
+                            if (lastSegment == null) {
+                                lastSegment = segment;
+                            }
+
+                            if (segment.startTime) {
+                                if(segment.startTime < firstSegment.startTime) {
+                                    firstSegment = segment;
+                                }
+                            }
+                            if (segment.endTime) {
+                                if (segment.endTime > lastSegment.endTime) {
+                                    lastSegment = segment;
+                                }
+                            }
+                        });
+                    }
+                {% endfor %}
+
+                //set up the slider and the player
+                setupSlider();//episode, firstSegment, lastSegment);
+                setupJWplayer();//displaySegments, firstSegment, episode);
             </script>
         {% endif %}
     {% endif %}
