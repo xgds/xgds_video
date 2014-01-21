@@ -89,8 +89,8 @@ def liveVideoFeed(request, feedName):
             form.fields["index"] = index
             form.source = feed.source
             form.fields["source"] = feed.source
-            if form.fields["source"]:
-                form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
+            #if form.fields["source"]:
+            #    form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
             index += 1
             feedData.append((feed, form))
 
