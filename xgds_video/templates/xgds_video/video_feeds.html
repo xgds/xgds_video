@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block headExtras %}
 {{block.super}}
- <script src="{{ STATIC_URL }}javascript/AC_QuickTime.js" language="javascript" type="text/javascript"></script>
- <script src="{{ STATIC_URL }}jquery/js/masonry.pkgd.min.js" type="text/javascript"></script>
- <script src="{{ STATIC_URL }}jquery/js/jquery.js" type="text/javascript"></script>
- <script src="{{STATIC_URL}}external/js/jquery-ui.js" type="text/javascript" ></script>
- <script src="{{STATIC_URL}}external/js/jquery.tagsinput.js" type="text/javascript" ></script>
- <script src="{{STATIC_URL}}external/js/jquery.form.min.js" type="text/javascript" ></script>
+ <script src="{{ STATIC_URL }}external/js/AC_QuickTime.js" language="javascript" type="text/javascript"></script>
+ <script src="{{ STATIC_URL }}external/js/masonry.pkgd.min.js" type="text/javascript"></script>
+ <script src="{{ STATIC_URL }}external/js/jquery/jquery.js" type="text/javascript"></script>
+ <script src="{{STATIC_URL}}external/js/jquery/jquery-ui.js" type="text/javascript" ></script>
+ <script src="{{STATIC_URL}}external/js/jquery/jquery.tagsinput.js" type="text/javascript" ></script>
+ <script src="{{STATIC_URL}}external/js/jquery/jquery.form.min.js" type="text/javascript" ></script>
  <script type="text/javascript">var submitNoteUrl = '{% url record_simple %}'</script>
  <script src="{{STATIC_URL}}xgds_video/js/video_notes_form.js" type="text/javascript" ></script>
  {% endblock headExtras %}
@@ -83,9 +83,9 @@ var maxWidth = getMaxWidth();
 
 {% block cssExtras %}
  {{ block.super }}
-<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}jquery/css/jquery-ui.css"></link>
+<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery/jquery-ui.css"></link>
 <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery.tagsinput.css"></link>
-<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}xgds_video/style/xgds_video.css"></link>
+<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}xgds_video/css/xgds_video.css"></link>
 {% endblock cssExtras %}
 
 {% block jsInit %}

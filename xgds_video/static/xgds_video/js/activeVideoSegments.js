@@ -175,7 +175,7 @@ function setupJWplayer(displaySegments, earliestSegTime, episode) {
                 height: height,
                 controls: false,
                 autostart: false,
-                skin: '/static/javascript/jwplayer/jw6-skin-sdk/skins/five/five.xml',
+                skin: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/five/five.xml',
                 events: {
                     onReady: function() {
                         if (earliestSegTime.toDateString() == segment.startTime.toDateString()) {

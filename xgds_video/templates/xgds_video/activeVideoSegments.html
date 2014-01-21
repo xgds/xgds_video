@@ -12,20 +12,22 @@
     {% endblock %}
 
 {% block headExtras %}
-    <script type="text/javascript" src="{{ STATIC_URL }}jquery/js/jquery.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}jquery/js/jquery-ui.js"></script>
-    <link rel="stylesheet" href="{{ STATIC_URL }}jquery/css/jquery-ui.css"/>
-    <link rel="stylesheet" href="{{ STATIC_URL }}xgds_video/style/xgds_video.css"/>
+    <script type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
+    <link rel="stylesheet" href="{{ STATIC_URL }}external/css/jquery/jquery-ui.css"/>
+    <link rel="stylesheet" href="{{ STATIC_URL }}xgds_video/css/xgds_video.css"/>
     
-    <script src="{{ STATIC_URL }}/external/foundation-5.0.2/js/foundation/foundation.js"></script>
-    <script src="{{ STATIC_URL }}/external/foundation-5.0.2/js/foundation/foundation.alert.js"></script>
+    <script src="{{ STATIC_URL }}/external/js/foundation/foundation.js"></script>
+    <script src="{{ STATIC_URL }}/external/js/foundation/foundation.alert.js"></script>
 
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
 
-    <script type="text/javascript" src="{{ STATIC_URL }}jquery/js/masonry.pkgd.min.js" ></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}external/js/masonry.pkgd.min.js" ></script>
     
-    <script type="text/javascript" src="{{ STATIC_URL }}javascript/jwplayer/jwplayer.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}external/js/jwplayer/jwplayer.js"></script>
+    <script type="text/javascript">
+    STATIC_URL='{{ STATIC_URL }}'</script>
     <script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/activeVideoSegments.js"></script>
     <script type="text/javascript">jwplayer.key="Wu88H+wZ8jZd7qICLr7IEKSmml1/EOMXWYcblA/CJVk=";</script>
 
