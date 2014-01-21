@@ -89,8 +89,8 @@ def liveVideoFeed(request, feedName):
             form.fields["index"] = index
             form.source = feed.source
             form.fields["source"] = feed.source
-            if form.fields["source"]:
-                form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
+            #if form.fields["source"]:
+            #    form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
             index += 1
             feedData.append((feed, form))
 
@@ -99,31 +99,17 @@ def liveVideoFeed(request, feedName):
                                'currentEpisodes': currentEpisodes},
                               context_instance=RequestContext(request))
 
-# helper used to set the initial position of slider knob for recorded videos.
-def getEarliestSegmentTime(segments):
-    startTimes = filter(None, [seg.startTime for seg in segments])
-    if (len(startTimes) != 0):
-        return min(startTimes)
-    else:
-        return False;
 
-def getLatestSegmentTime(segments):
-    endTimes = filter(None, [seg.endTime for seg in segments])
-    if (len(endTimes) != 0): 
-        return max(endTimes)
-    else: 
-        return False;
-
-
-def firstSegmentForSource(source, episode):
+def getSegments(source, episode):
+    """
+    Helper for getting segments given source and episode.
+    """
     if episode.endTime:
         segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime,
                                                 endTime__lte=episode.endTime)
     else:  # endTime of segment might be null if flight has not been stopped.
-        segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)  # double check
-    if segments:
-        return segments[:1][0]
-    return
+        segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
+    return segments
 
 
 def makedirsIfNeeded(path):
@@ -139,7 +125,9 @@ def displayEpisodeRecordedVideo(request):
     """
     Returns first segment of all sources that are part of a given episode.
     """
-
+    #XXX use jwplayer playlist to sequence multiple segments
+    #http://www.longtailvideo.com/support/forums/jw-player/using-playlists/21104/playlist-to-chain-sequence-of-mp3s/
+    
     episodeName = request.GET.get("episode")
     sourceName = request.GET.get("source")
 
@@ -163,22 +151,16 @@ def displayEpisodeRecordedVideo(request):
         sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]
 
     if episode:
-        segments = []
+        segmentsDict = {}  # dictionary of segments in JSON 
         for source in sources:
-            found = firstSegmentForSource(source, episode)
+            found  = getSegments(source, episode)
             if found:
-                segments.append(found)
-
-        earliestTime = "null"
-        latestTime = "null"
+                segmentsDict[source.shortName] = [seg.getDict() for seg in found] 
+   
         segmentsJson = "null"
         episodeJson = "null"
-        if segments:
-            earliestTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(getEarliestSegmentTime(segments)))
-            if getLatestSegmentTime(segments):
-               latestTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(getLatestSegmentTime(segments)))
-
-            segmentsJson = json.dumps([seg.getDict() for seg in segments], sort_keys=True, indent=4)
+        if segmentsDict:
+            segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4)
             episodeJson = json.dumps(episode.getDict())
 
             ctx = {
@@ -186,8 +168,6 @@ def displayEpisodeRecordedVideo(request):
                 'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
                 'episode': episode,
                 'episodeJson': episodeJson,
-                'earliestTime': earliestTime,
-                'latestTime': latestTime,
                 'sources': sources,
             }
         else: 
