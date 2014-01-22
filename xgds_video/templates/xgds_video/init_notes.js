@@ -14,11 +14,17 @@ $(document).ready(function() {
 		    autocomplete:{selectFirst:true,width:'80px',autoFill:true}
 			});
 			
-		$('#id_tags_tag').blur(function(e) {
-			console.log("blurring");
+		$('form#create_note{{ form.index }} #id_tags_tag').blur(function(e) {
 		    if (! $(this).data('autocomplete_active')) {
 		        if ($(this).attr('value') && $(this).attr('value') != 'add a tag') {
 		            $('form#create_note{{ form.index }} #id_tags').addTag($(this).attr('value'));
+		        }
+		    }
+		});
+		$('form#create_note{{ form.index }} #id_tags_tag').delegate('.ui-autocomplete-input', 'blur', function(eventObj) {
+		    if (! $(this).data('autocomplete_active')) {
+		        if ($(this).attr('value') && $(this).attr('value') != 'add a tag') {
+		        	 $('form#create_note{{ form.index }} #id_tags').addTag($(this).attr('value'));
 		        }
 		    }
 		});

@@ -33,6 +33,7 @@ div.tagsinput {
 	display: inline-block;
 	vertical-align: top;
 	height: 24px !important;
+	width: 150px !important;
 }
 
 div.tagsinput[style]{
