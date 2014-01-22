@@ -50,7 +50,7 @@ def stopPyraptordServiceIfRunning(pyraptord, svcName):
 # can find the groupflight that points to that episode
 # and then find the flight in the group flight that has the same source.
 def getNoteExtras(episodes=None, source=None):
-    print "RETURNING NONE FROM BASE GET NOTE EXTRAS CLASS"
+#     print "RETURNING NONE FROM BASE GET NOTE EXTRAS CLASS"
     return None
 
 def callGetNoteExtras(episodes, source):
@@ -89,8 +89,8 @@ def liveVideoFeed(request, feedName):
             form.fields["index"] = index
             form.source = feed.source
             form.fields["source"] = feed.source
-            #if form.fields["source"]:
-            #    form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
+            if form.fields["source"]:
+                form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
             index += 1
             feedData.append((feed, form))
 

@@ -37,13 +37,13 @@ var options = {
     	  url: submitNoteUrl,  
     	  data: dataString,  
     	  complete: function() {
-    		  alert ("complete")
+    		  //alert ("complete")
     		  $("input#id_content").val("");
     		  $("select#id_label").prop('selectedIndex', 0);
     		  $('#id_tags').importTags('');
     	  },
     	  success: function(response) {
-    		  alert ("success")
+    		  //alert ("success")
               $("input#id_content").val("");
     		  $("select#id_label").prop('selectedIndex', 0);
     		  $('#id_tags').importTags('');
