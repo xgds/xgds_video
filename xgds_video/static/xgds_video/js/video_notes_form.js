@@ -19,16 +19,20 @@ var options = {
  * 
  */
   $(function() {
-    $(".noteSubmit").click(function(e) {
-      // validate and process form here
-    	var content = $("input#id_content").val();
-    	var label = $("select#id_label option:selected").val();
-    	var tags = $("input#id_tags").val();
-    	var index = $("input#id_index").val();
-    	var extras = $("input#id_extras").val();
+	  
+	$(".noteSubmit").on('click', function(e) {
+		var parent = $(this).closest('form');
+		// validate and process form here
+		var index = parent.find("input#id_index").val();
+    	var content = parent.find("input#id_content").val();
+    	
+    	var tagsId = "input#id_tags" + index;
+    	var tags = parent.find(tagsId).val();
+    	var label = parent.find("select#id_label option:selected").val();
+    	var extras = parent.find("input#id_extras").val();
     	
     	 if (content == "") {
-    		 $("input#content").focus();
+    		 parent.find("input#content").focus();
     		 return false;
     	 }
     	var dataString = 'content='+ content + '&label=' + label + '&tags=' + tags + '&extras=' + extras;
@@ -38,15 +42,15 @@ var options = {
     	  data: dataString,  
     	  complete: function() {
     		  //alert ("complete")
-    		  $("input#id_content").val("");
-    		  $("select#id_label").prop('selectedIndex', 0);
-    		  $('#id_tags').importTags('');
+    		  parent.find("input#id_content").val("");
+    		  parent.find("select#id_label").prop('selectedIndex', 0);
+    		  parent.find(tagsId).importTags('');
     	  },
     	  success: function(response) {
     		  //alert ("success")
-              $("input#id_content").val("");
-    		  $("select#id_label").prop('selectedIndex', 0);
-    		  $('#id_tags').importTags('');
+              parent.find("input#id_content").val("");
+    		  parent.find("select#id_label").prop('selectedIndex', 0);
+    		  parent.find(tagsId).importTags('');
     	  },
     	  error: function(resp) {
     		  console.log(resp);
@@ -55,7 +59,7 @@ var options = {
     	  
     	}); 
     	e.preventDefault();
-    });
+	});
   }); 
 /*
  
