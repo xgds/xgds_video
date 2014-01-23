@@ -19,7 +19,6 @@ from xgds_notes.forms import  NoteForm
 
 from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
-from xgds_video import util
 
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
@@ -78,8 +77,8 @@ def liveVideoFeed(request, feedName):
                 form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
                 #form.extras = callGetNoteExtras(currentEpisodes, form.source)
                 #it returned a dictionary which should match the form
-                
-        feedData.append((videofeeds[0],form))
+
+        feedData.append((videofeeds[0], form))
     else:
         videofeeds = FEED_MODEL.objects.filter(active=True)
         index = 0
@@ -127,7 +126,7 @@ def displayEpisodeRecordedVideo(request):
     """
     #XXX use jwplayer playlist to sequence multiple segments
     #http://www.longtailvideo.com/support/forums/jw-player/using-playlists/21104/playlist-to-chain-sequence-of-mp3s/
-    
+
     episodeName = request.GET.get("episode")
     sourceName = request.GET.get("source")
 
@@ -151,12 +150,12 @@ def displayEpisodeRecordedVideo(request):
         sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]
 
     if episode:
-        segmentsDict = {}  # dictionary of segments in JSON 
+        segmentsDict = {}  # dictionary of segments in JSON
         for source in sources:
             found  = getSegments(source, episode)
             if found:
-                segmentsDict[source.shortName] = [seg.getDict() for seg in found] 
-   
+                segmentsDict[source.shortName] = [seg.getDict() for seg in found]
+
         segmentsJson = "null"
         episodeJson = "null"
         if segmentsDict:
@@ -170,13 +169,14 @@ def displayEpisodeRecordedVideo(request):
                 'episodeJson': episodeJson,
                 'sources': sources,
             }
-        else: 
-            messages.add_message(request,messages.ERROR, 'No Video Segments Exist')
-            ctx={'episode': episode,
-                 'episodeJson': episodeJson 
-                 }
+        else:
+            messages.add_message(request, messages.ERROR, 'No Video Segments Exist')
+            ctx = {
+                'episode': episode,
+                'episodeJson': episodeJson
+            }
     else:
-        messages.add_message(request,messages.ERROR, 'No Valid Episodes Exist')
+        messages.add_message(request, messages.ERROR, 'No Valid Episodes Exist')
         ctx = {'episode': None,
                'searchCriteria': searchCriteria}
     return render_to_response('xgds_video/activeVideoSegments.html',
