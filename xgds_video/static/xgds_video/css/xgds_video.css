@@ -82,8 +82,7 @@ div.tagsinput[style]{
 }
 
 #rightButton {
-  width:60%; 
-  float:left; 
+  float:right; 
   text-align:right; 
 }
 

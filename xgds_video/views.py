@@ -76,8 +76,6 @@ def liveVideoFeed(request, feedName):
             form.fields["source"] = videofeeds[0].source
             if form.fields["source"]:
                 form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
-                #form.extras = callGetNoteExtras(currentEpisodes, form.source)
-                #it returned a dictionary which should match the form
                 
         feedData.append((videofeeds[0],form))
     else:
@@ -151,11 +149,19 @@ def displayEpisodeRecordedVideo(request):
         sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]
 
     if episode:
-        segmentsDict = {}  # dictionary of segments in JSON 
+        segmentsDict = {}  # dictionary of segments in JSON
+        index = 0 
         for source in sources:
             found  = getSegments(source, episode)
             if found:
-                segmentsDict[source.shortName] = [seg.getDict() for seg in found] 
+                segmentsDict[source.shortName] = [seg.getDict() for seg in found]
+                form = NoteForm()
+                form.index = 0
+                form.fields["index"] = index
+                form.source = source
+                form.fields["source"] = source
+                form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
+                source.form = form 
    
         segmentsJson = "null"
         episodeJson = "null"

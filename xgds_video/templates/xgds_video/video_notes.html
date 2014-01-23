@@ -1,6 +1,6 @@
 {% with form=data %}
 <div style="float:left; padding-top:2px; padding-bottom:2px;" >
-	<form id="create_note{{ form.index }}" action="" method="POST">
+	<form id="create_note{{ form.index }}" class="create_note_form" action="" method="POST">
 		<label for="id_content">Note:</label><input id="id_content" type="text" name="content" maxlength="500" size="20">
         <label for="id_label">Label:</label>{{ form.label }}
         <label for="id_tags">Tags:</label>
