@@ -21,7 +21,7 @@ class AbstractVideoSource(models.Model):
                             help_text='Same as assetrole in NewFlight. ie, ROV')
     # shortName: a short mnemonic code suitable to embed in a URL
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True,
-                                  help_text='ie, ROV')
+                                 help_text='ie, ROV')
     uuid = UuidField(db_index=True)
 
     class Meta:
@@ -98,7 +98,6 @@ class VideoFeed(AbstractVideoFeed):
     A VideoFeed gives you enough information to watch a live video.
     """
     pass
-
 
 
 class AbstractVideoSegment(models.Model):

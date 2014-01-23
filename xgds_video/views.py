@@ -15,7 +15,7 @@ from django.contrib import messages
 
 from geocamUtil import anyjson as json
 
-from xgds_notes.forms import  NoteForm
+from xgds_notes.forms import NoteForm
 
 from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
@@ -51,6 +51,7 @@ def stopPyraptordServiceIfRunning(pyraptord, svcName):
 def getNoteExtras(episodes=None, source=None):
 #     print "RETURNING NONE FROM BASE GET NOTE EXTRAS CLASS"
     return None
+
 
 def callGetNoteExtras(episodes, source):
     if settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION:
@@ -152,7 +153,7 @@ def displayEpisodeRecordedVideo(request):
     if episode:
         segmentsDict = {}  # dictionary of segments in JSON
         for source in sources:
-            found  = getSegments(source, episode)
+            found = getSegments(source, episode)
             if found:
                 segmentsDict[source.shortName] = [seg.getDict() for seg in found]
 

@@ -16,10 +16,10 @@ def convertUtcToLocal(time):
     else:
         return ""
 
+
 def pythonDatetimeToJSON(pyDateTime):
     if pyDateTime:
-        return {"year":pyDateTime.year, "month":pyDateTime.month, "day":pyDateTime.day,
-                "hour":pyDateTime.hour, "min":pyDateTime.minute, "seconds":pyDateTime.second}
+        return {"year": pyDateTime.year, "month": pyDateTime.month, "day": pyDateTime.day,
+                "hour": pyDateTime.hour, "min": pyDateTime.minute, "seconds": pyDateTime.second}
     else:
         return ""
-
