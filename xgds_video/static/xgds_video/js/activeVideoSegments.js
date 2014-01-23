@@ -85,10 +85,15 @@ function seekToTime() {
             if (getPlaylistIdxAndOffset(segments, seekDateTime)) { //if seek time falls under a playable range
                 var idx = getPlaylistIdxAndOffset(segments, seekDateTime)[0];
                 var offset = getPlaylistIdxAndOffset(segments, seekDateTime)[1];
-
-                var player = jwplayer('myPlayer' + sourceName);
-                player.playlistItem(idx).play(true);
-                player.seek(offset);
+                
+                //update the player
+                jwplayer('myPlayer'+sourceName).playlistItem(idx).play(true);
+                jwplayer('myPlayer'+sourceName).seek(offset);
+                
+                //update the slider
+                masterSlider.slider('value', Math.round(seekDateTime.getTime()/1000)); //increment slider value by one second
+                var sliderTime = new Date(masterSlider.slider('value')*1000);
+                $('#sliderTimeLabel').val(sliderTime.toTimeString());
 
                 if (playFlag) {
                     player.play(true);
@@ -99,6 +104,7 @@ function seekToTime() {
         }
     }
 }
+
 
 /**
  * initialize master slider with range (episode start time->episode end time)
@@ -142,8 +148,9 @@ function playPauseButtonCallBack() {
                 var idx = getPlaylistIdxAndOffset(segments, currTime)[0];
                 var offset = getPlaylistIdxAndOffset(segments, currTime)[1];
                 if (player.getState() != 'BUFFERING') {
-                    player.playlistItem(idx).play(true);
-                    player.seek(offset);
+                    player.playlistItem(idx);//.play(true);
+                    player.seek(offset);    
+                    player.play(true);
                 }
             }
         }
@@ -220,22 +227,19 @@ function setupJWplayer() {
                     onBuffer: function(e) {
                         if ((e.oldstate == 'PLAYING') || (e.oldstate == 'PAUSED')) {
                             //all the players need to be paused, including the slider.
-                            playFlag = false; //this should stop the slider form incrementing
-                            for (var key in displaySegments) {
-                                var sourceName = displaySegments[key][0].source.shortName;
-                                var player = jwplayer('myPlayer' + sourceName);
-                                if (player.getState() != 'BUFFERING') {
-                                    document.getElementById('playbutton').className = 'fa fa-play fa-2x';
-                                    jwplayer('myPlayer' + sourceName).pause(true);
-                                }
+                            if (e.oldstate == 'PLAYING') {
+                                playState = !playState; //change the state to paused
                             }
+
+                            //pause all the players
+                            for (var key in displaySegments) {
+                                var segments = displaySegments[key];
+                                var sourceName = segments[0].source.shortName;
+                                var player = jwplayer('myPlayer'+sourceName);
+                                player.pause(true);
+                            }   
+                            document.getElementById("playbutton").className="fa fa-play fa-2x"
                         }
-                    },
-                    onPlay: function(e) {
-                        playFlag = true;
-                    },
-                    onPause: function(e) {
-                       playFlag = false;
                     },
                     onComplete: function() {
                         //upon complete, stop. It should start segment at the right time (in updateValues).
@@ -296,13 +300,10 @@ function uponSliderStop(event, ui) {
             var offset = getPlaylistIdxAndOffset(segments, currTime)[1];
             var state = player.getState();
             if (state == 'PAUSED') {
-                player.playlistItem(index);
-                player.seek(offset);
-                player.pause(true);
+                //XXX this doesn't pause properly
+                player.playlistItem(index).setMute(true).seek(offset).pause(true);
             } else if ((state == 'PLAYING') || (state == 'IDLE')) {
-                player.playlistItem(index);
-                player.seek(offset);
-                player.play(true);
+                player.playlistItem(index).setMute(true).seek(offset).play(true);
             } else { //buffering
                 // player is not ready yet
             }
@@ -332,19 +333,20 @@ function updateValues() {
     if (!playFlag) {
         return;
     }
-
-    //play the videos and update silder only if play flag is on.
+    
+    //play the videos and update slider only if play flag is on.
     for (var key in displaySegments) {
         var segments = displaySegments[key];
         var sourceName = segments[0].source.shortName;
-        if (playFlag) {
-            var datetime = new Date(masterSlider.slider('value') * 1000);
-            if (jwplayer('myPlayer' + sourceName).getState() != 'PLAYING') {
-                if (getPlaylistIdxAndOffset(segments, datetime)) {
-                    var playlistIdx = getPlaylistIdxAndOffset(segments, datetime)[0];
-                    var itemOffset = getPlaylistIdxAndOffset(segments, datetime)[1];
-                    jwplayer('myPlayer' + sourceName).playlistItem(playlistIdx).play(true);
-                    jwplayer('myPlayer' + sourceName).seek(itemOffset);
+        var datetime = new Date(masterSlider.slider('value')*1000);
+
+        if (playFlag){ 
+            if (jwplayer('myPlayer'+sourceName).getState() != 'PLAYING') {
+                if (getPlaylistIdxAndOffset(segments,datetime)) {
+                    var playlistIdx = getPlaylistIdxAndOffset(segments,datetime)[0];
+                    var itemOffset = getPlaylistIdxAndOffset(segments,datetime)[1];
+                    jwplayer('myPlayer'+sourceName).playlistItem(playlistIdx).play(true);
+                    jwplayer('myPlayer'+sourceName).seek(itemOffset);
                 } else {
                     //no playable range, so pause it.
                     if (jwplayer('myPlayer' + sourceName).getState() == 'PLAYING') {
@@ -353,6 +355,9 @@ function updateValues() {
                 }
             }
         }
+
+        //update the player time stamp
+        setText('testSiteTime'+sourceName, datetime.toString()+' '+segments[0].timeZone);
     }
 
     // update the slider count.
