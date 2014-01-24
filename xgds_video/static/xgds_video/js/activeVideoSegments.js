@@ -14,30 +14,6 @@ function seekTimeParser(str) {
 }
 
 
-// find max width of the jwplayer
-function getMaxWidth(displaySegments) {
-    var width = window.innerWidth ||
-        document.documentElement.clientWidth ||
-        document.body.clientWidth;
-
-    if (Object.keys(displaySegments).length > 1) {
-        width = Math.round(width / 2);
-    }
-
-    width = width - 100;
-    return width;
-}
-
-
-// find max height of jwplayer
-function calculateHeight(newWidth, defaultHeight, defaultWidth) {
-    var newHeight = defaultHeight;
-    var ratio = newWidth / defaultWidth;
-    newHeight = Math.round(defaultHeight * ratio);
-    return newHeight;
-}
-
-
 function getPlaylistIdxAndOffset(segments, currTime) {
     /*
      * Helper for uponSliderStop.
@@ -199,18 +175,19 @@ function getFilePaths(episode, segments) {
 
 function setupJWplayer() {
     if (episode) { //if episode exists
-        var maxWidth = getMaxWidth(displaySegments);
+        var maxWidth = getMaxWidth(Object.keys(displaySegments).length);
         for (var key in displaySegments) {
             //construct a playlist from these video segments!
             var segments = displaySegments[key]; //list of video segments with same source & episode
             var source = segments[0].source;
             var videoPaths = getFilePaths(episode, segments);
-            var height = calculateHeight(maxWidth, segments[0].settings.height,
+            var size = calculateSize(maxWidth, segments[0].settings.height,
                                          segments[0].settings.width);
 
             jwplayer('myPlayer' + source.shortName).setup({
-                height: height,
-                width: maxWidth,
+                //height: size[1],
+            	aspectRatio: '16:9',
+                width: size[0],
                 file: videoPaths[0],
                 autostart: false,
                 mute: true,

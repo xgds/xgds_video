@@ -155,7 +155,7 @@ def displayEpisodeRecordedVideo(request):
             if found:
                 segmentsDict[source.shortName] = [seg.getDict() for seg in found]
                 form = NoteForm()
-                form.index = 0
+                form.index = index
                 form.fields["index"] = index
                 form.source = source
                 form.fields["source"] = source
