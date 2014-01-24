@@ -17,11 +17,11 @@ videoSettings = settings
 
 class AbstractVideoSource(models.Model):
     # name: human-readable title
-    name = models.CharField(max_length=128, blank=True, null=True, 
+    name = models.CharField(max_length=128, blank=True, null=True,
                             help_text='Same as assetrole in NewFlight. ie, ROV')
     # shortName: a short mnemonic code suitable to embed in a URL
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True,
-                                  help_text='ie, ROV')
+                                 help_text='ie, ROV')
     uuid = UuidField(db_index=True)
 
     class Meta:
@@ -100,9 +100,8 @@ class VideoFeed(AbstractVideoFeed):
     pass
 
 
-
 class AbstractVideoSegment(models.Model):
-    directoryName = models.CharField(max_length=256, help_text="ie. Segment") 
+    directoryName = models.CharField(max_length=256, help_text="ie. Segment")
     segNumber = models.PositiveIntegerField(null=True, blank=True, help_text="ie. 1")
     indexFileName = models.CharField(max_length=50, help_text="ie. prog_index.m3u8")
     startTime = models.DateTimeField(null=True, blank=True, help_text="Second precision, utc. Start time needs to be later than episode start time")  # second precision, utc
@@ -114,8 +113,8 @@ class AbstractVideoSegment(models.Model):
     def getDict(self):
         return {"directoryName": self.directoryName, "segNumber": self.segNumber,
                 "indexFileName": self.indexFileName, "source": self.source.getDict(),
-                "startTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime)),                
-                "endTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime)),  
+                "startTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime)),
+                "endTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime)),
                 "timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'],
                 "settings": self.settings.getDict()}
 
@@ -153,7 +152,7 @@ class AbstractVideoEpisode(models.Model):
 
         if self.startTime:
             episodeStartTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime))
-       
+
         if self.endTime:  # if endTime is none (when live stream has not ended)
             episodeEndTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime))
 

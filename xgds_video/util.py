@@ -12,14 +12,14 @@ def getShortTimeString(dateTime):
 def convertUtcToLocal(time):
     if time:
         time = time.replace(tzinfo=pytz.UTC)
-        return time.astimezone(TIME_ZONE) 
+        return time.astimezone(TIME_ZONE)
     else:
         return ""
+
 
 def pythonDatetimeToJSON(pyDateTime):
     if pyDateTime:
-        return {"year":pyDateTime.year, "month":pyDateTime.month, "day":pyDateTime.day, 
-                "hour":pyDateTime.hour, "min":pyDateTime.minute, "seconds":pyDateTime.second}
+        return {"year": pyDateTime.year, "month": pyDateTime.month, "day": pyDateTime.day,
+                "hour": pyDateTime.hour, "min": pyDateTime.minute, "seconds": pyDateTime.second}
     else:
         return ""
-

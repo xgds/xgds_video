@@ -15,11 +15,10 @@ from django.contrib import messages
 
 from geocamUtil import anyjson as json
 
-from xgds_notes.forms import  NoteForm
+from xgds_notes.forms import NoteForm
 
 from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
-from xgds_video import util
 
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
@@ -52,6 +51,7 @@ def getNoteExtras(episodes=None, source=None):
 #     print "RETURNING NONE FROM BASE GET NOTE EXTRAS CLASS"
     return None
 
+
 def callGetNoteExtras(episodes, source):
     if settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION:
         noteExtrasFn = getClassByName(settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION)
@@ -75,7 +75,6 @@ def liveVideoFeed(request, feedName):
             form.fields["source"] = videofeeds[0].source
             if form.fields["source"]:
                 form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
-                
         feedData.append((videofeeds[0],form))
     else:
         videofeeds = FEED_MODEL.objects.filter(active=True)
@@ -124,7 +123,7 @@ def displayEpisodeRecordedVideo(request):
     """
     #XXX use jwplayer playlist to sequence multiple segments
     #http://www.longtailvideo.com/support/forums/jw-player/using-playlists/21104/playlist-to-chain-sequence-of-mp3s/
-    
+
     episodeName = request.GET.get("episode")
     sourceName = request.GET.get("source")
 
@@ -152,7 +151,7 @@ def displayEpisodeRecordedVideo(request):
         segmentsDict = {}  # dictionary of segments in JSON
         index = 0 
         for source in sources:
-            found  = getSegments(source, episode)
+            found = getSegments(source, episode)
             if found:
                 segmentsDict[source.shortName] = [seg.getDict() for seg in found]
                 form = NoteForm()
@@ -163,6 +162,7 @@ def displayEpisodeRecordedVideo(request):
                 form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
                 source.form = form 
                 sourcesWithStuff.append(source)
+                index++
    
         segmentsJson = "null"
         episodeJson = "null"
@@ -177,13 +177,14 @@ def displayEpisodeRecordedVideo(request):
                 'episodeJson': episodeJson,
                 'sources': sourcesWithStuff,
             }
-        else: 
-            messages.add_message(request,messages.ERROR, 'No Video Segments Exist')
-            ctx={'episode': episode,
-                 'episodeJson': episodeJson 
-                 }
+        else:
+            messages.add_message(request, messages.ERROR, 'No Video Segments Exist')
+            ctx = {
+                'episode': episode,
+                'episodeJson': episodeJson
+            }
     else:
-        messages.add_message(request,messages.ERROR, 'No Valid Episodes Exist')
+        messages.add_message(request, messages.ERROR, 'No Valid Episodes Exist')
         ctx = {'episode': None,
                'searchCriteria': searchCriteria}
     return render_to_response('xgds_video/activeVideoSegments.html',
