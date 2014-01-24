@@ -49,7 +49,7 @@ function getPlaylistIdxAndOffset(segments, currTime) {
     for (var i = 0; i < segments.length; i++) {
         if ((currTime >= segments[i].startTime) && (currTime <= segments[i].endTime)) {
             playlistIdx = i;
-            offset = currTime - segments[i].startTime;
+            offset = Math.round((currTime - segments[i].startTime)/1000); //in seconds
             return [playlistIdx, offset];
         }
     }
