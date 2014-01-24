@@ -75,6 +75,7 @@ div.tagsinput[style]{
     border-style:solid;
 }
 
+/*
 #leftButton {
     width:38%; 
     float:left; 
@@ -85,7 +86,32 @@ div.tagsinput[style]{
   float:right; 
   text-align:right; 
 }
+*/
+
+#toprow-left{
+    float:left;
+}
+
+#toprow-right{
+    float:right;
+}
+
+#buttons{
+    display:block;
+}
 
 .stylish {
     font-family: FontAwesome;
+}
+
+.item {
+    background:#CACACA; 
+    padding-bottom:30px; 
+    padding-left:10px;
+    padding-right:10px;
+    padding-top:5px;
+    margin-bottom:20px; 
+    border-width:2px; 
+    border-style:solid;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }

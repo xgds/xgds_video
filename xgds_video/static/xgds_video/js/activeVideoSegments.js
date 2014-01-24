@@ -25,7 +25,7 @@ function getPlaylistIdxAndOffset(segments, currTime) {
     for (var i = 0; i < segments.length; i++) {
         if ((currTime >= segments[i].startTime) && (currTime <= segments[i].endTime)) {
             playlistIdx = i;
-            offset = currTime - segments[i].startTime;
+            offset = Math.round((currTime - segments[i].startTime)/1000); //in seconds
             return [playlistIdx, offset];
         }
     }
@@ -183,6 +183,7 @@ function setupJWplayer() {
             var videoPaths = getFilePaths(episode, segments);
             var size = calculateSize(maxWidth, segments[0].settings.height,
                                          segments[0].settings.width);
+            console.log("file paths: ", videoPaths);
 
             jwplayer('myPlayer' + source.shortName).setup({
                 //height: size[1],

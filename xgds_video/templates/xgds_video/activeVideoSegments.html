@@ -3,9 +3,6 @@
 {{block.super}}
     <script type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
-    <!-- <script src="{{ STATIC_URL }}/external/js/foundation/foundation.js"></script>
-    <script src="{{ STATIC_URL }}/external/js/foundation/foundation.alert.js"></script>
- -->
     <script type="text/javascript" src="{{ STATIC_URL }}external/js/masonry.pkgd.min.js" ></script>
     <script type="text/javascript" src="{{ STATIC_URL }}external/js/jwplayer/jwplayer.js"></script>
     <script type="text/javascript">
@@ -22,10 +19,10 @@
 
  {% block cssExtras %}
  {{ block.super }}
-<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery/jquery.tagsinput.css"></link>
-<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery/jquery-ui.css"></link>
-<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}xgds_video/css/xgds_video.css"></link>
-<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/font-awesome/css/font-awesome.css"></link>
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery/jquery.tagsinput.css"></link>
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery/jquery-ui.css"></link>
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}xgds_video/css/xgds_video.css"></link>
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/font-awesome/css/font-awesome.css"></link>
 {% endblock cssExtras %}
 
 {% block scripts %}
@@ -69,33 +66,37 @@
                     </div>
                     <div>
                         <input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
-                        <input type="submit" value="&#xf01e; seek" class="stylish" id="seekButton" onclick=seekToTime() />
+                        <button type="submit" class="mybutton" id="seekButton" onclick=seekToTime()>
+                            <i class="fa fa-share"></i> Seek
+                        </button>
                     </div>
                 </div>
   
             <div id="container" class="js-masonry" data-masonry-options='{  "itemSelector": ".item", "gutter":5, "isInitLayout":false}'>
             {% for source in sources %}
-                <div class="item" id="item{{ forloop.counter }}" style="background:#CACACA; padding:8px; margin-bottom:5px; border-width:2px; border-style:solid;">
-	                <div id="leftButton">Recorded Segment: {{ source.name }}</div> 
-	                <div id="rightButton">
-	                    <a class="mybutton" href="{% url 'xgds_video_recorded' %}?source={{ source.shortName }}&episode={{ episode.shortName }}" target="new">New Window</a>
+                <div class="item" id="item{{ forloop.counter }}">
+
+	                <div id="buttons">
+	                    <div id=toprow-left>Recorded Segment: {{ source.name }}</div> 
+	                    <a class="mybutton" id=toprow-right href="{% url 'xgds_video_recorded' %}?source={{ source.shortName }}&episode={{ episode.shortName }}" target="new">New Window</a>
 	                    {% with feed=source.feed_set.all.0.shortName %}
 	                    {% if feed %}
-	                    	&nbsp;&nbsp;
-	                        <a class="mybutton" href="{% url 'xgds_video_live' feed %}">Live</a>
+	                        <a class="mybutton" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>
 	                    {% endif %}
 	                    {% endwith %}
 	                </div>
+	
 	                {% include "xgds_video/video_notes.html" with data=source.form %}
 	                <!--embed the video-->
-	                <div id="player_container" style="float:top">
+	                 <div id="player_container" style="float:top">
 	                <div id="myPlayer{{ source.shortName }}"></div>
 	                </div>
 	                <div id="myPlayer{{ source.shortName }}Label" style="text-align:left;font-family:arial,verdana,helvetica"> </div>
 	                <div>
 	                    Test Site Time: <span id="testSiteTime{{ source.shortName }}">0</span>
 	                </div>
-                </div><!--  item -->
+                </div>><!--  item -->
+                
             {% endfor %}
             </div> <!--  js masonry container -->
 
