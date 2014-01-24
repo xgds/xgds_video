@@ -75,18 +75,9 @@ div.tagsinput[style]{
     border-style:solid;
 }
 
-/*
-#leftButton {
-    width:38%; 
-    float:left; 
-    text-align:left;
+.float-left {
+	float:left;
 }
-
-#rightButton {
-  float:right; 
-  text-align:right; 
-}
-*/
 
 #toprow-left{
     float:left;
