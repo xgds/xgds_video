@@ -146,7 +146,7 @@ def displayEpisodeRecordedVideo(request):
     else:
         sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]
 
-    sourcesWithStuff = []
+    sourcesWithVideo = []
     if episode:
         segmentsDict = {}  # dictionary of segments in JSON
         index = 0 
@@ -161,7 +161,7 @@ def displayEpisodeRecordedVideo(request):
                 form.fields["source"] = source
                 form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
                 source.form = form 
-                sourcesWithStuff.append(source)
+                sourcesWithVideo.append(source)
                 index = index + 1
    
         segmentsJson = "null"
@@ -175,7 +175,7 @@ def displayEpisodeRecordedVideo(request):
                 'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
                 'episode': episode,
                 'episodeJson': episodeJson,
-                'sources': sourcesWithStuff,
+                'sources': sourcesWithVideo,
             }
         else:
             messages.add_message(request, messages.ERROR, 'No Video Segments Exist')

@@ -207,6 +207,7 @@ function setupJWplayer() {
             var videoPaths = getFilePaths(episode, segments);
             var height = calculateHeight(maxWidth, segments[0].settings.height,
                                          segments[0].settings.width);
+            console.log("file paths: ", videoPaths);
 
             jwplayer('myPlayer' + source.shortName).setup({
                 height: height,
