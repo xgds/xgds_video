@@ -85,16 +85,21 @@
 	                    {% endif %}
 	                    {% endwith %}
 	                </div>
-	
+					<section>
 	                {% include "xgds_video/video_notes.html" with data=source.form %}
+	                </section>
 	                <!--embed the video-->
-	                 <div id="player_container" style="float:top">
-	                <div id="myPlayer{{ source.shortName }}"></div>
-	                </div>
-	                <div id="myPlayer{{ source.shortName }}Label" style="text-align:left;font-family:arial,verdana,helvetica"> </div>
-	                <div>
+	                <section>
+	                 <div id="player_container" class="float-left">
+	                	<div id="myPlayer{{ source.shortName }}"></div>
+	                </div> <!--  player-container -->
+	                <div id="myPlayer{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
+	                </section>
+	                <section>
+	                <div class="float-left">
 	                    Test Site Time: <span id="testSiteTime{{ source.shortName }}">0</span>
 	                </div>
+	                </section>
                 </div>><!--  item -->
                 
             {% endfor %}

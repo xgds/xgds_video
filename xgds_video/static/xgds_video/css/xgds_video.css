@@ -88,6 +88,10 @@ div.tagsinput[style]{
 }
 */
 
+.float-left {
+	float:left;
+}
+
 #toprow-left{
     float:left;
 }
