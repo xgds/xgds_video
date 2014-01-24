@@ -162,7 +162,7 @@ def displayEpisodeRecordedVideo(request):
                 form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
                 source.form = form 
                 sourcesWithStuff.append(source)
-                index++
+                index = index + 1
    
         segmentsJson = "null"
         episodeJson = "null"
