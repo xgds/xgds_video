@@ -28,7 +28,6 @@ FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
 SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
-
 def getZerorpcClient(clientName):
     ports = json.loads(file(settings.ZEROMQ_PORTS, 'r').read())
     rpcPort = ports[clientName]['rpc']
@@ -148,6 +147,7 @@ def displayEpisodeRecordedVideo(request):
     else:
         sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]
 
+    sourcesWithStuff = []
     if episode:
         segmentsDict = {}  # dictionary of segments in JSON
         index = 0 
@@ -162,6 +162,7 @@ def displayEpisodeRecordedVideo(request):
                 form.fields["source"] = source
                 form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
                 source.form = form 
+                sourcesWithStuff.append(source)
    
         segmentsJson = "null"
         episodeJson = "null"
@@ -174,7 +175,7 @@ def displayEpisodeRecordedVideo(request):
                 'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
                 'episode': episode,
                 'episodeJson': episodeJson,
-                'sources': sources,
+                'sources': sourcesWithStuff,
             }
         else: 
             messages.add_message(request,messages.ERROR, 'No Video Segments Exist')
