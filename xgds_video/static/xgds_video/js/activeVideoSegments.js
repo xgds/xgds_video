@@ -302,9 +302,15 @@ function uponSliderStop(event, ui) {
             var state = player.getState();
             if (state == 'PAUSED') {
                 //XXX this doesn't pause properly
-                player.playlistItem(index).setMute(true).seek(offset).pause(true);
+                player.playlistItem(index);
+                player.setMute(true);
+                player.seek(offset);
+                player.pause(true);
             } else if ((state == 'PLAYING') || (state == 'IDLE')) {
-                player.playlistItem(index).setMute(true).seek(offset).play(true);
+                player.playlistItem(index);
+                player.setMute(true);
+                player.seek(offset);
+                player.play(true);
             } else { //buffering
                 // player is not ready yet
             }
