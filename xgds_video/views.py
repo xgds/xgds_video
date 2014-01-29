@@ -40,7 +40,6 @@ def stopPyraptordServiceIfRunning(pyraptord, svcName):
     except zerorpc.RemoteError:
         pass
 
-
 # put a setting for the name of the function to call to generate extra text to insert in the form
 # and then add the name of the plrpExplorer.views.getFlightFromFeed (context function)  extraNoteFormDataFunction
 # feed has a source, look up active episode, (find episode with endtime of none) -- or use a known episode
