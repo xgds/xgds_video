@@ -47,7 +47,7 @@
 	<div style="float:left; text-align: left"><b>Live feed: {{ feed.name }}</b></div>
 	<div style="float:right; text-align: right; padding-bottom:3px;"><a class="mybutton" href="{% url xgds_video_live feed.shortName %}">New Window</a>&nbsp;&nbsp;
 		<a class="mybutton" href="{% url xgds_video_recorded %}?source={{ feed.source.shortName }}">Recorded</a></div>
-	{% include "xgds_video/video_notes.html" with data=form %}
+	{% include "xgds_video/video_notes.html" with data=form source=feed.source.shortName %}
 	<script language="javascript" type="text/javascript">
 	  $("#item{{ forloop.counter }}").css({"width":size[0],"height":size[1]+100}); 
 	  QT_WriteOBJECT('https://plrp.xgds.org/static/{{ feed.name }}Stream.mov',  '100%', /* feedHeight */'100%', '', 'AUTOPLAY',

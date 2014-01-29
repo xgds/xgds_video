@@ -20,46 +20,47 @@ var options = {
  */
   $(function() {
 
-        $('.noteSubmit').on('click', function(e) {
-                var parent = $(this).closest('form');
-                // validate and process form here
-                var index = parent.find('input#id_index').val();
-            var content = parent.find('input#id_content').val();
+	  $('.noteSubmit').on('click', function(e) {
+		  var parent = $(this).closest('form');
+		  // validate and process form here
+		  var content = parent.find('input#id_content').val();
+		  if (content == '') {
+			  parent.find('input#content').focus();
+			  return false;
+		  }
+		  var index = parent.find('input#id_index').val();
+		  var tagsId = 'input#id_tags' + index;
+		  var tags = parent.find(tagsId).val();
+		  var label = parent.find('select#id_label option:selected').val();
+		  var extras = parent.find('input#id_extras').val();
+		  var event_time = getPlayerVideoTime(parent.find('input#source').val())
+		  console.log(event_time)
 
-            var tagsId = 'input#id_tags' + index;
-            var tags = parent.find(tagsId).val();
-            var label = parent.find('select#id_label option:selected').val();
-            var extras = parent.find('input#id_extras').val();
+		  var dataString = 'content=' + content + '&label=' + label + '&tags=' + tags + '&extras=' + extras;
+		  $.ajax({
+			  type: 'POST',
+			  url: submitNoteUrl,
+			  data: dataString,
+			  complete: function() {
+				  //alert ('complete')
+				  parent.find('input#id_content').val('');
+				  parent.find('select#id_label').prop('selectedIndex', 0);
+				  parent.find(tagsId).importTags('');
+			  },
+			  success: function(response) {
+				  //alert ('success')
+				  parent.find('input#id_content').val('');
+				  parent.find('select#id_label').prop('selectedIndex', 0);
+				  parent.find(tagsId).importTags('');
+			  },
+			  error: function(resp) {
+				  console.log(resp);
+				  //alert(resp.getAllResponseHeaders());
+			  }
 
-             if (content == '') {
-                     parent.find('input#content').focus();
-                     return false;
-             }
-            var dataString = 'content=' + content + '&label=' + label + '&tags=' + tags + '&extras=' + extras;
-            $.ajax({
-              type: 'POST',
-              url: submitNoteUrl,
-              data: dataString,
-              complete: function() {
-                      //alert ('complete')
-                      parent.find('input#id_content').val('');
-                      parent.find('select#id_label').prop('selectedIndex', 0);
-                      parent.find(tagsId).importTags('');
-              },
-              success: function(response) {
-                      //alert ('success')
-              parent.find('input#id_content').val('');
-                      parent.find('select#id_label').prop('selectedIndex', 0);
-                      parent.find(tagsId).importTags('');
-              },
-              error: function(resp) {
-                      console.log(resp);
-                      //alert(resp.getAllResponseHeaders());
-              }
-
-            });
-            e.preventDefault();
-        });
+		  });
+		  e.preventDefault();
+	  });
   });
 /*
 
