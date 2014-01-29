@@ -183,14 +183,13 @@ function setupJWplayer() {
             var videoPaths = getFilePaths(episode, segments);
             var size = calculateSize(maxWidth, segments[0].settings.height,
                                          segments[0].settings.width);
-            console.log("file paths: ", videoPaths);
 
             jwplayer('myPlayer' + source.shortName).setup({
-                //height: size[1],
-            	aspectRatio: '16:9',
-                width: size[0],
                 file: videoPaths[0],
+            	//aspectratio: '16:9',
                 autostart: false,
+                width: maxWidth,
+                height: size[1],
                 mute: true,
                 controlbar: 'none',
                 skin: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/five/five.xml',
@@ -255,6 +254,25 @@ function uponSliderMove(event, ui) {
     $('#sliderTimeLabel').val(sliderTime.toTimeString());
 }
 
+/*
+ * Helper for returning current test site time from the jwplayer.
+ */
+function getPlayerVideoTime(source) {
+    var segments = displaySegments[source];
+    var player = jwplayer("myPlayer" + source);
+    var index = player.getPlaylistIndex(); //index of video segment it is currently playing
+    var offset = player.getPosition(); //in seconds
+
+    var totalPlayTime=0;
+    for (var i=0; i< index; i++){
+        totalPlayTime += segments[i].endTime.getTime() - segments[i].startTime.getTime(); //in miliseconds
+    }
+    totalPlayTime += (offset*1000);
+
+    var currentTime = segments[0].startTime.getTime() + totalPlayTime;
+    currentTime = new Date(currentTime);
+    return currentTime;
+}
 
 /**
  * Slider Callback:
