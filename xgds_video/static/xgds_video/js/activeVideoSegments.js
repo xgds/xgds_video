@@ -7,25 +7,27 @@ function setText(id, messageText) {
 }
 
 
-//helper to parse seektime into hours, minutes, seconds
+/**
+ * helper to parse seektime into hours, minutes, seconds
+ */
 function seekTimeParser(str) {
     var hmsArray = str.split(':');
     return hmsArray;
 }
 
 
+/**
+ * Helper for uponSliderStop.
+ * Given current time in javascript datetime,
+ * find the playlist item and the offset (seconds) to seek to.
+ */
 function getPlaylistIdxAndOffset(segments, currTime) {
-    /*
-     * Helper for uponSliderStop.
-     * Given current time in javascript datetime,
-     * find the playlist item and the offset (seconds) to seek to.
-     */
     var playlistIdx = 0;
     var offset = 0;
     for (var i = 0; i < segments.length; i++) {
         if ((currTime >= segments[i].startTime) && (currTime <= segments[i].endTime)) {
             playlistIdx = i;
-            offset = Math.round((currTime - segments[i].startTime)/1000); //in seconds
+            offset = Math.round((currTime - segments[i].startTime) / 1000); //in seconds
             return [playlistIdx, offset];
         }
     }
@@ -38,7 +40,7 @@ function getPlaylistIdxAndOffset(segments, currTime) {
  * Update the slider value, slider text
  * update the jwplayer position
  *    offset = seek time - video start time.
- **/
+ */
 function seekToTime() {
     var seekTimeStr = document.getElementById('seekTime').value;
 
@@ -61,14 +63,14 @@ function seekToTime() {
             if (getPlaylistIdxAndOffset(segments, seekDateTime)) { //if seek time falls under a playable range
                 var idx = getPlaylistIdxAndOffset(segments, seekDateTime)[0];
                 var offset = getPlaylistIdxAndOffset(segments, seekDateTime)[1];
-                
+
                 //update the player
-                jwplayer('myPlayer'+sourceName).playlistItem(idx).play(true);
-                jwplayer('myPlayer'+sourceName).seek(offset);
-                
+                jwplayer('myPlayer' + sourceName).playlistItem(idx).play(true);
+                jwplayer('myPlayer' + sourceName).seek(offset);
+
                 //update the slider
-                masterSlider.slider('value', Math.round(seekDateTime.getTime()/1000)); //increment slider value by one second
-                var sliderTime = new Date(masterSlider.slider('value')*1000);
+                masterSlider.slider('value', Math.round(seekDateTime.getTime() / 1000)); //increment slider value by one second
+                var sliderTime = new Date(masterSlider.slider('value') * 1000);
                 $('#sliderTimeLabel').val(sliderTime.toTimeString());
 
                 if (playFlag) {
@@ -84,7 +86,7 @@ function seekToTime() {
 
 /**
  * initialize master slider with range (episode start time->episode end time)
- **/
+ */
  //XXX slider legend : http://stackoverflow.com/questions/10224856/jquery-ui-slider-labels-under-slider
 function setupSlider() {
     if (episode) { //video episode needed to set slider range
@@ -111,7 +113,7 @@ function setupSlider() {
 
 /**
  * Callback function for play/pause button
- **/
+ */
 function playPauseButtonCallBack() {
     playFlag = !playFlag;
     if (playFlag) {
@@ -124,8 +126,8 @@ function playPauseButtonCallBack() {
                 var idx = getPlaylistIdxAndOffset(segments, currTime)[0];
                 var offset = getPlaylistIdxAndOffset(segments, currTime)[1];
                 if (player.getState() != 'BUFFERING') {
-                    player.playlistItem(idx);//.play(true);
-                    player.seek(offset);    
+                    player.playlistItem(idx);
+                    player.seek(offset);
                     player.play(true);
                 }
             }
@@ -152,10 +154,10 @@ function padNum(num, size) {
 }
 
 
+/**
+ * Helper that returns file paths of video segments with same source
+ */
 function getFilePaths(episode, segments) {
-    /*
-     * Helper that returns file paths of video segments with same source
-     */
     var filePaths = [];
     $.each(segments, function(id) {
         var segment = segments[id];
@@ -171,8 +173,7 @@ function getFilePaths(episode, segments) {
 
 /**
  * Initialize jw player and call update values
- **/
-
+ */
 function setupJWplayer() {
     if (episode) { //if episode exists
         var maxWidth = getMaxWidth(Object.keys(displaySegments).length);
@@ -186,7 +187,6 @@ function setupJWplayer() {
 
             jwplayer('myPlayer' + source.shortName).setup({
                 file: videoPaths[0],
-            	//aspectratio: '16:9',
                 autostart: false,
                 width: maxWidth,
                 height: size[1],
@@ -212,10 +212,10 @@ function setupJWplayer() {
                             for (var key in displaySegments) {
                                 var segments = displaySegments[key];
                                 var sourceName = segments[0].source.shortName;
-                                var player = jwplayer('myPlayer'+sourceName);
+                                var player = jwplayer('myPlayer' + sourceName);
                                 player.pause(true);
-                            }   
-                            document.getElementById("playbutton").className="fa fa-play fa-2x"
+                            }
+                            document.getElementById('playbutton').className = 'fa fa-play fa-2x';
                         }
                     },
                     onComplete: function() {
@@ -248,31 +248,33 @@ function setupJWplayer() {
 /**
  * Slider Callback:
  * update slider time text when moving slider.
- **/
+ */
 function uponSliderMove(event, ui) {
     var sliderTime = new Date(ui.value * 1000);
     $('#sliderTimeLabel').val(sliderTime.toTimeString());
 }
 
-/*
+
+/**
  * Helper for returning current test site time from the jwplayer.
  */
 function getPlayerVideoTime(source) {
     var segments = displaySegments[source];
-    var player = jwplayer("myPlayer" + source);
+    var player = jwplayer('myPlayer' + source);
     var index = player.getPlaylistIndex(); //index of video segment it is currently playing
     var offset = player.getPosition(); //in seconds
 
-    var totalPlayTime=0;
-    for (var i=0; i< index; i++){
+    var totalPlayTime = 0;
+    for (var i = 0; i < index; i++) {
         totalPlayTime += segments[i].endTime.getTime() - segments[i].startTime.getTime(); //in miliseconds
     }
-    totalPlayTime += (offset*1000);
+    totalPlayTime += (offset * 1000);
 
     var currentTime = segments[0].startTime.getTime() + totalPlayTime;
     currentTime = new Date(currentTime);
     return currentTime;
 }
+
 
 /**
  * Slider Callback:
@@ -280,7 +282,7 @@ function getPlayerVideoTime(source) {
  *    offset = slider position - each video's start time
  *    seek each video at offset. (means each video's offset will be different, but their test site time same)
  *    update the test site times to equal slider position.
- **/
+ */
 function uponSliderStop(event, ui) {
     var currTime = masterSlider.slider('value'); //in seconds
     currTime = new Date(currTime * 1000); //convert to javascript date
@@ -296,7 +298,7 @@ function uponSliderStop(event, ui) {
             var offset = getPlaylistIdxAndOffset(segments, currTime)[1];
             var state = player.getState();
             if (state == 'PAUSED') {
-                //XXX this doesn't pause properly
+                //XXX this doesn't pause properly XXX!!!
                 player.playlistItem(index);
                 player.setMute(true);
                 player.seek(offset);
@@ -310,14 +312,7 @@ function uponSliderStop(event, ui) {
                 // player is not ready yet
             }
 
-            //set testsite time for each player (get it from the player itself. this should match slider time)
-            var testSiteMiliSec = 0;
-            for (var s = 0; s < index; s++) {
-                testSiteMiliSec += segments[s].endTime.getTime() - segments[s].startTime.getTime();
-            }
-            testSiteMiliSec += (offset * 1000);
-            testSiteMiliSec += segments[0].startTime.getTime();
-            var testSiteTime = new Date(testSiteMiliSec);
+            var testSiteTime = getPlayerVideoTime(source.shortName);
             setText('testSiteTime' + source.shortName, testSiteTime.toString() + ' ' + segments[0].timeZone);
         } else {
             if (jwplayer('myPlayer' + source.shortName).getState() == 'PLAYING') {
@@ -328,27 +323,26 @@ function uponSliderStop(event, ui) {
 }
 
 
-/*
+/**
  * updateValues increments the slider every second (if the state is 'play').
  */
 function updateValues() {
     if (!playFlag) {
         return;
     }
-    
     //play the videos and update slider only if play flag is on.
     for (var key in displaySegments) {
         var segments = displaySegments[key];
         var sourceName = segments[0].source.shortName;
-        var datetime = new Date(masterSlider.slider('value')*1000);
+        var datetime = new Date(masterSlider.slider('value') * 1000);
 
-        if (playFlag){ 
-            if (jwplayer('myPlayer'+sourceName).getState() != 'PLAYING') {
-                if (getPlaylistIdxAndOffset(segments,datetime)) {
-                    var playlistIdx = getPlaylistIdxAndOffset(segments,datetime)[0];
-                    var itemOffset = getPlaylistIdxAndOffset(segments,datetime)[1];
-                    jwplayer('myPlayer'+sourceName).playlistItem(playlistIdx).play(true);
-                    jwplayer('myPlayer'+sourceName).seek(itemOffset);
+        if (playFlag) {
+            if (jwplayer('myPlayer' + sourceName).getState() != 'PLAYING') {
+                if (getPlaylistIdxAndOffset(segments, datetime)) {
+                    var playlistIdx = getPlaylistIdxAndOffset(segments, datetime)[0];
+                    var itemOffset = getPlaylistIdxAndOffset(segments, datetime)[1];
+                    jwplayer('myPlayer' + sourceName).playlistItem(playlistIdx).play(true);
+                    jwplayer('myPlayer' + sourceName).seek(itemOffset);
                 } else {
                     //no playable range, so pause it.
                     if (jwplayer('myPlayer' + sourceName).getState() == 'PLAYING') {
@@ -359,7 +353,7 @@ function updateValues() {
         }
 
         //update the player time stamp
-        setText('testSiteTime'+sourceName, datetime.toString()+' '+segments[0].timeZone);
+        setText('testSiteTime' + sourceName, datetime.toString() + ' ' + segments[0].timeZone);
     }
 
     // update the slider count.
@@ -372,4 +366,3 @@ function updateValues() {
     //recurse every second!
     setTimeout(updateValues, 1000);
 }
-
