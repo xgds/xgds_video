@@ -1,6 +1,17 @@
 var masterSlider = '';
 var playFlag = true;
 
+jQuery(function($){
+var windowWidth = $(window).width();
+
+$(window).resize(function() {
+    if(windowWidth != $(window).width()){
+    location.reload();
+    return;
+    }
+});
+});
+
 
 function setText(id, messageText) {
     document.getElementById(id).innerHTML = messageText;
@@ -84,6 +95,58 @@ function seekToTime() {
 }
 
 
+function get_random_color() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.round(Math.random() * 15)];
+    }
+    return color;
+}
+
+
+function createSliderLegend() {
+    for (var key in displaySegments) {
+        //construct a playlist from these video segments!
+        var segments = displaySegments[key]; //list of video segments with same source & episode
+        var source = segments[0].source;
+
+        //get the total slider range in seconds
+        var startTime = masterSlider.slider("option", "min");
+        var endTime = masterSlider.slider("option", "max");
+        var totalDuration = endTime - startTime;  // in seconds
+        var color = get_random_color();
+
+        //handle empty space infront of first segment
+        emptySegmentDuration = Math.round(segments[0].startTime / 1000) - startTime;
+        emptySegmentWidth = masterSlider.width() * (emptySegmentDuration / totalDuration);
+        masterSlider.before('<img class="'+source.shortName+'" width="' + emptySegmentWidth + '" height="5px" style="opacity:0.0;">');
+
+        //for each video segment
+        $.each(segments, function(id) {
+            var segment = segments[id];
+            var source = segment.source;
+            //get the duration of the =video segment
+            var segDuration = Math.round((segment.endTime - segment.startTime)/1000); //in seconds
+            var width = masterSlider.width() * (segDuration / totalDuration);            
+            
+            //draw the visualization
+            masterSlider.before('<img class="'+source.shortName+'" id=' + id + ' width="' + width + '" height="5px" style="background-color:'+color+';">');
+            var emptySegmentDuration;
+            var emptySegmentWidth;
+
+            if (segments[id+1]) { //if there is a next segment
+                var nextSegment = segments[id+1];
+                emptySegmentDuration = Math.round((nextSegment.startTime - segment.endTime) / 1000);
+                emptySegmentWidth = masterSlider.width() * (emptySegmentDuration / totalDuration);
+                masterSlider.before('<img class="'+source.shortName+'" width="' + emptySegmentWidth + '" height="5px" style="opacity:0.0;">');
+            }
+        });
+        //wrap segments of each source in a div
+        $( "."+source.shortName ).wrapAll( '<div class="divider";"></div>');
+    }
+}
+
 /**
  * initialize master slider with range (episode start time->episode end time)
  */
@@ -98,10 +161,11 @@ function setupSlider() {
                 max: Math.ceil(endTime.getTime() / 1000), //in seconds
                 stop: uponSliderStop,
                 slide: uponSliderMove,
-                range: 'min'
+                range: 'min' 
             });
             var sliderTime = new Date($('#masterSlider').slider('value') * 1000);
             $('#sliderTimeLabel').val(sliderTime.toTimeString());
+            createSliderLegend();
         } else {
             alert('The end time of video segment not available. Cannot setup slider');
         }
@@ -184,7 +248,6 @@ function setupJWplayer() {
             var videoPaths = getFilePaths(episode, segments);
             var size = calculateSize(maxWidth, segments[0].settings.height,
                                          segments[0].settings.width);
-
             jwplayer('myPlayer' + source.shortName).setup({
                 file: videoPaths[0],
                 autostart: false,
@@ -223,10 +286,11 @@ function setupJWplayer() {
                         jwplayer('myPlayer' + source.shortName).pause(true);
                     }
                 },
+                /*
                 listbar: { //this list bar is just for debug
                     position: 'right',
                     size: 120
-                }
+                }*/
             });
 
             var playlist = [];

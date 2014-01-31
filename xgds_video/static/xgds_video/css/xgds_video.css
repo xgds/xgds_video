@@ -59,7 +59,7 @@ div.tagsinput[style]{
 
 #masterSlider {
     width:70%;
-    margin-top:5px;
+    margin-top:12px;
     margin-bottom:5px;
     margin-right:15px;
     float:left;
@@ -105,4 +105,17 @@ div.tagsinput[style]{
     border-width:2px; 
     border-style:solid;
     box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.divider {
+    clear: both;
+    padding: 0px;
+}
+
+.divider hr {
+}
+
+.hr {
+    float: left;
+    height: 4px;
 }
