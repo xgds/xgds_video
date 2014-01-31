@@ -25,4 +25,6 @@ XGDS_VIDEO_TIME_ZONE = {'name': 'Pacific', 'code': 'America/Los_Angeles'}
 XGDS_VIDEO_NOTE_EXTRAS_FUNCTION = None
 
 ZEROMQ_PORTS = 'path to ports.json file -- set this in siteSettings.py'
-RECORDED_VIDEO_URL_BASE = "http://10.0.3.15/data/"
+
+# set this in siteSettings.py example: DATA_URL
+RECORDED_VIDEO_URL_BASE = None

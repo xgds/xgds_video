@@ -38,11 +38,9 @@ var options = {
 		  // not live, pull the time out of the video
 		  if (isLive == false) {
 			  var event_time = getPlayerVideoTime(parent.find('input#source').val())
-//			  console.log(event_time)
 			  var iso_string = event_time.toISOString();
 			  iso_string = iso_string.replace("T"," ");
 			  iso_string = iso_string.substring(0, 19);
-//			  console.log(iso_string);
 			  dataString = dataString + '&event_time=' + iso_string;
 		  }
 		  
