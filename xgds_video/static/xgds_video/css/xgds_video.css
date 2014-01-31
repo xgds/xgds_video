@@ -79,15 +79,15 @@ div.tagsinput[style]{
 	float:left;
 }
 
-#toprow-left{
+.toprow-left{
     float:left;
 }
 
-#toprow-right{
+.toprow-right{
     float:right;
 }
 
-#buttons{
+.buttons{
     display:block;
 }
 
