@@ -2,9 +2,7 @@
 var g_masterSlider = '';
 var g_playFlag = true;
 var g_initialState = true;
-
-var g_seekFlag = false;
-var g_seekOffsetList = {}; 
+var g_seekOffsetList = {};
 
 /***************************
            Helpers
@@ -22,8 +20,10 @@ var windowWidth = $(window).width();
 
 
 //checks if json dict is empty
-function isEmpty(ob){
-   for(var i in ob){ return false;}
+function isEmpty(ob) {
+  for (var i in ob) {
+    return false;
+  }
   return true;
 }
 
@@ -40,6 +40,7 @@ function seekTimeParser(str) {
     var hmsArray = str.split(':');
     return hmsArray;
 }
+
 
 function padNum(num, size) {
     var s = num + '';
@@ -105,20 +106,15 @@ function seekToOffset(currTime, sourceName) {
         if ((currTime >= segments[i].startTime) && (currTime <= segments[i].endTime)) {
             playlistIdx = i;
             offset = Math.round((currTime - segments[i].startTime) / 1000); //in seconds
-            
             //seek later (onPlay). Otherwise it won't work.
-            g_seekFlag = true;
-            g_seekOffsetList[sourceName] = offset  
-
+            g_seekOffsetList[sourceName] = offset;
             break;
         }
     }
-   
-    var player = jwplayer('myPlayer'+sourceName);
+    var player = jwplayer('myPlayer' + sourceName);
     if ((playlistIdx != null) && (offset != null)) { //currTime falls in one of the segments.
         //update the player
         player.playlistItem(playlistIdx);
-    
         if (g_playFlag) {
             player.play(true);
         } else {
@@ -141,7 +137,7 @@ function getNextAvailableSegment(currentTime) {
         var segments = displaySegments[key];
         sources.push(segments[0].source.shortName);
         for (var id in segments) {
-            var segment = segments[id]; 
+            var segment = segments[id];
             var delta = segment.startTime - currentTime;
 
             if ((delta < minDelta) && (delta >= 0)) {
@@ -150,7 +146,6 @@ function getNextAvailableSegment(currentTime) {
             }
         }
     }
-    
     if (nearestSeg == null) {
         return currentTime;
     } else {
@@ -180,26 +175,25 @@ function getPlayerVideoTime(source) {
 }
 
 
-/** 
+/**
  * Helper that returns slowest time among all players in 'PLAYING' state.
  * If none are in 'PLAYING' state, it gets the nearest segment start time.
  */
 function getUpdateTime() {
-    //get the current time from the segment that is playing.        
+    //get the current time from the segment that is playing.
     var earliestPlayerTime = Number.MAX_VALUE;
- 
+
     for (var key in displaySegments) { //for each source
         var segments = displaySegments[key];
         var sourceName = segments[0].source.shortName;
-        var state = jwplayer('myPlayer'+sourceName).getState();
+        var state = jwplayer('myPlayer' + sourceName).getState();
 
         if (state == 'PLAYING') {
             if (getPlayerVideoTime(sourceName) < earliestPlayerTime) {
                 earliestPlayerTime = getPlayerVideoTime(sourceName);
             }
-        } 
-    }
-    
+        }
+    } 
     var updateTime = null;
     if (earliestPlayerTime == Number.MAX_VALUE) { //none of the players were in 'PLAYING' state.
         var prevTime = new Date(g_masterSlider.slider('value') * 1000);
@@ -245,12 +239,12 @@ function createSliderLegend() {
 
             //draw the visualization
             g_masterSlider.before('<img class="' + source.shortName + '" id=' + id + ' width="' + width +
-                                '" height="5px" style="background-color:'+color+';">');
+                                '" height="5px" style="background-color:' + color + ';">');
             var emptySegmentDuration;
             var emptySegmentWidth;
 
             if (segments[id + 1]) { //if there is a next segment
-                var nextSegment = segments[id+1];
+                var nextSegment = segments[id + 1];
                 emptySegmentDuration = Math.round((nextSegment.startTime - segment.endTime) / 1000);
                 emptySegmentWidth = g_masterSlider.width() * (emptySegmentDuration / totalDuration);
                 g_masterSlider.before('<img class="' + source.shortName + '" width="' + emptySegmentWidth +
@@ -258,7 +252,7 @@ function createSliderLegend() {
             }
         });
         //wrap segments of each source in a div
-        $('.'+source.shortName ).wrapAll( '<div class="divider";"></div>');
+        $('.' + source.shortName ).wrapAll( '<div class="divider";"></div>');
     }
 }
 
@@ -289,6 +283,21 @@ function setupSlider() {
     }
 }
 
+/**
+ * Only called once onReady. Kickstarts the player with earliest starttime.
+ */
+
+function playFirstSegment() {
+    for (var key in displaySegments) {
+        var segments = displaySegments[key];
+        var sourceName = segments[0].source.shortName;
+
+        if (firstSegment.startTime == segments[0].startTime) {
+            jwplayer('myPlayer' + sourceName).play(true);
+        }
+    }
+}
+
 
 /**
  * Initialize jw player and call update values
@@ -314,10 +323,7 @@ function setupJWplayer() {
                 events: {
                     onReady: function() {
                         //if it's the first segment, it should start playing.
-                        if (firstSegment.startTime == segments[0].startTime) {
-                            jwplayer('myPlayer' + source.shortName).play(true);
-                            //updateValues();
-                        }
+                       playFirstSegment();
                     },
                     onBuffer: function(e) {
                         if ((e.oldstate == 'PLAYING') || (e.oldstate == 'PAUSED')) {
@@ -340,22 +346,21 @@ function setupJWplayer() {
                         //upon complete, stop. It should start segment at the right time (in updateValues).
                         jwplayer('myPlayer' + source.shortName).pause(true);
                     },
-                    onPlay: function(e) {
+                    onPlay: function(e) { //gets called per source
                         if (g_initialState) {
                             updateValues();
                             g_initialState = false;
                         }
-                        if (g_seekFlag) {
-                            if (!isEmpty(g_seekOffsetList)) {
-                                for (var source in g_seekOffsetList) {
-                                    jwplayer('myPlayer'+source).seek(g_seekOffsetList[source]);
-                                    delete g_seekOffsetList[source];
+                        if (!isEmpty(g_seekOffsetList)) {
+                            for (var keySource in g_seekOffsetList) {
+                                if (jwplayer('myPlayer' + keySource).getState != 'BUFFERING') {
+                                    jwplayer('myPlayer' + keySource).seek(g_seekOffsetList[keySource]);
+                                    delete g_seekOffsetList[keySource];
                                 }
-                            }
-                            g_seekFlag = false;
+                            } 
                         }
                     }
-                }, 
+                },
                 listbar: {
                 position: 'right',
                 size: 150
@@ -406,7 +411,7 @@ function seekCallBack() {
         var player = jwplayer('myPlayer' + sourceName);
         if (player != undefined) {
             seekToOffset(seekDateTime,sourceName);
-            setPlayerTimeLabel(getPlayerVideoTime(sourceName),sourceName);
+            setPlayerTimeLabel(getPlayerVideoTime(sourceName), sourceName);
         }
     }
     if (seekDateTime != null) {
@@ -470,34 +475,45 @@ function uponSliderStopCallBack(event, ui) {
  * updateValues increments the slider every second (if the state is 'play').
  */
 function updateValues() {
-    if (g_playFlag == true) { 
+    if (g_playFlag == true) {
         var updateTime = getUpdateTime();
-        var udpateSliderTime = true;
-
+        var isBuffering = false;
+        var sourceList = [];
+    
         //update players
         for (var key in displaySegments) { //for each source
             var segments = displaySegments[key];
             var sourceName = segments[0].source.shortName;
             var state = jwplayer('myPlayer'+sourceName).getState();
+            sourceList.push(sourceName);
+
             if (state == 'PLAYING') {
                 //No op
                 var testSiteTime = getPlayerVideoTime(sourceName);
                 setText('testSiteTime' + sourceName, testSiteTime.toString());
-            } else if (state == 'PAUSED') {
-                //it is in between segments. don't do anything. 
-            } else if (state == 'IDLE') {
+            } else if ((state == 'PAUSED') || (state == 'IDLE')) {
                 seekToOffset(updateTime, sourceName);
                 setPlayerTimeLabel(getPlayerVideoTime(sourceName), sourceName);
             } else if (state == 'BUFFERING') {
-                updateSliderTime = false; //XXX don't udpate the time, and don't do anything.
-            } 
-            else { //undefined
+                isBuffering = true; //don't update the time. just let it buffer.
+                //XXX may need to handle case when buffering
+            } else { //undefined
                 //No op
             }
         }
 
-        //update slider
-        if (updateSliderTime) {
+        if (isBuffering) {
+            //pause all players.
+            for (var i in sourceList) {
+                var sourceName = sourceList[i];
+                var player = jwplayer('myPlayer' + sourceName);
+                var state = player.getState();
+                if (state == 'PLAYING') {
+                    player.pause(true);   
+                }
+            }
+        } else {
+            //update slider
             setSliderTime(updateTime);
         }
 
@@ -505,9 +521,9 @@ function updateValues() {
         for (var key in displaySegments) {
             var segments = displaySegments[key];
             var sourceName = segments[0].source.shortName;
-            var state = jwplayer('myPlayer'+sourceName).getState();
+            var state = jwplayer('myPlayer' + sourceName).getState();
             if (state == 'PLAYING') {
-                jwplayer('myPlayer'+sourceName).pause(true);
+                jwplayer('myPlayer' + sourceName).pause(true);
             }
         }
     }
