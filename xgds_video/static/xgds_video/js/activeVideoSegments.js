@@ -179,6 +179,7 @@ function getPlayerVideoTime(source) {
     return currentTime;
 }
 
+
 /** 
  * Helper that returns slowest time among all players in 'PLAYING' state.
  * If none are in 'PLAYING' state, it gets the nearest segment start time.
@@ -260,6 +261,7 @@ function createSliderLegend() {
         $('.'+source.shortName ).wrapAll( '<div class="divider";"></div>');
     }
 }
+
 
 /**
  * initialize master slider with range (episode start time->episode end time)
@@ -347,9 +349,9 @@ function setupJWplayer() {
                             if (!isEmpty(g_seekOffsetList)) {
                                 for (var source in g_seekOffsetList) {
                                     jwplayer('myPlayer'+source).seek(g_seekOffsetList[source]);
+                                    delete g_seekOffsetList[source];
                                 }
                             }
-                            g_seekOffsetList = {};
                             g_seekFlag = false;
                         }
                     }
@@ -387,11 +389,9 @@ function setupJWplayer() {
  */
 function seekCallBack() {
     var seekTimeStr = document.getElementById('seekTime').value;
-
     if ((seekTimeStr == null) || (Object.keys(displaySegments).length < 1)) {
         return;
     }
-
     var seekDateTime = null;
     for (var key in displaySegments) {
         var segments = displaySegments[key];
