@@ -1,6 +1,10 @@
-var masterSlider = '';
-var playFlag = true;
+//globals. There are more in the template.
+var g_masterSlider = '';
+var g_playFlag = true;
+var g_initialState = true;
 
+var g_seekFlag = false;
+var g_seekOffsetList = {}; 
 
 /***************************
            Helpers
@@ -15,6 +19,13 @@ var windowWidth = $(window).width();
         }
     });
 });
+
+
+//checks if json dict is empty
+function isEmpty(ob){
+   for(var i in ob){ return false;}
+  return true;
+}
 
 
 function setText(id, messageText) {
@@ -56,6 +67,7 @@ function getFilePaths(episode, segments) {
 }
 
 
+//TODO: get the color from either the vehicle or the source. Need to add color column to the model
 function getRandomColor() {
     var letters = '0123456789ABCDEF'.split('');
     var color = '#';
@@ -63,6 +75,19 @@ function getRandomColor() {
         color += letters[Math.round(Math.random() * 15)];
     }
     return color;
+}
+
+
+function setSliderTime(datetime) {
+    //update the slider
+    g_masterSlider.slider('value', Math.round(datetime.getTime() / 1000));
+    $('#sliderTimeLabel').val(datetime.toTimeString());
+}
+
+
+function setPlayerTimeLabel(datetime, sourceName) {
+    //set test site time of the player
+    setText('testSiteTime' + sourceName, datetime.toString());
 }
 
 
@@ -80,40 +105,34 @@ function seekToOffset(currTime, sourceName) {
         if ((currTime >= segments[i].startTime) && (currTime <= segments[i].endTime)) {
             playlistIdx = i;
             offset = Math.round((currTime - segments[i].startTime) / 1000); //in seconds
+            
+            //seek later (onPlay). Otherwise it won't work.
+            g_seekFlag = true;
+            g_seekOffsetList[sourceName] = offset  
+
             break;
         }
     }
    
     var player = jwplayer('myPlayer'+sourceName);
     if ((playlistIdx != null) && (offset != null)) { //currTime falls in one of the segments.
-        if (player.getState() != 'BUFFERING') {
-            //update the player
-            player.playlistItem(playlistIdx).play(true);
-            player.seek(offset);
-
-            //set test site time of the player
-            var testSiteTime = getPlayerVideoTime(sourceName);
-            setText('testSiteTime' + sourceName, currTime.toString() + ' ' + segments[0].timeZone);
-
-            //update the slider //XXX this is going to get called for each source. Don't do that. call it once.
-            masterSlider.slider('value', Math.round(currTime.getTime() / 1000));
-            var sliderTime = new Date(masterSlider.slider('value') * 1000);
-            $('#sliderTimeLabel').val(sliderTime.toTimeString());
-
-            if (playFlag) {
-                player.play(true);
-            } else {
-                player.pause(true);
-            }
+        //update the player
+        player.playlistItem(playlistIdx);
+    
+        if (g_playFlag) {
+            player.play(true);
+        } else {
+            player.pause(true);
         }
     } else { //current time is not in the playable range.
         //pause the player
         player.pause(true);
+        return;
     }
 }
 
 
-function jumpToNearestSegment(currentTime) {
+function getNextAvailableSegment(currentTime) {
     var nearestSeg = null;
     var minDelta = Number.MAX_VALUE;
     var sources = [];
@@ -121,18 +140,22 @@ function jumpToNearestSegment(currentTime) {
     for (var key in displaySegments) {
         var segments = displaySegments[key];
         sources.push(segments[0].source.shortName);
-        $.each(segments, function(id) {
+        for (var id in segments) {
             var segment = segments[id]; 
-            var delta = Math.abs(currentTime - segment.startTime);
+            var delta = segment.startTime - currentTime;
 
-            if (delta < minDelta) {
+            if ((delta < minDelta) && (delta >= 0)) {
                 minDelta = delta;
                 nearestSeg = segment;
             }
-        });
+        }
     }
-
-    return nearestSeg.startTime; // need to seek to this time.
+    
+    if (nearestSeg == null) {
+        return currentTime;
+    } else {
+        return nearestSeg.startTime; // need to seek to this time.
+    }
 }
 
 
@@ -157,15 +180,33 @@ function getPlayerVideoTime(source) {
 }
 
 /** 
- * Helper that returns slowest time given list of javascript datetimes.
+ * Helper that returns slowest time among all players in 'PLAYING' state.
+ * If none are in 'PLAYING' state, it gets the nearest segment start time.
  */
-function getEarliestTime(dateTimes) {
-    dateTimes.sort(function(a, b){
-        return Date.parse(a) - Date.parse(b);
-    });
+function getUpdateTime() {
+    //get the current time from the segment that is playing.        
+    var earliestPlayerTime = Number.MAX_VALUE;
+ 
+    for (var key in displaySegments) { //for each source
+        var segments = displaySegments[key];
+        var sourceName = segments[0].source.shortName;
+        var state = jwplayer('myPlayer'+sourceName).getState();
 
-    return dateTimes[0];
-
+        if (state == 'PLAYING') {
+            if (getPlayerVideoTime(sourceName) < earliestPlayerTime) {
+                earliestPlayerTime = getPlayerVideoTime(sourceName);
+            }
+        } 
+    }
+    
+    var updateTime = null;
+    if (earliestPlayerTime == Number.MAX_VALUE) { //none of the players were in 'PLAYING' state.
+        var prevTime = new Date(g_masterSlider.slider('value') * 1000);
+        updateTime = getNextAvailableSegment(prevTime);
+    } else { //at least one player was in 'PLAYING' state
+        updateTime = earliestPlayerTime;
+    }
+    return updateTime;
 }
 
 
@@ -183,15 +224,15 @@ function createSliderLegend() {
         var source = segments[0].source;
 
         //get the total slider range in seconds
-        var startTime = masterSlider.slider('option', 'min');
-        var endTime = masterSlider.slider('option', 'max');
+        var startTime = g_masterSlider.slider('option', 'min');
+        var endTime = g_masterSlider.slider('option', 'max');
         var totalDuration = endTime - startTime;  // in seconds
         var color = getRandomColor();
 
         //handle empty space infront of first segment
         emptySegmentDuration = Math.round(segments[0].startTime / 1000) - startTime;
-        emptySegmentWidth = masterSlider.width() * (emptySegmentDuration / totalDuration);
-        masterSlider.before('<img class="' + source.shortName + '" width="' + emptySegmentWidth + '" height="5px" style="opacity:0.0;">');
+        emptySegmentWidth = g_masterSlider.width() * (emptySegmentDuration / totalDuration);
+        g_masterSlider.before('<img class="' + source.shortName + '" width="' + emptySegmentWidth + '" height="5px" style="opacity:0.0;">');
 
         //for each video segment
         $.each(segments, function(id) {
@@ -199,10 +240,10 @@ function createSliderLegend() {
             var source = segment.source;
             //get the duration of the =video segment
             var segDuration = Math.round((segment.endTime - segment.startTime) / 1000); //in seconds
-            var width = masterSlider.width() * (segDuration / totalDuration);
+            var width = g_masterSlider.width() * (segDuration / totalDuration);
 
             //draw the visualization
-            masterSlider.before('<img class="' + source.shortName + '" id=' + id + ' width="' + width +
+            g_masterSlider.before('<img class="' + source.shortName + '" id=' + id + ' width="' + width +
                                 '" height="5px" style="background-color:'+color+';">');
             var emptySegmentDuration;
             var emptySegmentWidth;
@@ -210,8 +251,8 @@ function createSliderLegend() {
             if (segments[id + 1]) { //if there is a next segment
                 var nextSegment = segments[id+1];
                 emptySegmentDuration = Math.round((nextSegment.startTime - segment.endTime) / 1000);
-                emptySegmentWidth = masterSlider.width() * (emptySegmentDuration / totalDuration);
-                masterSlider.before('<img class="' + source.shortName + '" width="' + emptySegmentWidth +
+                emptySegmentWidth = g_masterSlider.width() * (emptySegmentDuration / totalDuration);
+                g_masterSlider.before('<img class="' + source.shortName + '" width="' + emptySegmentWidth +
                                     '" height="5px" style="opacity:0.0;">');
             }
         });
@@ -227,7 +268,7 @@ function setupSlider() {
     if (episode) { //video episode needed to set slider range
         var endTime = (episode.endTime) ? episode.endTime : lastSegment.endTime;
         if (endTime) {
-            masterSlider = $('#masterSlider').slider({
+            g_masterSlider = $('#masterSlider').slider({
                 step: 1,
                 min: Math.floor(firstSegment.startTime.getTime() / 1000), //in seconds
                 max: Math.ceil(endTime.getTime() / 1000), //in seconds
@@ -273,7 +314,7 @@ function setupJWplayer() {
                         //if it's the first segment, it should start playing.
                         if (firstSegment.startTime == segments[0].startTime) {
                             jwplayer('myPlayer' + source.shortName).play(true);
-                            updateValues();
+                            //updateValues();
                         }
                     },
                     onBuffer: function(e) {
@@ -296,8 +337,27 @@ function setupJWplayer() {
                     onComplete: function() {
                         //upon complete, stop. It should start segment at the right time (in updateValues).
                         jwplayer('myPlayer' + source.shortName).pause(true);
+                    },
+                    onPlay: function(e) {
+                        if (g_initialState) {
+                            updateValues();
+                            g_initialState = false;
+                        }
+                        if (g_seekFlag) {
+                            if (!isEmpty(g_seekOffsetList)) {
+                                for (var source in g_seekOffsetList) {
+                                    jwplayer('myPlayer'+source).seek(g_seekOffsetList[source]);
+                                }
+                            }
+                            g_seekOffsetList = {};
+                            g_seekFlag = false;
+                        }
                     }
-                }
+                }, 
+                listbar: {
+                position: 'right',
+                size: 150
+                },
             });
 
             var playlist = [];
@@ -332,12 +392,13 @@ function seekCallBack() {
         return;
     }
 
+    var seekDateTime = null;
     for (var key in displaySegments) {
         var segments = displaySegments[key];
         var sourceName = segments[0].source.shortName;
 
         var seekTime = seekTimeParser(seekTimeStr);
-        var seekDateTime = new Date(segments[0].endTime); //XXX for now assume seek time's date is same as first segment's end date
+        seekDateTime = new Date(segments[0].endTime); //XXX for now assume seek time's date is same as first segment's end date
         seekDateTime.setHours(parseInt(seekTime[0]));
         seekDateTime.setMinutes(parseInt(seekTime[1]));
         seekDateTime.setSeconds(parseInt(seekTime[2]));
@@ -345,7 +406,11 @@ function seekCallBack() {
         var player = jwplayer('myPlayer' + sourceName);
         if (player != undefined) {
             seekToOffset(seekDateTime,sourceName);
+            setPlayerTimeLabel(getPlayerVideoTime(sourceName),sourceName);
         }
+    }
+    if (seekDateTime != null) {
+        setSliderTime(seekDateTime);
     }
 }
 
@@ -354,19 +419,21 @@ function seekCallBack() {
  * Callback function for play/pause button
  */
 function playPauseButtonCallBack() {
-    playFlag = !playFlag;
-    if (playFlag) {
+    g_playFlag = !g_playFlag;
+    if (g_playFlag) {
         document.getElementById('playbutton').className = 'fa fa-pause fa-2x';
     } else {
         document.getElementById('playbutton').className = 'fa fa-play fa-2x';
     }
 
-    var currTime = new Date(masterSlider.slider('value') * 1000);
+    var currTime = new Date(g_masterSlider.slider('value') * 1000);
     for (var key in displaySegments) {
         var segments = displaySegments[key];
         var sourceName = segments[0].source.shortName;
         seekToOffset(currTime, sourceName);
+        setPlayerTimeLabel(getPlayerVideoTime(sourceName), sourceName);
     }
+    setSliderTime(currTime);
 }
 
 
@@ -380,7 +447,6 @@ function uponSliderMoveCallBack(event, ui) {
 }
 
 
-
 /**
  * Slider Callback:
  *    get the current slider position and do
@@ -389,14 +455,13 @@ function uponSliderMoveCallBack(event, ui) {
  *    update the test site times to equal slider position.
  */
 function uponSliderStopCallBack(event, ui) {
-    var currTime = masterSlider.slider('value'); //in seconds
+    var currTime = g_masterSlider.slider('value'); //in seconds
     currTime = new Date(currTime * 1000); //convert to javascript date
 
     for (var key in displaySegments) {
-        var segments = displaySegments[key];
-        var source = segments[0].source;
-        var player = jwplayer('myPlayer' + source.shortName);
-        seekToOffset(currTime, source.shortName);
+        var sourceName = displaySegments[key][0].source.shortName;
+        seekToOffset(currTime, sourceName);
+        setPlayerTimeLabel(getPlayerVideoTime(sourceName), sourceName);
     }
 }
 
@@ -405,75 +470,43 @@ function uponSliderStopCallBack(event, ui) {
  * updateValues increments the slider every second (if the state is 'play').
  */
 function updateValues() {
-    if (playFlag == true) {
-        //get the current time from the segment that is playing.
-        var currentVideoTimes = [];
-        var idleSources = []; //list of sources that are idle.
+    if (g_playFlag == true) { 
+        var updateTime = getUpdateTime();
+        var udpateSliderTime = true;
+
+        //update players
         for (var key in displaySegments) { //for each source
             var segments = displaySegments[key];
             var sourceName = segments[0].source.shortName;
             var state = jwplayer('myPlayer'+sourceName).getState();
-            console.log("state of "+sourceName+" is "+state);
-
             if (state == 'PLAYING') {
-                currentVideoTimes.push(getPlayerVideoTime(sourceName)); 
-            } /*else if ((state == 'BUFFERING') || (state == undefined)) {
-                //if one of the players is buffering or undefined, pause all players and don't update the slider time.
-                for (var key2 in displaySegments) {
-                    var sourceName2 = displaySegments[key2][0].source.shortName;
-                    var player = jwplayer('myPlayer'+sourceName2);
-                    if (player.getState() == 'PLAYING') {
-                        player.pause(true);
-                    }
-                }
-                setText('testSiteTime'+sourceName, "the state of this player is: "+state);
-                
-                //recurse every second!
-                setTimeout(updateValues, 1000);
-                return;
-            } */ else if (state == 'IDLE') {
-                idleSources.push(sourceName);
-            }
-
-            //update player time stamp
-            var testSiteTime = getPlayerVideoTime(sourceName);
-            setText('testSiteTime' + sourceName, testSiteTime.toString() + ' ' + segments[0].timeZone);
-        }
-        var sliderTime = null;
-        //if some players are currently playing, grab the earliest time and update the master slider to that time.
-        if (currentVideoTimes.length != 0) {
-            sliderTime = getEarliestTime(currentVideoTimes);
-              
-            //if some videos are idle, wake them up.
-            for (var id in idleSources) {
-                //are they still idle at this point? 
-                var idleSource = idleSources[id];
-                if (jwplayer('myPlayer'+ idleSource).getState() == 'IDLE') {
-                    seekToOffset(sliderTime,idleSource);
-                }
-            }
-        } else { //all players are paused (in btw segments)
-            var prevTime = new Date(masterSlider.slider('value') * 1000);
-            sliderTime = jumpToNearestSegment(prevTime); 
-           
-            //make all videos seek to SliderTime
-            for (var key in displaySegments) {
-                var segments2 = displaySegments[key];
-                var sourceName3 = segments2[0].source.shortName;
-                seekToOffset(sliderTime, sourceName3);
+                //No op
+                var testSiteTime = getPlayerVideoTime(sourceName);
+                setText('testSiteTime' + sourceName, testSiteTime.toString());
+            } else if (state == 'PAUSED') {
+                //it is in between segments. don't do anything. 
+            } else if (state == 'IDLE') {
+                seekToOffset(updateTime, sourceName);
+                setPlayerTimeLabel(getPlayerVideoTime(sourceName), sourceName);
+            } else if (state == 'BUFFERING') {
+                updateSliderTime = false; //XXX don't udpate the time, and don't do anything.
+            } 
+            else { //undefined
+                //No op
             }
         }
 
-        //update the master slider value and time.
-        masterSlider.slider('value', Math.round(sliderTime.getTime() / 1000));
-        $('#sliderTimeLabel').val(sliderTime.toTimeString());
-    } else { //playFlag == false
-        //all videos should be paused
+        //update slider
+        if (updateSliderTime) {
+            setSliderTime(updateTime);
+        }
+
+    } else { //g_playFlag == false
         for (var key in displaySegments) {
             var segments = displaySegments[key];
-            var sourceName = segmetns[0].source.shortName;
+            var sourceName = segments[0].source.shortName;
             var state = jwplayer('myPlayer'+sourceName).getState();
-            if (state != 'PAUSED') {
+            if (state == 'PLAYING') {
                 jwplayer('myPlayer'+sourceName).pause(true);
             }
         }
@@ -481,4 +514,4 @@ function updateValues() {
 
     //recurse every second!
     setTimeout(updateValues, 1000);
-}
+} 
