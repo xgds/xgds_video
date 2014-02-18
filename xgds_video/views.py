@@ -148,7 +148,7 @@ def displayEpisodeRecordedVideo(request):
     sourcesWithVideo = []
     if episode:
         segmentsDict = {}  # dictionary of segments in JSON
-        index = 0 
+        index = 0
         for source in sources:
             found = getSegments(source, episode)
             if found:
@@ -159,10 +159,10 @@ def displayEpisodeRecordedVideo(request):
                 form.source = source
                 form.fields["source"] = source
                 form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
-                source.form = form 
+                source.form = form
                 sourcesWithVideo.append(source)
                 index = index + 1
-   
+
         segmentsJson = "null"
         episodeJson = "null"
         if segmentsDict:
