@@ -1,8 +1,10 @@
-//globals. There are more in the template.
-var g_masterSlider = '';
-var g_playFlag = true;
-var g_initialState = true;
-var g_seekOffsetList = {};
+//globals
+var xgds_video = { masterSlider: '',
+                   playFlag: true,
+                   initialState: true,
+                   seekOffsetList: {},
+                   playerTime: null,
+                   playerSource: null };
 
 /***************************
            Helpers
@@ -68,7 +70,7 @@ function getFilePaths(episode, segments) {
 }
 
 
-//TODO: get the color from either the vehicle or the source. Need to add color column to the model
+//XXX: get the color from either the vehicle or the source. Need to add color column to the model
 function getRandomColor() {
     var letters = '0123456789ABCDEF'.split('');
     var color = '#';
@@ -81,7 +83,7 @@ function getRandomColor() {
 
 function setSliderTime(datetime) {
     //update the slider
-    g_masterSlider.slider('value', Math.round(datetime.getTime() / 1000));
+    xgds_video.masterSlider.slider('value', Math.round(datetime.getTime() / 1000));
     $('#sliderTimeLabel').val(datetime.toTimeString());
 }
 
@@ -93,12 +95,9 @@ function setPlayerTimeLabel(datetime, sourceName) {
 
 
 /**
- * Helper
- * Given current time in javascript datetime,
- * find the playlist item and the offset (seconds) and seek to there.
+ * find the playlist item index and offset the current time falls under for this player.
  */
-function seekToOffset(currTime, sourceName) {
-    //find the playlist item index and offset the current time falls under for this player.
+function getPlaylistIdxAndOffset(currTime, sourceName) {
     var playlistIdx = null;
     var offset = null;
     var segments = displaySegments[sourceName];
@@ -106,16 +105,26 @@ function seekToOffset(currTime, sourceName) {
         if ((currTime >= segments[i].startTime) && (currTime <= segments[i].endTime)) {
             playlistIdx = i;
             offset = Math.round((currTime - segments[i].startTime) / 1000); //in seconds
-            //seek later (onPlay). Otherwise it won't work.
-            g_seekOffsetList[sourceName] = offset;
             break;
         }
     }
+    return {index: playlistIdx, offset: offset};
+}
+
+
+/**
+ * Given current time in javascript datetime,
+ * find the playlist item and the offset (seconds) and seek to there.
+ */
+function jumpToPosition(currTime, sourceName) {
+    var seekValues = getPlaylistIdxAndOffset(currTime, sourceName);
     var player = jwplayer('myPlayer' + sourceName);
-    if ((playlistIdx != null) && (offset != null)) { //currTime falls in one of the segments.
+    if ((seekValues.index != null) && (seekValues.offset != null)) { //currTime falls in one of the segments.
         //update the player
-        player.playlistItem(playlistIdx);
-        if (g_playFlag) {
+        player.playlistItem(seekValues.index);
+        //seek later (onPlay). Otherwise it won't work.
+        xgds_video.seekOffsetList[sourceName] = seekValues;
+        if (xgds_video.playFlag) {
             player.play(true);
         } else {
             player.pause(true);
@@ -131,21 +140,20 @@ function seekToOffset(currTime, sourceName) {
 function getNextAvailableSegment(currentTime) {
     var nearestSeg = null;
     var minDelta = Number.MAX_VALUE;
-    var sources = [];
 
     for (var key in displaySegments) {
         var segments = displaySegments[key];
-        sources.push(segments[0].source.shortName);
         for (var id in segments) {
             var segment = segments[id];
             var delta = segment.startTime - currentTime;
 
-            if ((delta < minDelta) && (delta >= 0)) {
+            if ((delta < minDelta) && (delta >= 0)) { 
                 minDelta = delta;
                 nearestSeg = segment;
             }
         }
     }
+
     if (nearestSeg == null) {
         return currentTime;
     } else {
@@ -196,7 +204,7 @@ function getUpdateTime() {
     } 
     var updateTime = null;
     if (earliestPlayerTime == Number.MAX_VALUE) { //none of the players were in 'PLAYING' state.
-        var prevTime = new Date(g_masterSlider.slider('value') * 1000);
+        var prevTime = new Date(xgds_video.masterSlider.slider('value') * 1000);
         updateTime = getNextAvailableSegment(prevTime);
     } else { //at least one player was in 'PLAYING' state
         updateTime = earliestPlayerTime;
@@ -204,6 +212,14 @@ function getUpdateTime() {
     return updateTime;
 }
 
+
+function checkPlaylistIdx(source) {
+    return (jwplayer('myPlayer' + source).getPlaylistIndex() == xgds_video.seekOffsetList[source].index)
+}
+
+function withinRange(position, offset) {
+    return ((position < offset + 20) && (position > offset - 20));
+}
 
 /****************************   
            Set-up
@@ -219,15 +235,15 @@ function createSliderLegend() {
         var source = segments[0].source;
 
         //get the total slider range in seconds
-        var startTime = g_masterSlider.slider('option', 'min');
-        var endTime = g_masterSlider.slider('option', 'max');
+        var startTime = xgds_video.masterSlider.slider('option', 'min');
+        var endTime = xgds_video.masterSlider.slider('option', 'max');
         var totalDuration = endTime - startTime;  // in seconds
         var color = getRandomColor();
 
         //handle empty space infront of first segment
         emptySegmentDuration = Math.round(segments[0].startTime / 1000) - startTime;
-        emptySegmentWidth = g_masterSlider.width() * (emptySegmentDuration / totalDuration);
-        g_masterSlider.before('<img class="' + source.shortName + '" width="' + emptySegmentWidth + '" height="5px" style="opacity:0.0;">');
+        emptySegmentWidth = xgds_video.masterSlider.width() * (emptySegmentDuration / totalDuration);
+        xgds_video.masterSlider.before('<img class="' + source.shortName + '" width="' + emptySegmentWidth + '" height="5px" style="opacity:0.0;">');
 
         //for each video segment
         $.each(segments, function(id) {
@@ -235,10 +251,10 @@ function createSliderLegend() {
             var source = segment.source;
             //get the duration of the =video segment
             var segDuration = Math.round((segment.endTime - segment.startTime) / 1000); //in seconds
-            var width = g_masterSlider.width() * (segDuration / totalDuration);
+            var width = xgds_video.masterSlider.width() * (segDuration / totalDuration);
 
             //draw the visualization
-            g_masterSlider.before('<img class="' + source.shortName + '" id=' + id + ' width="' + width +
+            xgds_video.masterSlider.before('<img class="' + source.shortName + '" id=' + id + ' width="' + width +
                                 '" height="5px" style="background-color:' + color + ';">');
             var emptySegmentDuration;
             var emptySegmentWidth;
@@ -246,8 +262,8 @@ function createSliderLegend() {
             if (segments[id + 1]) { //if there is a next segment
                 var nextSegment = segments[id + 1];
                 emptySegmentDuration = Math.round((nextSegment.startTime - segment.endTime) / 1000);
-                emptySegmentWidth = g_masterSlider.width() * (emptySegmentDuration / totalDuration);
-                g_masterSlider.before('<img class="' + source.shortName + '" width="' + emptySegmentWidth +
+                emptySegmentWidth = xgds_video.masterSlider.width() * (emptySegmentDuration / totalDuration);
+                xgds_video.masterSlider.before('<img class="' + source.shortName + '" width="' + emptySegmentWidth +
                                     '" height="5px" style="opacity:0.0;">');
             }
         });
@@ -264,7 +280,7 @@ function setupSlider() {
     if (episode) { //video episode needed to set slider range
         var endTime = (episode.endTime) ? episode.endTime : lastSegment.endTime;
         if (endTime) {
-            g_masterSlider = $('#masterSlider').slider({
+            xgds_video.masterSlider = $('#masterSlider').slider({
                 step: 1,
                 min: Math.floor(firstSegment.startTime.getTime() / 1000), //in seconds
                 max: Math.ceil(endTime.getTime() / 1000), //in seconds
@@ -347,17 +363,40 @@ function setupJWplayer() {
                         jwplayer('myPlayer' + source.shortName).pause(true);
                     },
                     onPlay: function(e) { //gets called per source
-                        if (g_initialState) {
+                        if (xgds_video.initialState) {
                             updateValues();
-                            g_initialState = false;
+                            xgds_video.initialState = false;
+                            return;
                         }
-                        if (!isEmpty(g_seekOffsetList)) {
-                            for (var keySource in g_seekOffsetList) {
-                                if (jwplayer('myPlayer' + keySource).getState != 'BUFFERING') {
-                                    jwplayer('myPlayer' + keySource).seek(g_seekOffsetList[keySource]);
-                                    delete g_seekOffsetList[keySource];
+
+                        var idxAndOffsets = xgds_video.seekOffsetList;
+                        for (var keySource in idxAndOffsets) {
+                            var player = jwplayer('myPlayer' + keySource);
+                            var idx = idxAndOffsets[keySource].index;
+                            var offset = idxAndOffsets[keySource].offset;
+                            var threshold = 0;
+                            
+                            if (checkPlaylistIdx(keySource)) {
+                                if (player.getState() != 'BUFFERING') {
+                                    player.seek(offset);
+                                    
+                                    while (!withinRange(player.getPosition(), offset)) {
+                                        player.seek(offset);
+                                         
+                                        if (threshold > 1000) {
+                                            //alert ("Player "+ keySource +" could not seeked to "+offset+"!!");
+                                            break;
+                                        }
+                                        threshold = threshold + 1;
+                                    }
+
+                                    delete xgds_video.seekOffsetList[keySource];
+                                    //update the slider time.
+                                    if ((xgds_video.playerTime != null) && (xgds_video.playerSource != null)) { 
+                                        setPlayerTimeLabel(xgds_video.playerTime, xgds_video.playerSource);
+                                    }
                                 }
-                            } 
+                            }
                         }
                     }
                 },
@@ -410,8 +449,10 @@ function seekCallBack() {
 
         var player = jwplayer('myPlayer' + sourceName);
         if (player != undefined) {
-            seekToOffset(seekDateTime,sourceName);
-            setPlayerTimeLabel(getPlayerVideoTime(sourceName), sourceName);
+            jumpToPosition(seekDateTime,sourceName);
+            //setPlayerTimeLabel(getPlayerVideoTime(sourceName), sourceName);
+            xgds_video.playerTime = getPlayerVideoTime(sourceName);
+            xgds_video.playerSource = sourceName;
         }
     }
     if (seekDateTime != null) {
@@ -424,19 +465,21 @@ function seekCallBack() {
  * Callback function for play/pause button
  */
 function playPauseButtonCallBack() {
-    g_playFlag = !g_playFlag;
-    if (g_playFlag) {
+    xgds_video.playFlag = !xgds_video.playFlag;
+    if (xgds_video.playFlag) {
         document.getElementById('playbutton').className = 'fa fa-pause fa-2x';
     } else {
         document.getElementById('playbutton').className = 'fa fa-play fa-2x';
     }
 
-    var currTime = new Date(g_masterSlider.slider('value') * 1000);
+    var currTime = new Date(xgds_video.masterSlider.slider('value') * 1000);
     for (var key in displaySegments) {
         var segments = displaySegments[key];
         var sourceName = segments[0].source.shortName;
-        seekToOffset(currTime, sourceName);
-        setPlayerTimeLabel(getPlayerVideoTime(sourceName), sourceName);
+        jumpToPosition(currTime, sourceName);
+        //setPlayerTimeLabel(getPlayerVideoTime(sourceName), sourceName);
+        xgds_video.playerTime = getPlayerVideoTime(sourceName);
+        xgds_video.playerSource = sourceName;
     }
     setSliderTime(currTime);
 }
@@ -460,13 +503,12 @@ function uponSliderMoveCallBack(event, ui) {
  *    update the test site times to equal slider position.
  */
 function uponSliderStopCallBack(event, ui) {
-    var currTime = g_masterSlider.slider('value'); //in seconds
+    var currTime = xgds_video.masterSlider.slider('value'); //in seconds
     currTime = new Date(currTime * 1000); //convert to javascript date
 
     for (var key in displaySegments) {
         var sourceName = displaySegments[key][0].source.shortName;
-        seekToOffset(currTime, sourceName);
-        setPlayerTimeLabel(getPlayerVideoTime(sourceName), sourceName);
+        jumpToPosition(currTime, sourceName);
     }
 }
 
@@ -475,7 +517,7 @@ function uponSliderStopCallBack(event, ui) {
  * updateValues increments the slider every second (if the state is 'play').
  */
 function updateValues() {
-    if (g_playFlag == true) {
+    if (xgds_video.playFlag == true) {
         var updateTime = getUpdateTime();
         var isBuffering = false;
         var sourceList = [];
@@ -492,11 +534,14 @@ function updateValues() {
                 var testSiteTime = getPlayerVideoTime(sourceName);
                 setText('testSiteTime' + sourceName, testSiteTime.toString());
             } else if ((state == 'PAUSED') || (state == 'IDLE')) {
-                seekToOffset(updateTime, sourceName);
-                setPlayerTimeLabel(getPlayerVideoTime(sourceName), sourceName);
+                jumpToPosition(updateTime, sourceName);
+                //setPlayerTimeLabel(getPlayerVideoTime(sourceName), sourceName);
+                xgds_video.playerTime = getPlayerVideoTime(sourceName);
+                xgds_video.playerSource = sourceName;
             } else if (state == 'BUFFERING') {
                 isBuffering = true; //don't update the time. just let it buffer.
                 //XXX may need to handle case when buffering
+                //TODO: if by the third iteration it's still buffering, do stuff.
             } else { //undefined
                 //No op
             }
@@ -517,7 +562,7 @@ function updateValues() {
             setSliderTime(updateTime);
         }
 
-    } else { //g_playFlag == false
+    } else { //xgds_video.playFlag == false
         for (var key in displaySegments) {
             var segments = displaySegments[key];
             var sourceName = segments[0].source.shortName;
