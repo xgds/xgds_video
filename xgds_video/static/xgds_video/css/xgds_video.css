@@ -119,3 +119,7 @@ div.tagsinput[style]{
     float: left;
     height: 4px;
 }
+
+#volume {
+    float: right;
+}
