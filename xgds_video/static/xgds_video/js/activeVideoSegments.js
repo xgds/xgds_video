@@ -122,7 +122,11 @@ function getPlaylistIdxAndOffset(currTime, sourceName) {
             break;
         }
     }
-    return {index: playlistIdx, offset: offset};
+    if ((playlistIdx != null) && (offset != null)) {
+        return {index: playlistIdx, offset: offset};
+    } else {
+        return false;
+    }
 }
 
 
@@ -134,7 +138,7 @@ function jumpToPosition(currTime, sourceName) {
     var seekValues = getPlaylistIdxAndOffset(currTime, sourceName);
     var player = jwplayer('myPlayer' + sourceName);
     //currTime falls in one of the segments.
-    if ((seekValues.index != null) && (seekValues.offset != null)) { 
+    if (seekValues != false) {
         //update the player
         player.playlistItem(seekValues.index);
         //seek later (onPlay). Otherwise it won't work.
@@ -146,8 +150,9 @@ function jumpToPosition(currTime, sourceName) {
         }
     } else { //current time is not in the playable range.
         //pause the player
-        player.pause(true);
-        return;
+        if (player.getState() == 'PLAYING') {
+            player.pause(true);
+        }
     }
 }
 
@@ -207,23 +212,40 @@ function getPlayerVideoTime(source) {
 function getUpdateTime() {
     //get the current time from the segment that is playing.
     var earliestPlayerTime = Number.MAX_VALUE;
+    var timeInPlayableRange = Number.MAX_VALUE;
+    var sliderTime = new Date(xgds_video.masterSlider.slider('value') * 1000);
 
     for (var key in xgds_video.displaySegments) { //for each source
         var segments = xgds_video.displaySegments[key];
         var sourceName = segments[0].source.shortName;
         var state = jwplayer('myPlayer' + sourceName).getState();
+        var playerTime = getPlayerVideoTime(sourceName);
 
+        //this is needed for the case where one of the players is paused (or both)
+        //but it's paused at a time that can be played (within segment)
+        if (getPlaylistIdxAndOffset(sliderTime, sourceName) != false ) {
+            if (sliderTime < timeInPlayableRange) {
+                timeInPlayableRange = sliderTime;
+            }
+        }
+    
         if (state == 'PLAYING') {
-            if (getPlayerVideoTime(sourceName) < earliestPlayerTime) {
+            if (playerTime < earliestPlayerTime) {
                 earliestPlayerTime = getPlayerVideoTime(sourceName);
             }
         }
     } 
+
     var updateTime = null;
     //none of the players were in 'PLAYING' state.
     if (earliestPlayerTime == Number.MAX_VALUE) { 
-        var prevTime = new Date(xgds_video.masterSlider.slider('value') * 1000);
-        updateTime = getNextAvailableSegment(prevTime);
+        //check if any of the players are in a playable range.
+        if (timeInPlayableRange != Number.MAX_VALUE) {
+            updateTime = timeInPlayableRange;
+        } else { //all players are in between segments
+            var prevTime = new Date(xgds_video.masterSlider.slider('value') * 1000);
+            updateTime = getNextAvailableSegment(prevTime);
+        }
     } else { //at least one player was in 'PLAYING' state
         updateTime = earliestPlayerTime;
     }
@@ -402,8 +424,8 @@ function setupJWplayer() {
                     },
                     onPlay: function(e) { //gets called per source
                         if (xgds_video.initialState) {
-                            updateValues();
                             xgds_video.initialState = false;
+                            updateValues();
                             return;
                         }
 
@@ -414,37 +436,37 @@ function setupJWplayer() {
                             var offset = idxAndOffsets[keySource].offset;
                             var threshold = 0;
                             
-                            if (checkPlaylistIdx(keySource)) {
-                                if (player.getState() != 'BUFFERING') {
-                                    player.seek(offset);
-                                    
-                                    while (!withinRange(player.getPosition(), offset)) {
-                                        player.seek(offset);
-                                         
-                                        if (threshold > 1000) {
-                                            break;
-                                        }
-                                        threshold = threshold + 1;
-                                    }
+                            //if the player's idx is not correct, set it again.
+                            while (!checkPlaylistIdx(keySource)) {
+                                player.playlistItem(idx);
+                            }
 
-                                    delete xgds_video.seekOffsetList[keySource];
-                                    //update the slider time.
-                                    if ((xgds_video.playerTime != null) && 
-                                        (xgds_video.playerSource != null)) { 
-                                        setPlayerTimeLabel(xgds_video.playerTime, 
-                                        xgds_video.playerSource);
+                            if (player.getState() != 'BUFFERING') {
+                                player.seek(offset);
+                                
+                                while (!withinRange(player.getPosition(), offset)) {
+                                    player.seek(offset);
+                                     
+                                    if (threshold > 1000) {
+                                        break;
                                     }
+                                    threshold = threshold + 1;
+                                }
+
+                                delete xgds_video.seekOffsetList[keySource];
+                                //update the slider time.
+                                if ((xgds_video.playerTime != null) && 
+                                    (xgds_video.playerSource != null)) { 
+                                    setPlayerTimeLabel(xgds_video.playerTime, xgds_video.playerSource);
                                 }
                             }
                         }
                     }
                 },
-                /*
                 listbar: {
                 position: 'right',
                 size: 150
                 },
-                */
             });
 
             var playlist = [];
@@ -563,20 +585,24 @@ function updateValues() {
         var updateTime = getUpdateTime();
         var isBuffering = false;
         var sourceList = [];
-    
+
         //update players
         for (var key in xgds_video.displaySegments) { //for each source
             var segments = xgds_video.displaySegments[key];
             var sourceName = segments[0].source.shortName;
-            var state = jwplayer('myPlayer'+sourceName).getState();
+            var player = jwplayer('myPlayer' + sourceName);
+            var state = player.getState();
             sourceList.push(sourceName);
 
             if (state == 'PLAYING') {
-                //No op
                 var testSiteTime = getPlayerVideoTime(sourceName);
                 setText('testSiteTime' + sourceName, testSiteTime.toString());
+                //double check that time is within a playable range
+                if (getPlaylistIdxAndOffset(testSiteTime, sourceName) == false) {
+                     player.pause(true);
+                }
             } else if ((state == 'PAUSED') || (state == 'IDLE')) {
-                jumpToPosition(updateTime, sourceName);
+                jumpToPosition(updateTime, sourceName); 
                 xgds_video.playerTime = getPlayerVideoTime(sourceName);
                 xgds_video.playerSource = sourceName;
             } else if (state == 'BUFFERING') {
@@ -592,12 +618,12 @@ function updateValues() {
             //pause all players.
             for (var i in sourceList) {
                 var sourceName = sourceList[i];
-                var player = jwplayer('myPlayer' + sourceName);
-                var state = player.getState();
-                if (state == 'PLAYING') {
-                    player.pause(true);   
+                var player2 = jwplayer('myPlayer' + sourceName);
+                var state2 = player2.getState();
+                if (state2 == 'PLAYING') {
+                    player2.pause(true);   
                 }
-            }
+            } 
         } else {
             //update slider
             setSliderTime(updateTime);
