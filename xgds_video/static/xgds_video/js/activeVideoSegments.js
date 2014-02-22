@@ -515,7 +515,7 @@ function seekCallBack() {
         var player = jwplayer('myPlayer' + sourceName);
         if (player != undefined) {
             jumpToPosition(seekDateTime,sourceName);
-            xgds_video.playerTime = getPlayerVideoTime(sourceName);
+            xgds_video.playerTime = seekDateTime;
             xgds_video.playerSource = sourceName;
         }
     }
