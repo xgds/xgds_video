@@ -581,61 +581,74 @@ function uponSliderStopCallBack(event, ui) {
  * updateValues increments the slider every second (if the state is 'play').
  */
 function updateValues() {
-    if (xgds_video.playFlag == true) {
-        var updateTime = getUpdateTime();
-        var isBuffering = false;
-        var sourceList = [];
-
-        //update players
-        for (var key in xgds_video.displaySegments) { //for each source
-            var segments = xgds_video.displaySegments[key];
-            var sourceName = segments[0].source.shortName;
-            var player = jwplayer('myPlayer' + sourceName);
-            var state = player.getState();
-            sourceList.push(sourceName);
-
-            if (state == 'PLAYING') {
-                var testSiteTime = getPlayerVideoTime(sourceName);
-                setText('testSiteTime' + sourceName, testSiteTime.toString());
-                //double check that time is within a playable range
-                if (getPlaylistIdxAndOffset(testSiteTime, sourceName) == false) {
-                     player.pause(true);
-                }
-            } else if ((state == 'PAUSED') || (state == 'IDLE')) {
-                jumpToPosition(updateTime, sourceName); 
-                xgds_video.playerTime = getPlayerVideoTime(sourceName);
-                xgds_video.playerSource = sourceName;
-            } else if (state == 'BUFFERING') {
-                isBuffering = true; //don't update the time. just let it buffer.
-                //XXX may need to handle case when buffering
-                //TODO: if by the third iteration it's still buffering, do stuff.
-            } else { //undefined
-                //No op
+    //if the time is at the last segment, stay paused.
+    var sliderTime = new Date(xgds_video.masterSlider.slider('value') * 1000);
+    if (sliderTime.valueOf() == xgds_video.lastSegment.endTime.valueOf()) {
+        for (var key in xgds_video.displaySegments) {
+            var source = xgds_video.displaySegments[key][0].source.shortName;
+            var player = jwplayer('myPlayer' + source);
+            if (player.getState() == 'PLAYING') {
+                //pause it
+                player.pause(true); 
             }
         }
+    } else  {
+        if (xgds_video.playFlag == true) {
+            var updateTime = getUpdateTime();
+            var isBuffering = false;
+            var sourceList = [];
 
-        if (isBuffering) {
-            //pause all players.
-            for (var i in sourceList) {
-                var sourceName = sourceList[i];
-                var player2 = jwplayer('myPlayer' + sourceName);
-                var state2 = player2.getState();
-                if (state2 == 'PLAYING') {
-                    player2.pause(true);   
+            //update players
+            for (var key in xgds_video.displaySegments) { //for each source
+                var segments = xgds_video.displaySegments[key];
+                var sourceName = segments[0].source.shortName;
+                var player = jwplayer('myPlayer' + sourceName);
+                var state = player.getState();
+                sourceList.push(sourceName);
+
+                if (state == 'PLAYING') {
+                    var testSiteTime = getPlayerVideoTime(sourceName);
+                    setText('testSiteTime' + sourceName, testSiteTime.toString());
+                    //double check that time is within a playable range
+                    if (getPlaylistIdxAndOffset(testSiteTime, sourceName) == false) {
+                         player.pause(true);
+                    }
+                } else if ((state == 'PAUSED') || (state == 'IDLE')) {
+                    jumpToPosition(updateTime, sourceName); 
+                    xgds_video.playerTime = getPlayerVideoTime(sourceName);
+                    xgds_video.playerSource = sourceName;
+                } else if (state == 'BUFFERING') {
+                    isBuffering = true; //don't update the time. just let it buffer.
+                    //XXX may need to handle case when buffering
+                    //TODO: if by the third iteration it's still buffering, do stuff.
+                } else { //undefined
+                    //No op
                 }
-            } 
-        } else {
-            //update slider
-            setSliderTime(updateTime);
-        }
+            }
 
-    } else { //xgds_video.playFlag == false
-        for (var key in xgds_video.displaySegments) {
-            var segments = xgds_video.displaySegments[key];
-            var sourceName = segments[0].source.shortName;
-            var state = jwplayer('myPlayer' + sourceName).getState();
-            if (state == 'PLAYING') {
-                jwplayer('myPlayer' + sourceName).pause(true);
+            if (isBuffering) {
+                //pause all players.
+                for (var i in sourceList) {
+                    var sourceName = sourceList[i];
+                    var player2 = jwplayer('myPlayer' + sourceName);
+                    var state2 = player2.getState();
+                    if (state2 == 'PLAYING') {
+                        player2.pause(true);   
+                    }
+                } 
+            } else {
+                //update slider
+                setSliderTime(updateTime);
+            }
+
+        } else { //xgds_video.playFlag == false
+            for (var key in xgds_video.displaySegments) {
+                var segments = xgds_video.displaySegments[key];
+                var sourceName = segments[0].source.shortName;
+                var state = jwplayer('myPlayer' + sourceName).getState();
+                if (state == 'PLAYING') {
+                    jwplayer('myPlayer' + sourceName).pause(true);
+                }
             }
         }
     }
