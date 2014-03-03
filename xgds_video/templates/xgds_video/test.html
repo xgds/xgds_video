@@ -26,8 +26,7 @@
 
             function jumpToPosition(sourceName) {
                 var player = jwplayer(sourceName);
-                player.playlistItem(1);
-                player.seek(20);
+                player.playlistItem(1).seek(20);
             }
 
             function uponSliderStopCallBack() {
@@ -59,7 +58,7 @@
             }
 
             /**
-             *ensures that only one onTime event is enabled
+             * ensures that only one onTime event is enabled
              */
             function onTimeController(thisObj) {
                 var switchPlayer = false;            
@@ -91,6 +90,7 @@
                 file: "http://www.longtailvideo.com/jw/upload/bunny.mp4",
                 image: "http://www.longtailvideo.com/jw/upload/bunny.jpg",
                 flashplayer: "http://player.longtailvideo.com/player.swf",
+                primary: "flash",
                 height: 270,
                 width: 480,
                 autostart: true,

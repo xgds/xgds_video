@@ -186,7 +186,7 @@ def displayEpisodeRecordedVideo(request):
         messages.add_message(request, messages.ERROR, 'No Valid Episodes Exist')
         ctx = {'episode': None,
                'searchCriteria': searchCriteria}
-    return render_to_response('xgds_video/activeVideoSegments.html',
+    return render_to_response('xgds_video/video_recorded_playbacks.html',
                               ctx,
                               context_instance=RequestContext(request))
 

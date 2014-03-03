@@ -1,76 +1,8 @@
-//globals
-/* //defined in the template. Copied here for reference.
-    var xgds_video = { masterSlider: '',
-                       playFlag: true,
-                       initialState: true,
-                       seekOffsetList: {},
-                       playerTime: null,
-                       playerSource: null,
-                       baseUrl = "{{ baseUrl}}",
-                       episode = ({{ episodeJson|safe }}=="None") ? 
-                                 null : {{ episodeJson|safe }},
-                       displaySegments = {{ segmentsJson|safe }},
-                       firstSegment = null,
-                       lastSegment = null
-                       };
-*/
-
-
-/**
- * Helper that returns slowest time among all players in 'PLAYING' state.
- * If none are in 'PLAYING' state, it gets the nearest segment start time.
- */
-/*
-function getUpdateTime() {
-    //get the current time from the segment that is playing.
-    var earliestPlayerTime = Number.MAX_VALUE;
-    var timeInPlayableRange = Number.MAX_VALUE;
-    var sliderTime = new Date(xgds_video.masterSlider.slider('value') * 1000);
-
-    for (var key in xgds_video.displaySegments) { //for each source
-        var segments = xgds_video.displaySegments[key];
-        var sourceName = segments[0].source.shortName;
-        var state = jwplayer(sourceName).getState();
-        var playerTime = getPlayerVideoTime(sourceName);
-
-        //this is needed for the case where one of the players is paused (or both)
-        //but it's paused at a time that can be played (within segment)
-        if (getPlaylistIdxAndOffset(sliderTime, sourceName) != false ) {
-            if (sliderTime < timeInPlayableRange) {
-                timeInPlayableRange = sliderTime;
-            }
-        }
-    
-        if (state == 'PLAYING') {
-            if (playerTime < earliestPlayerTime) {
-                earliestPlayerTime = getPlayerVideoTime(sourceName);
-            }
-        }
-    } 
-
-    var updateTime = null;
-    //none of the players were in 'PLAYING' state.
-    if (earliestPlayerTime == Number.MAX_VALUE) { 
-        //check if any of the players are in a playable range.
-        if (timeInPlayableRange != Number.MAX_VALUE) {
-            updateTime = timeInPlayableRange;
-        } else { //all players are in between segments
-            var prevTime = new Date(xgds_video.masterSlider.slider('value') * 1000);
-            updateTime = getNextAvailableSegment(prevTime);
-        }
-    } else { //at least one player was in 'PLAYING' state
-        updateTime = earliestPlayerTime;
-    }
-    return updateTime;
-}
-*/
-
 /**
  * ensures that only one onTime event is enabled
  */
 function onTimeController(thisObj) {
     var switchPlayer = false;            
-
     if (thisObj.id == xgds_video.onTimePlayer) {
         var state = jwplayer(thisObj.id).getState();
         if (state != 'PLAYING') { 
@@ -82,7 +14,6 @@ function onTimeController(thisObj) {
             switchPlayer = true; 
         }
     }
-
     if (switchPlayer) {
         for (var key in xgds_video.displaySegments) {
             var source = xgds_video.displaySegments[key][0].source.shortName;
@@ -98,7 +29,6 @@ function onTimeController(thisObj) {
 /**
  * Only called once onReady. Kickstarts the player with earliest starttime.
  */
-
 function playFirstSegment() {
     for (var key in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[key];
@@ -148,6 +78,7 @@ function setupJWplayer() {
                     onComplete: function() {
                         // upon complete, stop. It should start segment at next seg's start time. 
                         jwplayer(this.id).pause(true);
+                       
                         // if all other players are paused, go the the next available segment and play.
                         if (allPaused()) {
                             var time = getPlayerVideoTime(this.id); 
@@ -169,7 +100,12 @@ function setupJWplayer() {
                         onTimeController(this);
                     }, 
                     onTime: function(object) {
-                        // otherwise slider jumps around while moving.
+                        //if at the end of the segment, pause.
+                         if (object.position > object.duration - 1) { 
+                            this.pause(); 
+                         }
+
+                        // need this. otherwise slider jumps around while moving.
                         if (xgds_video.movingSlider == true) {
                             return;
                         }
@@ -178,13 +114,33 @@ function setupJWplayer() {
                         var testSiteTime = getPlayerVideoTime(this.id);
                         setPlayerTimeLabel(testSiteTime, this.id);
 
+                        //if this call is from the current 'onTimePlayer'
                         if (xgds_video.onTimePlayer == this.id) {
                             // update the slider here.
                             //XXX if the play flag is off, shouldn't be player shouldn't be playing.
+                                                        //awake idle players
+                            //awakeIdlePlayers(updateTime); //XXX doesn't wok!
+
                             var updateTime = getPlayerVideoTime(this.id);
-                            setSliderTime(updateTime);
+                            setSliderTime(updateTime);                        
                         }
-                    }
+                    },
+                    /*
+                    onPlaylistItem: function(object) {
+                        if (this.id == xgds_video.playerId) {
+                            //XXX make sure it doesn't run infinitely.
+                            while (this.getPlaylistIndex() != xgds_video.playerIdx) {
+                                this.playlistItem(xgds_video.playerIdx);
+                            }
+                
+
+                            if (xgds_video.playerOffset != null) {
+                                this.seek(xgds_video.playerOffset);
+                                xgds_video.playerId = "";
+                                xgds_video.playerOffset = null;
+                            }
+                        }
+                    },*/
                 },
             });
 
@@ -215,6 +171,7 @@ function setupJWplayer() {
  * the seek time value specified in the 'seek' text box.
  */
 function seekCallBack() {
+/*
     var seekTimeStr = document.getElementById('seekTime').value;
     if ((seekTimeStr == null) || 
         (Object.keys(xgds_video.displaySegments).length < 1)) {
@@ -242,6 +199,7 @@ function seekCallBack() {
     if (seekDateTime != null) {
         setSliderTime(seekDateTime);
     }
+    */
 }
 
 
@@ -249,6 +207,7 @@ function seekCallBack() {
  * Callback function for play/pause button
  */
 function playPauseButtonCallBack() {
+/*
     xgds_video.playFlag = !xgds_video.playFlag;
     if (xgds_video.playFlag) {
         document.getElementById('playbutton').className = 'fa fa-pause fa-2x';
@@ -265,6 +224,7 @@ function playPauseButtonCallBack() {
         xgds_video.playerSource = sourceName;
     }
     setSliderTime(currTime);
+    */
 }
 
 

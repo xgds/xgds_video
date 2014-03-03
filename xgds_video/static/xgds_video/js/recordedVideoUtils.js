@@ -62,6 +62,7 @@ function getFilePaths(episode, segments) {
     return filePaths;
 }
 
+
 //XXX: get the color from either the vehicle or the source. 
 //     Need to add color column to the model
 function getRandomColor() {
@@ -87,10 +88,12 @@ function setPlayerTimeLabel(datetime, sourceName) {
     setText('testSiteTime' + sourceName, datetime.toString());
 }
 
+
 function checkPlaylistIdx(source) {
     return (jwplayer(source).getPlaylistIndex() == 
             xgds_video.seekOffsetList[source].index)
 }
+
 
 function withinRange(position, offset) {
     return ((position < offset + 20) && (position > offset - 20));
@@ -121,6 +124,22 @@ function getPlaylistIdxAndOffset(currTime, sourceName) {
     }
 }
 
+/** 
+ * Chaining playlist item call and seek call doesn't work if the player is in
+ * flash mode (aka in Chrome).
+ **/
+
+/*
+function flashSeekPlayer(index, offset, source) {
+    var player = jwplayer(source);
+    player.playlistItem(index);
+
+    //seek later in onPlaylistItem.
+    xgds_video.index = index;
+    xgds_video.playerId = source;
+    xgds_video.playerOffset = offset;
+}
+*/
 
 /**
  * Given current time in javascript datetime,
@@ -133,6 +152,7 @@ function jumpToPosition(currTime, sourceName) {
     if (seekValues != false) {
         //update the player
         player.playlistItem(seekValues.index).seek(seekValues.offset); //XXX works in safari, not in chrome
+        //flashSeekPlayer(seekValues.index, seekValues.offset, sourceName);
         if (xgds_video.playFlag) {
             player.play(true);
         } else {
@@ -170,6 +190,7 @@ function getNextAvailableSegment(currentTime) {
         return nearestSeg.startTime; // need to seek to this time.
     }
 }
+
 
 /** XXX double check logic 
  * Returns true if all players are paused or idle.
@@ -213,3 +234,34 @@ function seekAllPlayersToTime(datetime) {
         jumpToPosition(datetime,sourceName);
     }
 }
+
+var counter = 0;
+
+/*
+function awakeIdlePlayers(datetime) {
+    var idlePlayers = [];
+    for (var key in xgds_video.displaySegments) {
+        var segments = xgds_video.displaySegments[key];
+        var sourceName = segments[0].source.shortName;
+        var player = jwplayer(sourceName);
+        var state = player.getState();
+
+        if ((state == 'IDLE') || (state == 'PAUSED')) { //XXX TODO: and playflag is on!!
+            //if date time falls under the player's segment, 
+            /*
+            if (datetime == segments[player.getPlaylistIndex()].startTime) {
+                player.play(true);
+                console.log("inside the conditional, told player to play");   
+            } */
+/*            
+            var idxAndOffset = getPlaylistIdxAndOffset(datetime, sourceName);
+            if (idxAndOffset != false) {
+                player.play(true).playlistItem(idxAndOffset.index).seek(idxAndOffset.offset);
+                idlePlayers.push(player);
+            }
+        }
+    }
+
+    return idlePlayers;
+}
+*/
