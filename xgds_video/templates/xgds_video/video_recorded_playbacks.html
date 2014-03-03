@@ -129,12 +129,9 @@
                        skinURL: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml',
                        onTimePlayer: "{{ sources.0.shortName }}",
                        movingSlider: false, //if slider is moving, turn off onTime call
-                       playerId: "", //needed for flash players (playlistItem then seek)
-                       playerIdx: null, //needed for flash
-                       playerOffset: null //needed for flash players (playlistItem then seek)
+                       seekOffsetList: {}, //needed for seeking vid in flash mode
                      };
 
-    console.log("onTimePlayer: ", xgds_video.onTimePlayer);
     // displaySegments are in json format like this:
     // displaySegments['RD1'] = {segment1, segment2, segment3}
     // displaySegments['RD1'][0].startTime would return start time of one of the segments.

@@ -124,23 +124,6 @@ function getPlaylistIdxAndOffset(currTime, sourceName) {
     }
 }
 
-/** 
- * Chaining playlist item call and seek call doesn't work if the player is in
- * flash mode (aka in Chrome).
- **/
-
-/*
-function flashSeekPlayer(index, offset, source) {
-    var player = jwplayer(source);
-    player.playlistItem(index);
-
-    //seek later in onPlaylistItem.
-    xgds_video.index = index;
-    xgds_video.playerId = source;
-    xgds_video.playerOffset = offset;
-}
-*/
-
 /**
  * Given current time in javascript datetime,
  * find the playlist item and the offset (seconds) and seek to there.
@@ -151,8 +134,10 @@ function jumpToPosition(currTime, sourceName) {
     //currTime falls in one of the segments.
     if (seekValues != false) {
         //update the player
-        player.playlistItem(seekValues.index).seek(seekValues.offset); //XXX works in safari, not in chrome
-        //flashSeekPlayer(seekValues.index, seekValues.offset, sourceName);
+        player.playlistItem(seekValues.index) 
+        //chrome plays in flash mode. Seek later (otherwise doesn't work)
+        xgds_video.seekOffsetList[sourceName] = seekValues;
+        //seek(seekValues.offset); //XXX works in safari, not in chrome
         if (xgds_video.playFlag) {
             player.play(true);
         } else {

@@ -89,6 +89,34 @@ function setupJWplayer() {
                     },
                     onPlay: function(e) { //gets called per source
                         onTimeController(this);
+
+                        var idxAndOffsets = xgds_video.seekOffsetList;
+                        for (var keySource in idxAndOffsets) {
+                            var player = jwplayer(keySource);
+                            var idx = idxAndOffsets[keySource].index;
+                            var offset = idxAndOffsets[keySource].offset;
+                            var threshold = 0;
+                            
+                            //if the player's idx is not correct, set it again.
+                            while (!checkPlaylistIdx(keySource)) {
+                                player.playlistItem(idx);
+                            }
+
+                            if (player.getState() != 'BUFFERING') {
+                                player.seek(offset);
+                                
+                                while (!withinRange(player.getPosition(), offset)) {
+                                    player.seek(offset);
+                                     
+                                    if (threshold > 1000) {
+                                        break;
+                                    }
+                                    threshold = threshold + 1;
+                                }
+
+                                delete xgds_video.seekOffsetList[keySource];
+                            }
+                        }
                     },
                     onPause: function(e) {
                         onTimeController(this);
@@ -125,22 +153,6 @@ function setupJWplayer() {
                             setSliderTime(updateTime);                        
                         }
                     },
-                    /*
-                    onPlaylistItem: function(object) {
-                        if (this.id == xgds_video.playerId) {
-                            //XXX make sure it doesn't run infinitely.
-                            while (this.getPlaylistIndex() != xgds_video.playerIdx) {
-                                this.playlistItem(xgds_video.playerIdx);
-                            }
-                
-
-                            if (xgds_video.playerOffset != null) {
-                                this.seek(xgds_video.playerOffset);
-                                xgds_video.playerId = "";
-                                xgds_video.playerOffset = null;
-                            }
-                        }
-                    },*/
                 },
             });
 
