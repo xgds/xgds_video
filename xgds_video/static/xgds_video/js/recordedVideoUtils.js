@@ -75,6 +75,11 @@ function getRandomColor() {
 }
 
 
+function getSliderTime() {
+    return new Date(xgds_video.masterSlider.slider('value') * 1000);
+}
+
+
 function setSliderTime(datetime) {
     //update the slider
     var seconds = Math.round(datetime.getTime() / 1000);
@@ -137,7 +142,6 @@ function jumpToPosition(currTime, sourceName) {
         player.playlistItem(seekValues.index) 
         //chrome plays in flash mode. Seek later (otherwise doesn't work)
         xgds_video.seekOffsetList[sourceName] = seekValues;
-        //seek(seekValues.offset); //XXX works in safari, not in chrome
         if (xgds_video.playFlag) {
             player.play(true);
         } else {
@@ -145,11 +149,13 @@ function jumpToPosition(currTime, sourceName) {
         }
     } else { //current time is not in the playable range.
         //pause the player
-        if (player.getState() == 'PLAYING') {
+        if ((player.getState() == 'PLAYING') ||
+            (player.getState() == 'IDLE')) {
             player.pause(true);
         }
     }
 }
+
 
 
 function getNextAvailableSegment(currentTime) {
@@ -170,9 +176,24 @@ function getNextAvailableSegment(currentTime) {
     }
 
     if (nearestSeg == null) {
-        return currentTime;
+        return {'time': currentTime, 'source': ""};
     } else {
-        return nearestSeg.startTime; // need to seek to this time.
+        return {'time': nearestSeg.startTime, 'source': nearestSeg.source.shortName}; // need to seek to this time.
+    }
+}
+
+function onSegmentComplete(thisObj) {
+    //awaken idle players.
+    var time = getSliderTime();
+    awakenIdlePlayers(time, thisObj.id);
+    onTimeController(thisObj);
+    // if all other players are paused, go the the next available segment and play.
+
+    if (allPaused()) {
+        var time = getPlayerVideoTime(thisObj.id); 
+        var seekTime = getNextAvailableSegment(time);
+        console.log("seekTime: ", seekTime.toString());
+        seekAllPlayersToTime(seekTime['time']);
     }
 }
 
@@ -222,31 +243,28 @@ function seekAllPlayersToTime(datetime) {
 
 var counter = 0;
 
-/*
-function awakeIdlePlayers(datetime) {
-    var idlePlayers = [];
+
+function awakenIdlePlayers(datetime, exceptThisPlayer) {
     for (var key in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[key];
         var sourceName = segments[0].source.shortName;
         var player = jwplayer(sourceName);
         var state = player.getState();
-
-        if ((state == 'IDLE') || (state == 'PAUSED')) { //XXX TODO: and playflag is on!!
-            //if date time falls under the player's segment, 
-            /*
-            if (datetime == segments[player.getPlaylistIndex()].startTime) {
-                player.play(true);
-                console.log("inside the conditional, told player to play");   
-            } */
-/*            
-            var idxAndOffset = getPlaylistIdxAndOffset(datetime, sourceName);
-            if (idxAndOffset != false) {
-                player.play(true).playlistItem(idxAndOffset.index).seek(idxAndOffset.offset);
-                idlePlayers.push(player);
+        if (sourceName != exceptThisPlayer) {
+            if ((state == 'IDLE') || (state == 'PAUSED')) { //XXX TODO: and playflag is on!!
+               var canJump = true;
+                for (var s in segments) {
+                    var segment = segments[s];
+                    if (datetime.getTime() == segment.endTime.getTime()) {
+                        canJump = false;
+                        break;
+                    }
+                }
+                if (canJump) {
+                    jumpToPosition(datetime, sourceName);
+                }
             }
         }
     }
-
-    return idlePlayers;
 }
-*/
+
