@@ -130,6 +130,7 @@
                        onTimePlayer: "{{ sources.0.shortName }}",
                        movingSlider: false, //if slider is moving, turn off onTime call
                        seekOffsetList: {}, //needed for seeking vid in flash mode
+                       haltOtherEvents: false, //for onComplete, awaken idle players.
                      };
 
     // displaySegments are in json format like this:
