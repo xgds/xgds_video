@@ -23,6 +23,8 @@ class AbstractVideoSource(models.Model):
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True,
                                  help_text='ie, ROV')
     uuid = UuidField(db_index=True)
+    displayColor = models.CharField(max_length=56, blank=True, null=True,
+                                help_text='in html format. i.e. #7B3221')
 
     class Meta:
         abstract = True
@@ -31,7 +33,8 @@ class AbstractVideoSource(models.Model):
         return u'%s: %s' % (self.id, self.name)
 
     def getDict(self):
-        return {"name": self.name, "shortName": self.shortName, "uuid": self.uuid}
+        return {"name": self.name, "shortName": self.shortName, 
+                "displayColor": self.displayColor ,"uuid": self.uuid}
 
 
 class VideoSource(AbstractVideoSource):
@@ -197,6 +200,7 @@ class VideoSourceGroup(models.Model):
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True, help_text="a short mnemonic code suitable to embed in a URL")
     sources = models.ManyToManyField(settings.XGDS_VIDEO_SOURCE_MODEL, through='VideoSourceGroupEntry')
     uuid = UuidField(db_index=True)
+
 
 
 class VideoSourceGroupEntry(models.Model):

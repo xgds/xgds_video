@@ -10,11 +10,10 @@ function onTimeController(thisObj) {
     if (thisObj.id == xgds_video.onTimePlayer) {
         var state = jwplayer(thisObj.id).getState();
         if (state != 'PLAYING') { 
-        //XXX later when there is a play button, make sure playFlag is also on. If it's on pause, do nothing. 
             switchPlayer = true;
         }
     } else {
-        if (jwplayer(xgds_video.onTimePlayer).getState() != 'PLAYING') { //XXX and if the play button is on.
+        if (jwplayer(xgds_video.onTimePlayer).getState() != 'PLAYING') { 
             switchPlayer = true; 
         }
     }
@@ -49,6 +48,8 @@ function playFirstSegment() {
 
         if (xgds_video.firstSegment.startTime == segments[0].startTime) {
             jwplayer(sourceName).play(true);
+            //unmute this player
+            jwplayer(sourceName).setMute(false);
         }
     }
 }
@@ -77,7 +78,7 @@ function setupJWplayer() {
                 width: maxWidth,
                 height: size[1],
                 //aspectratio: "16:9",
-                mute: false,
+                mute: true,
                 controls: true, //for debugging
                 skin: xgds_video.skinURL,
                 listbar: {
@@ -146,7 +147,7 @@ function setupJWplayer() {
                     },
                     onIdle: function(e) {
                         if (!xgds_video.haltOtherEvents) {
-                            if (e.position > Math.floor(e.duration)) {//e.duration - 1) {
+                            if (e.position > Math.floor(e.duration)) {
                                 this.pause(true);
                                 console.log("onIdle");
                                 onSegmentComplete(this);
@@ -177,7 +178,7 @@ function setupJWplayer() {
                             setSliderTime(updateTime);                        
                         }
                         //if at the end of the segment, pause.
-                        if (object.position > Math.floor(object.duration)) {//object.duration - 1) { 
+                        if (object.position > Math.floor(object.duration)) { 
                             this.pause(true);
                             console.log("onTime");
                             onSegmentComplete(this);

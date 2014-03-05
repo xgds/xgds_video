@@ -63,18 +63,6 @@ function getFilePaths(episode, segments) {
 }
 
 
-//XXX: get the color from either the vehicle or the source. 
-//     Need to add color column to the model
-function getRandomColor() {
-    var letters = '0123456789ABCDEF'.split('');
-    var color = '#';
-    for (var i = 0; i < 6; i++) {
-        color += letters[Math.round(Math.random() * 15)];
-    }
-    return color;
-}
-
-
 function getSliderTime() {
     return new Date(xgds_video.masterSlider.slider('value') * 1000);
 }

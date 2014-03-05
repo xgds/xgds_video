@@ -79,7 +79,8 @@
   
             <div id="container" class="js-masonry" data-masonry-options='{"itemSelector": ".item", "gutter":5, "isInitLayout":false}'>
             {% for source in sources %}
-                <div class="item" id="item{{ forloop.counter }}">
+                <div class="item" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
+
 	                <div class="buttons">
 	                    <div class="toprow-left">Recorded Segment: {{ source.name }}</div> 
 	                    <a class="mybutton toprow-right" href="{% url 'xgds_video_recorded' %}?source={{ source.shortName }}&episode={{ episode.shortName }}" target="new">New Window</a>

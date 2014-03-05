@@ -168,7 +168,6 @@ def displayEpisodeRecordedVideo(request):
         if segmentsDict:
             segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4)
             episodeJson = json.dumps(episode.getDict())
-
             ctx = {
                 'segmentsJson': segmentsJson,
                 'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
