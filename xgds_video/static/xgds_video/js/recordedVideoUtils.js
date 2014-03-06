@@ -81,12 +81,12 @@ function setPlayerTimeLabel(datetime, sourceName) {
     setText('testSiteTime' + sourceName, datetime.toString());
 }
 
-
+/*
 function checkPlaylistIdx(source) {
     return (jwplayer(source).getPlaylistIndex() == 
             xgds_video.seekOffsetList[source].index)
 }
-
+*/
 
 function withinRange(position, offset) {
     return ((position < offset + 20) && (position > offset - 20));
@@ -127,10 +127,11 @@ function jumpToPosition(currTime, sourceName) {
     //currTime falls in one of the segments.
     if (seekValues != false) {
         //update the player
-        player.playlistItem(seekValues.index) 
+        //player.playlistItem(seekValues.index) 
         //chrome plays in flash mode. Seek later (otherwise doesn't work)
-        xgds_video.seekOffsetList[sourceName] = seekValues;
-        if (xgds_video.playFlag) {
+	//xgds_video.seekOffsetList[sourceName] = seekValues;
+        setPlaylistAndSeek(sourceName, seekValues.index, seekValues.offset);
+	if (xgds_video.playFlag) {
             player.play(true);
         } else {
             player.pause(true);

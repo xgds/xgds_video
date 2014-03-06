@@ -1,3 +1,15 @@
+var pendingPlayerActions = {}
+
+    function setPlaylistAndSeek(playerName, playlist, offset) {
+	// Example: setPlaylistAndSeek("ROV", 1, 120)
+	var p = jwplayer(playerName);
+	var actionObj = new Object();
+	actionObj.action = p.seek;
+	actionObj.arg = offset;
+	pendingPlayerActions[playerName] = [actionObj];
+	p.playlistItem(playlist);
+    }
+
 /**
  * ensures that only one onTime event is enabled
  */
@@ -80,7 +92,6 @@ function setupJWplayer() {
                 //aspectratio: "16:9",
                 mute: true,
                 controls: true, //for debugging
-                skin: xgds_video.skinURL,
                 listbar: {
                     position: 'right',
                     size: 150
@@ -93,18 +104,21 @@ function setupJWplayer() {
                         //this.pause(true);
                     },
                     onComplete: function() {
-                        xgds_video.haltOtherEvents = true;
                         //stop until start of the next segment.
                         var counter = 0;
                         jwplayer(this.id).pause(true);
                         onSegmentComplete(this);
                         console.log("onComplete");
-                        xgds_video.haltOtherEvents = false;
                     },
                     onPlay: function(e) { //gets called per source
-                        if (!xgds_video.haltOtherEvents) {
                         onTimeController(this);
 
+			var pendingActions = pendingPlayerActions[this.id];
+			for (var i=0; i<pendingActions.length; i++) {
+			    pendingActions[i].action(pendingActions[i].arg);
+			}
+			pendingPlayerActions[this.id] = [];
+                        /*
                         var idxAndOffsets = xgds_video.seekOffsetList;
                         for (var keySource in idxAndOffsets) {
                             var player = jwplayer(keySource);
@@ -112,48 +126,36 @@ function setupJWplayer() {
                             var offset = idxAndOffsets[keySource].offset;
                             var threshold = 0;
                             
-                            //if the player's idx is not correct, set it again.
-                            while (!checkPlaylistIdx(keySource)) {
-                                player.playlistItem(idx);
-                            }
-
                             if (player.getState() != 'BUFFERING') {
                                 player.seek(offset);
                                 
-                                while (!withinRange(player.getPosition(), offset)) {
-                                    player.seek(offset);
+//                                 while (!withinRange(player.getPosition(), offset)) {
+//                                     player.seek(offset);
                                      
-                                    if (threshold > 1000) {
-                                        break;
-                                    }
-                                    threshold = threshold + 1;
-                                }
+//                                     if (threshold > 1000) {
+//                                         break;
+//                                     }
+//                                     threshold = threshold + 1;
+//                                 }
 
                                 delete xgds_video.seekOffsetList[keySource];
                             }
-                        }
-                        }
+			    }*/
                     },
                     onPause: function(e) {
                         //just make sure the item does get paused.
-                        if (!xgds_video.haltOtherEvents) {
-                            onTimeController(this);
-                        }
+                        onTimeController(this);
                     },
                     onBuffer: function(e) {
-                        if (!xgds_video.haltOtherEvents) { 
-                            onTimeController(this);
-                        }
+                        onTimeController(this);
                     },
                     onIdle: function(e) {
-                        if (!xgds_video.haltOtherEvents) {
-                            if (e.position > Math.floor(e.duration)) {
-                                this.pause(true);
-                                console.log("onIdle");
-                                onSegmentComplete(this);
-                            }
-                            onTimeController(this);
+                        if (e.position > Math.floor(e.duration)) {
+                            this.pause(true);
+                            console.log("onIdle");
+                            onSegmentComplete(this);
                         }
+                        onTimeController(this);
                     }, 
                     onTime: function(object) {
                         // need this. otherwise slider jumps around while moving.
