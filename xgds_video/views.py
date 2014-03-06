@@ -10,7 +10,7 @@ except ImportError:
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-#from django.views.generic.list_detail import object_list
+# from django.views.generic.list_detail import object_list
 from django.contrib import messages
 
 from geocamUtil import anyjson as json
@@ -27,6 +27,7 @@ FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
 SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
+
 def getZerorpcClient(clientName):
     ports = json.loads(file(settings.ZEROMQ_PORTS, 'r').read())
     rpcPort = ports[clientName]['rpc']
@@ -39,6 +40,7 @@ def stopPyraptordServiceIfRunning(pyraptord, svcName):
         pyraptord.stop(svcName)
     except zerorpc.RemoteError:
         pass
+
 
 # put a setting for the name of the function to call to generate extra text to insert in the form
 # and then add the name of the plrpExplorer.views.getFlightFromFeed (context function)  extraNoteFormDataFunction
@@ -62,7 +64,7 @@ def callGetNoteExtras(episodes, source):
 def liveVideoFeed(request, feedName):
     feedData = []
 
-    #get the active episodes
+    # get the active episodes
     currentEpisodes = EPISODE_MODEL.objects.filter(endTime=None)
     if feedName.lower() != 'all':
         videofeeds = FEED_MODEL.objects.filter(shortName=feedName).select_related('source')
@@ -74,7 +76,7 @@ def liveVideoFeed(request, feedName):
             form.fields["source"] = videofeeds[0].source
             if form.fields["source"]:
                 form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
-        feedData.append((videofeeds[0],form))
+        feedData.append((videofeeds[0], form))
     else:
         videofeeds = FEED_MODEL.objects.filter(active=True)
         index = 0
@@ -120,8 +122,8 @@ def displayEpisodeRecordedVideo(request):
     """
     Returns first segment of all sources that are part of a given episode.
     """
-    #XXX use jwplayer playlist to sequence multiple segments
-    #http://www.longtailvideo.com/support/forums/jw-player/using-playlists/21104/playlist-to-chain-sequence-of-mp3s/
+    # XXX use jwplayer playlist to sequence multiple segments
+    # http://www.longtailvideo.com/support/forums/jw-player/using-playlists/21104/playlist-to-chain-sequence-of-mp3s/
 
     episodeName = request.GET.get("episode")
     sourceName = request.GET.get("source")
@@ -266,7 +268,7 @@ def stopRecording(source, endTime):
     vlcSvc = '%s_vlc' % assetName
     segmenterSvc = '%s_segmenter' % assetName
 
-    #we need to set the endtime
+    # we need to set the endtime
     if source.videosegment_set.all().count() != 0:
         videoSegment = source.videosegment_set.all()[0]
         videoSegment.endTime = endTime
