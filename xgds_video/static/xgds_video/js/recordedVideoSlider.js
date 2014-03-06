@@ -21,12 +21,12 @@ function createSliderLegend() {
         xgds_video.masterSlider.before('<img class="' + source.shortName + 
                                        '" width="' + emptySegmentWidth + 
                                        '" height="5px" style="opacity:0.0;">');
-
+        
         //for each video segment
         $.each(segments, function(id) {
             var segment = segments[id];
             var source = segment.source;
-            //get the duration of the =video segment
+            //get the duration of the video segment
             var segDuration = Math.round((segment.endTime - 
                               segment.startTime) / 1000); //in seconds
             var width = xgds_video.masterSlider.width() * 

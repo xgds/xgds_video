@@ -62,13 +62,14 @@
                         Local Flight Time: <input type="text" id="sliderTimeLabel" readonly>
                     </div>
                     
-                    <div id="masterSlider"></div>
-                    
+                    <div id="masterSlider" class="masterSlider"></div>
                     <div> 
                         <a class="btn btn-small btn-info" href="#" onclick=playPauseButtonCallBack()>
                             <i id="playbutton" class="fa fa-pause fa-2x"></i>
                         </a>
                     </div>
+                    <div id="legend"></div>
+                    
                     <div>
                         <input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
                         <button type="submit" class="mybutton" id="seekButton" onclick=seekCallBack()>
