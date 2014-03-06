@@ -12,7 +12,9 @@
     	var isLive = false;
     </script>
     <script src="{{STATIC_URL}}xgds_video/js/video_size_utils.js" type="text/javascript" ></script>
- 	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/activeVideoSegments.js"></script>
+ 	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoSlider.js"></script>
+ 	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoUtils.js"></script>
+ 	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoPlayer.js"></script>
     <script src="{{STATIC_URL}}external/js/jquery/jquery.tagsinput.js" type="text/javascript" ></script>
  	<script src="{{STATIC_URL}}external/js/jquery/jquery.form.min.js" type="text/javascript" ></script>
  	<script type="text/javascript" src="{{ STATIC_URL }}external/js/date.js"></script>
@@ -60,13 +62,14 @@
                         Local Flight Time: <input type="text" id="sliderTimeLabel" readonly>
                     </div>
                     
-                    <div id="masterSlider"></div>
-                    
+                    <div id="masterSlider" class="masterSlider"></div>
                     <div> 
                         <a class="btn btn-small btn-info" href="#" onclick=playPauseButtonCallBack()>
                             <i id="playbutton" class="fa fa-pause fa-2x"></i>
                         </a>
                     </div>
+                    <div id="legend"></div>
+                    
                     <div>
                         <input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
                         <button type="submit" class="mybutton" id="seekButton" onclick=seekCallBack()>
@@ -75,9 +78,10 @@
                     </div>
                 </div>
   
-            <div id="container" class="js-masonry" data-masonry-options='{  "itemSelector": ".item", "gutter":5, "isInitLayout":false}'>
+            <div id="container" class="js-masonry" data-masonry-options='{"itemSelector": ".item", "gutter":5, "isInitLayout":false}'>
             {% for source in sources %}
-                <div class="item" id="item{{ forloop.counter }}">
+                <div class="item" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
+
 	                <div class="buttons">
 	                    <div class="toprow-left">Recorded Segment: {{ source.name }}</div> 
 	                    <a class="mybutton toprow-right" href="{% url 'xgds_video_recorded' %}?source={{ source.shortName }}&episode={{ episode.shortName }}" target="new">New Window</a>
@@ -93,16 +97,16 @@
 	                <!--embed the video-->
 	                <section>
 	                 <div id="player_container" class="float-left">
-	                	<div id="myPlayer{{ source.shortName }}"></div>
+	                	<div id="{{ source.shortName }}"></div>
 	                </div> <!--  player-container -->
-	                <div id="myPlayer{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
+	                <div id="{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
 	                </section>
 	                <section>
 	                <div class="float-left">
 	                    Test Site Time: <span id="testSiteTime{{ source.shortName }}">0</span>
 	                </div>
 	                </section>
-                </div>><!--  item -->
+                </div><!--  item -->
             {% endfor %}
             </div> <!--  js masonry container -->
 
@@ -114,7 +118,26 @@
 {% block jsInit %}
 {% include "xgds_video/init_notes.js" %}
  {% if segmentsJson %}
- 	var baseUrl = "{{ baseUrl }}";
+    //globals
+    var xgds_video = { masterSlider: '',
+                       playFlag: true,
+                       initialState: true,
+                       seekOffsetList: {},
+                       baseUrl: "{{ baseUrl}}",
+                       episode: ({{ episodeJson|safe }}=="None") ? null : {{ episodeJson|safe }},
+                       displaySegments: {{ segmentsJson|safe }},
+                       firstSegment: null,
+                       lastSegment: null,
+                       skinURL: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml',
+                       onTimePlayer: "{{ sources.0.shortName }}",
+                       movingSlider: false, //if slider is moving, turn off onTime call
+                       seekOffsetList: {}, //needed for seeking vid in flash mode
+                       haltOtherEvents: false, //for onComplete, awaken idle players.
+                     };
+
+    // displaySegments are in json format like this:
+    // displaySegments['RD1'] = {segment1, segment2, segment3}
+    // displaySegments['RD1'][0].startTime would return start time of one of the segments.
                 
     //helper for converting json datetime object to javascript date time
     function toJsDateTime(jsonDateTime) {
@@ -127,44 +150,37 @@
     }
 
     //convert episode start/end time to javascript dateTime
-    var episode = ({{ episodeJson|safe }}=="None") ? null : {{ episodeJson|safe }};
-    if (episode) { 
-        episode.startTime = toJsDateTime(episode.startTime);
-        episode.endTime = toJsDateTime(episode.endTime);
+    if (xgds_video.episode) { 
+        xgds_video.episode.startTime = toJsDateTime(xgds_video.episode.startTime);
+        xgds_video.episode.endTime = toJsDateTime(xgds_video.episode.endTime);
     }
        
-    // displaySegments are in json format like this:
-    // displaySegments['RD1'] = {segment1, segment2, segment3}
-    // displaySegments['RD1'][0].startTime would return start time of one of the segments.
-    var displaySegments = {{ segmentsJson|safe }};
 
     // convert segment start and end times to javascript dateTime
-    var firstSegment = null;
-    var lastSegment = null;
 
     {% for source in sources %}
-        var segments = displaySegments["{{ source.shortName }}"]; 
+        var segments = xgds_video.displaySegments["{{ source.shortName }}"]; 
         if ((segments != undefined) && (segments.length > 0)) {
             $.each(segments, function(id) {
                 var segment = segments[id];
                 segment.startTime = toJsDateTime(segment.startTime);
                 segment.endTime = toJsDateTime(segment.endTime);
 
-                if(firstSegment == null) {
-                    firstSegment = segment;
+                if(xgds_video.firstSegment == null) {
+                    xgds_video.firstSegment = segment;
                 }
-                if (lastSegment == null) {
-                    lastSegment = segment;
+                if (xgds_video.lastSegment == null) {
+                    xgds_video.lastSegment = segment;
                 }
 
                 if (segment.startTime) {
-                    if(segment.startTime < firstSegment.startTime) {
-                        firstSegment = segment;
+                    if(segment.startTime < xgds_video.firstSegment.startTime) {
+                        xgds_video.firstSegment = segment;
                     }
                 }
                 if (segment.endTime) {
-                    if (segment.endTime > lastSegment.endTime) {
-                        lastSegment = segment;
+                    if (segment.endTime > xgds_video.lastSegment.endTime) {
+                        xgds_video.lastSegment = segment;
                     }
                 }
             });
@@ -174,7 +190,8 @@
     //set up the slider and the player
     setupSlider();
     setupJWplayer();
- {% endif %}
+
+{% endif %}
  
  	//update masonry sizing
  	$('#container').masonry().masonry();

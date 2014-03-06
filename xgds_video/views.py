@@ -170,7 +170,6 @@ def displayEpisodeRecordedVideo(request):
         if segmentsDict:
             segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4)
             episodeJson = json.dumps(episode.getDict())
-
             ctx = {
                 'segmentsJson': segmentsJson,
                 'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
@@ -188,7 +187,7 @@ def displayEpisodeRecordedVideo(request):
         messages.add_message(request, messages.ERROR, 'No Valid Episodes Exist')
         ctx = {'episode': None,
                'searchCriteria': searchCriteria}
-    return render_to_response('xgds_video/activeVideoSegments.html',
+    return render_to_response('xgds_video/video_recorded_playbacks.html',
                               ctx,
                               context_instance=RequestContext(request))
 
