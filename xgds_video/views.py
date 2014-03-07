@@ -9,6 +9,7 @@ except ImportError:
     pass  # zerorpc not needed for most views
 
 from django.shortcuts import render_to_response
+from django.http import HttpResponse
 from django.template import RequestContext
 # from django.views.generic.list_detail import object_list
 from django.contrib import messages
@@ -276,3 +277,13 @@ def stopRecording(source, endTime):
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
+
+def videoIndexFile(request):
+    flightAndSource = request.GET["flightAndSource"]
+    segmentNumber = request.GET["segmentNumber"]
+    # Look up path to index file
+    # Load index file
+    # use regex(?) substitution to replace hostname, etc.
+    # return modified file in next line
+    return HttpResponse("I am the video index renderer!! I will generate an index for Flight %s, Segment %s" %
+                        (flightAndSource, segmentNumber))
