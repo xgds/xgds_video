@@ -6,8 +6,15 @@ var pendingPlayerActions = {}
 	var actionObj = new Object();
 	actionObj.action = p.seek;
 	actionObj.arg = offset;
-	pendingPlayerActions[playerName] = [actionObj];
-	p.playlistItem(playlist);
+	// Calling immediately seems to work better for HTML5,
+	// Queuing in list for handling in onPlay(), below, works better for Flash. Yuck!
+	if (p.getRenderingMode() == "html5") {
+	    p.playlistItem(playlist).seek(offset);
+	}
+	else {
+	    pendingPlayerActions[playerName] = [actionObj];
+	    p.playlistItem(playlist);
+	}
     }
 
 /**
