@@ -1,21 +1,25 @@
 var pendingPlayerActions = {}
 
-    function setPlaylistAndSeek(playerName, playlist, offset) {
-	// Example: setPlaylistAndSeek("ROV", 1, 120)
-	var p = jwplayer(playerName);
-	var actionObj = new Object();
-	actionObj.action = p.seek;
-	actionObj.arg = offset;
-	// Calling immediately seems to work better for HTML5,
-	// Queuing in list for handling in onPlay(), below, works better for Flash. Yuck!
-	if (p.getRenderingMode() == "html5") {
-	    p.playlistItem(playlist).seek(offset);
-	}
-	else {
-	    pendingPlayerActions[playerName] = [actionObj];
-	    p.playlistItem(playlist);
-	}
+/**
+ * Ensures that seeking to a playlist item and offset works on both
+ * html 5 and flash.
+ * Example: setPlaylistAndSeek("ROV", 1, 120)
+ */
+function setPlaylistAndSeek(playerName, playlist, offset) {
+    var p = jwplayer(playerName);
+    var actionObj = new Object();
+    actionObj.action = p.seek;
+    actionObj.arg = offset;
+    // Calling immediately seems to work better for HTML5,
+    // Queuing in list for handling in onPlay(), below, works better for Flash. Yuck!
+    if (p.getRenderingMode() == "html5") {
+        p.playlistItem(playlist).seek(offset);
     }
+    else {
+        pendingPlayerActions[playerName] = [actionObj];
+        p.playlistItem(playlist);
+    }
+}
 
 /**
  * ensures that only one onTime event is enabled
@@ -96,13 +100,10 @@ function setupJWplayer() {
                 autostart: false,
                 width: maxWidth,
                 height: size[1],
+                skin: STATIC_URL + "external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml",
                 //aspectratio: "16:9",
                 mute: true,
                 controls: true, //for debugging
-                listbar: {
-                    position: 'right',
-                    size: 150
-                },
                 events: {
                     onReady: function() {
                        playFirstSegment();
@@ -119,35 +120,11 @@ function setupJWplayer() {
                     },
                     onPlay: function(e) { //gets called per source
                         onTimeController(this);
-
-			var pendingActions = pendingPlayerActions[this.id];
-			for (var i=0; i<pendingActions.length; i++) {
-			    pendingActions[i].action(pendingActions[i].arg);
-			}
-			pendingPlayerActions[this.id] = [];
-                        /*
-                        var idxAndOffsets = xgds_video.seekOffsetList;
-                        for (var keySource in idxAndOffsets) {
-                            var player = jwplayer(keySource);
-                            var idx = idxAndOffsets[keySource].index;
-                            var offset = idxAndOffsets[keySource].offset;
-                            var threshold = 0;
-                            
-                            if (player.getState() != 'BUFFERING') {
-                                player.seek(offset);
-                                
-//                                 while (!withinRange(player.getPosition(), offset)) {
-//                                     player.seek(offset);
-                                     
-//                                     if (threshold > 1000) {
-//                                         break;
-//                                     }
-//                                     threshold = threshold + 1;
-//                                 }
-
-                                delete xgds_video.seekOffsetList[keySource];
-                            }
-			    }*/
+			            var pendingActions = pendingPlayerActions[this.id];
+                        for (var i=0; i<pendingActions.length; i++) {
+                            pendingActions[i].action(pendingActions[i].arg);
+                        }
+                        pendingPlayerActions[this.id] = [];
                     },
                     onPause: function(e) {
                         //just make sure the item does get paused.

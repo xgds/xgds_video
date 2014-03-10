@@ -2,7 +2,10 @@
  * Create a slider legend that shows breaks between segments
  */
 function createSliderLegend() {
+
     for (var key in xgds_video.displaySegments) {
+        var labels = {}; //key: position, value: label
+
         var segments = xgds_video.displaySegments[key]; 
         //list of video segments with same source & episode
         var source = segments[0].source;
@@ -13,7 +16,7 @@ function createSliderLegend() {
         var totalDuration = endTime - startTime;  // in seconds
         var color = source.displayColor;
 
-        //handle empty space infront of first segment
+        //handle empty space in front of first segment
         var segStartTimeInSeconds = Math.round(segments[0].startTime / 1000);
         var emptySegmentDuration =  segStartTimeInSeconds - startTime;
         var emptySegmentWidth = xgds_video.masterSlider.width() * 
@@ -21,11 +24,12 @@ function createSliderLegend() {
         xgds_video.masterSlider.before('<img class="' + source.shortName + 
                                        '" width="' + emptySegmentWidth + 
                                        '" height="5px" style="opacity:0.0;">');
-        
+
         //for each video segment
         $.each(segments, function(id) {
             var segment = segments[id];
             var source = segment.source;
+
             //get the duration of the video segment
             var segDuration = Math.round((segment.endTime - 
                               segment.startTime) / 1000); //in seconds
@@ -57,15 +61,81 @@ function createSliderLegend() {
     }
 }
 
+function showTimeOnHover(duration) {
+    /*
+    xgds_video.masterSlider.hover(function() {
+    console.log("show time on hover"); 
+        xgds_video.masterSlider.tooltip( {
+            track: true;
+        });
+    });
+    */
+
+    // Number of tick marks on slider
+    var position = $("#masterSlider").position(),
+        sliderWidth = $("#masterSlider").width(),
+        minX = position.left,
+        maxX = minX + sliderWidth;
+
+
+    $(this).mousemove(function(e) {
+        // If within the slider's width, follow it along
+        if (e.pageX >= minX && e.pageX <= maxX) {
+            var val = (e.pageX - minX);
+            console.log("val: ", val);
+
+            //get the time
+            console.log("percentage: ", val/(maxX-minX));
+            var dur = (duration * 1000) * (val/(maxX - minX));
+            var currentTime = dur + xgds_video.firstSegment.startTime.getTime(); 
+            currentTime = new Date(currentTime);
+            
+            //display as a tooltip
+            console.log("currentTime", currentTime)
+        }
+    });
+}
+
+function getPercent(width, totalWidth) {
+    return Math.round(width/totalWidth * 100);
+}
+
+function getTimeString(datetime) {
+    var timeString = "";
+
+    if (datetime.getHours().toString().length == 1) {
+        timeString += "0"+datetime.getHours()+":";    
+    } else {
+        timeString += datetime.getHours()+":";
+    }
+
+    if (datetime.getMinutes().toString().length == 1) {
+        timeString += "0"+datetime.getMinutes()+":";    
+    } else {
+        timeString += datetime.getMinutes()+":";
+    }
+
+    if (datetime.getSeconds().toString().length == 1) {
+        timeString += "0"+datetime.getSeconds();    
+    } else {
+        timeString += datetime.getSeconds();
+    }
+    return timeString;
+}
 
 /**
  * Slider Callback:
  * update slider time text when moving slider.
  */
 function uponSliderMoveCallBack(event, ui) {
+    //update slider time label on top
     xgds_video.movingSlider = true;
     var sliderTime = new Date(ui.value * 1000);
     $('#sliderTimeLabel').val(sliderTime.toTimeString());
+
+    var target = ui.handle || $('.ui-slider-handle');                                     
+    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + getTimeString(sliderTime) + '</div><div class="tooltip-arrow"></div></div>';
+    $(target).html(tooltip);
 }
 
 
@@ -99,6 +169,10 @@ function setupSlider() {
     if (xgds_video.episode) { //video episode needed to set slider range
         var endTime = (xgds_video.episode.endTime) ? xgds_video.episode.endTime : 
                        xgds_video.lastSegment.endTime;
+
+        var duration = Math.ceil(endTime.getTime() / 1000) - 
+                       Math.floor(xgds_video.firstSegment.startTime.getTime() / 1000);
+        //for time hover label
         if (endTime) {
             xgds_video.masterSlider = $('#masterSlider').slider({
                 step: 1,
@@ -112,6 +186,7 @@ function setupSlider() {
             var sliderTime = new Date($('#masterSlider').slider('value') * 1000);
             $('#sliderTimeLabel').val(sliderTime.toTimeString());
             createSliderLegend();
+            showTimeOnHover(duration);
         } else {
             alert('The end time of video segment not available.'+
                   'Cannot setup slider');

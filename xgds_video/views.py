@@ -2,6 +2,8 @@ from __future__ import division
 import stat
 import logging
 import os
+import re
+import sys
 
 try:
     import zerorpc
@@ -123,9 +125,6 @@ def displayEpisodeRecordedVideo(request):
     """
     Returns first segment of all sources that are part of a given episode.
     """
-    # XXX use jwplayer playlist to sequence multiple segments
-    # http://www.longtailvideo.com/support/forums/jw-player/using-playlists/21104/playlist-to-chain-sequence-of-mp3s/
-
     episodeName = request.GET.get("episode")
     sourceName = request.GET.get("source")
 
@@ -278,12 +277,29 @@ def stopRecording(source, endTime):
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
 
+
+# modifies index file of recorded video to the correct host.
 def videoIndexFile(request):
     flightAndSource = request.GET["flightAndSource"]
     segmentNumber = request.GET["segmentNumber"]
+    
     # Look up path to index file
+    path = settings.PROJ_ROOT + settings.RECORDED_VIDEO_URL_BASE + str(flightAndSource) \
+            + "/Video/Recordings/Segment" + segmentNumber + '/prog_index.m3u8'
+   
+    #TODO: modify the permissions of index file to be accessible.
+
     # Load index file
+    f = open(path, 'r+')
+   
     # use regex(?) substitution to replace hostname, etc.
+    flag = False
+    if flag:
+        correctIP = "1000.000.0008" # for debug
+        for line in f:
+            s = re.sub(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', correctIP, line)
+            print >> sys.stderr, s
+
     # return modified file in next line
     return HttpResponse("I am the video index renderer!! I will generate an index for Flight %s, Segment %s" %
                         (flightAndSource, segmentNumber))

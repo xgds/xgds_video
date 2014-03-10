@@ -80,7 +80,10 @@ div.ui-slider-range.ui-widget-header {
 }
 
 #legend {
-   clear: both; 
+    float: left;
+    position: absolute;
+    clear:both;
+    font-size:10px;
 }
 
 #seekTimeBox {
@@ -139,5 +142,12 @@ div.ui-slider-range.ui-widget-header {
 }
 
 #volume {
+    float: right;
+}
+
+.tooltip { 
+    font-size: 17px;
+    width: 100px;
+    color: white;
     float: right;
 }
