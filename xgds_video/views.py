@@ -22,6 +22,7 @@ from xgds_notes.forms import NoteForm
 
 from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
+from xgds_video import util
 
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
@@ -278,7 +279,9 @@ def stopRecording(source, endTime):
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
 
 
-# modifies index file of recorded video to the correct host.
+'''
+    modifies index file of recorded video to the correct host.
+'''
 def videoIndexFile(request):
     flightAndSource = request.GET["flightAndSource"]
     segmentNumber = request.GET["segmentNumber"]
@@ -289,16 +292,9 @@ def videoIndexFile(request):
    
     #TODO: modify the permissions of index file to be accessible.
 
-    # Load index file
-    f = open(path, 'r+')
-   
-    # use regex(?) substitution to replace hostname, etc.
-    flag = False
-    if flag:
-        correctIP = "1000.000.0008" # for debug
-        for line in f:
-            s = re.sub(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', correctIP, line)
-            print >> sys.stderr, s
+    # use regex substitution to replace hostname, etc.
+    if False: #TODO set to false for debug
+        util.replace(path, "(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", correctIP)
 
     # return modified file in next line
     return HttpResponse("I am the video index renderer!! I will generate an index for Flight %s, Segment %s" %
