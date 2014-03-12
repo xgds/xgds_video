@@ -1,9 +1,6 @@
 import pytz
-<<<<<<< Updated upstream
 import re
-=======
 import sys
->>>>>>> Stashed changes
 
 from xgds_video import settings
 
