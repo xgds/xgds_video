@@ -1,4 +1,5 @@
 import pytz
+import re
 
 from xgds_video import settings
 
@@ -29,17 +30,16 @@ search and replace in file
 pattern: regex pattern for searching
 subst: string you want to replace with.
 '''
-def replace(file_path, pattern, subst):
-    #create a temp file
-    abs_path = mkstemp()
-    new_file = open(str(abs_path[1]), 'w')
-    old_file = open(file_path)
-    for line in old_file:
-        new_file.write(re.sub(pattern, subst, line))
-    #close the temp file
-    new_file.close()
-    old_file.close()
-    #remove the original file
-    remove(file_path)
-    #move the new file
-    move(str(abs_path[1]), file_path)
+def updateIndexFilePrefix(indexFilePath, pattern, subst):
+    foundEndMarker = False
+    baseFile = open(indexFilePath)
+    processedIndex = []
+    for line in baseFile:
+        processedIndex.append(re.sub(pattern, subst, line.rstrip("\n")))
+        if re.match("#EXT-X-ENDLIST", line):
+            foundEndMarker = True
+    baseFile.close()
+    if not foundEndMarker:
+        processedIndex.append("#EXT-X-ENDLIST")
+    # Append final newline to match original file format
+    return "\n".join(processedIndex) + "\n"

@@ -287,15 +287,12 @@ def videoIndexFile(request):
     segmentNumber = request.GET["segmentNumber"]
     
     # Look up path to index file
-    path = settings.PROJ_ROOT + settings.RECORDED_VIDEO_URL_BASE + str(flightAndSource) \
-            + "/Video/Recordings/Segment" + segmentNumber + '/prog_index.m3u8'
+    path = settings.PROJ_ROOT + "data/DW_Data/" + \
+        str(flightAndSource) + "/Video/Recordings/Segment" + \
+        segmentNumber + '/prog_index.m3u8'
    
-    #TODO: modify the permissions of index file to be accessible.
-
     # use regex substitution to replace hostname, etc.
-    if False: #TODO set to false for debug
-        util.replace(path, "(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", correctIP)
+    newIndex = util.updateIndexFilePrefix(path, "<prefix>", settings.SCRIPT_NAME)
 
     # return modified file in next line
-    return HttpResponse("I am the video index renderer!! I will generate an index for Flight %s, Segment %s" %
-                        (flightAndSource, segmentNumber))
+    return HttpResponse(newIndex, content_type="application/x-mpegurl")
