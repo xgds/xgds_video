@@ -1,9 +1,9 @@
-var pendingPlayerActions = {}
+var pendingPlayerActions = {};
 
 /**
  * Ensures that seeking to a playlist item and offset works on both
  * html 5 and flash.
- * Example: setPlaylistAndSeek("ROV", 1, 120)
+ * Example: setPlaylistAndSeek('ROV', 1, 120)
  */
 function setPlaylistAndSeek(playerName, playlist, offset) {
     var p = jwplayer(playerName);
@@ -12,7 +12,7 @@ function setPlaylistAndSeek(playerName, playlist, offset) {
     actionObj.arg = offset;
     // Calling immediately seems to work better for HTML5,
     // Queuing in list for handling in onPlay(), below, works better for Flash. Yuck!
-    if (p.getRenderingMode() == "html5") {
+    if (p.getRenderingMode() == 'html5') {
         p.playlistItem(playlist).seek(offset);
     }
     else {
@@ -29,15 +29,15 @@ function onTimeController(thisObj) {
         return;
     }
 
-    var switchPlayer = false;            
+    var switchPlayer = false;
     if (thisObj.id == xgds_video.onTimePlayer) {
         var state = jwplayer(thisObj.id).getState();
-        if (state != 'PLAYING') { 
+        if (state != 'PLAYING') {
             switchPlayer = true;
         }
     } else {
-        if (jwplayer(xgds_video.onTimePlayer).getState() != 'PLAYING') { 
-            switchPlayer = true; 
+        if (jwplayer(xgds_video.onTimePlayer).getState() != 'PLAYING') {
+            switchPlayer = true;
         }
     }
     if (switchPlayer) {
@@ -55,7 +55,7 @@ function onTimeController(thisObj) {
             //to current slider time
             var time = getSliderTime();
             var sourceName = getNextAvailableSegment(time)['source'];
-            xgds_video.onTimePlayer = sourceName; 
+            xgds_video.onTimePlayer = sourceName;
         }
     }
 }
@@ -86,22 +86,21 @@ function setupJWplayer() {
         var maxWidth = getMaxWidth(Object.keys(xgds_video.displaySegments).length);
         for (var key in xgds_video.displaySegments) {
             // list of video segments with same source & episode
-            var segments = xgds_video.displaySegments[key]; 
+            var segments = xgds_video.displaySegments[key];
             // source of the video segments
             var source = segments[0].source;
-            // paths of the video segments 
+            // paths of the video segments
             var videoPaths = getFilePaths(xgds_video.episode, segments);
             //width and height of the player
             var size = calculateSize(maxWidth, segments[0].settings.height,
                                          segments[0].settings.width);
-            
             jwplayer(source.shortName).setup({
                 file: videoPaths[0],
                 autostart: false,
                 width: maxWidth,
                 height: size[1],
-                skin: STATIC_URL + "external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml",
-                //aspectratio: "16:9",
+                skin: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml',
+                //aspectratio: '16:9',
                 mute: true,
                 controls: true, //for debugging
                 events: {
@@ -116,12 +115,12 @@ function setupJWplayer() {
                         var counter = 0;
                         jwplayer(this.id).pause(true);
                         onSegmentComplete(this);
-                        console.log("onComplete");
+                        console.log('onComplete');
                     },
                     onPlay: function(e) { //gets called per source
                         onTimeController(this);
-			            var pendingActions = pendingPlayerActions[this.id];
-                        for (var i=0; i<pendingActions.length; i++) {
+                        var pendingActions = pendingPlayerActions[this.id];
+                        for (var i = 0; i < pendingActions.length; i++) {
                             pendingActions[i].action(pendingActions[i].arg);
                         }
                         pendingPlayerActions[this.id] = [];
@@ -136,11 +135,11 @@ function setupJWplayer() {
                     onIdle: function(e) {
                         if (e.position > Math.floor(e.duration)) {
                             this.pause(true);
-                            console.log("onIdle");
+                            console.log('onIdle');
                             onSegmentComplete(this);
                         }
                         onTimeController(this);
-                    }, 
+                    },
                     onTime: function(object) {
                         // need this. otherwise slider jumps around while moving.
                         if (xgds_video.movingSlider == true) {
@@ -160,17 +159,17 @@ function setupJWplayer() {
                         if (xgds_video.onTimePlayer == this.id) {
                             // update the slider here.
                             var updateTime = getPlayerVideoTime(this.id);
-                            awakenIdlePlayers(updateTime,this.id);
-                            setSliderTime(updateTime);                        
+                            awakenIdlePlayers(updateTime, this.id);
+                            setSliderTime(updateTime);
                         }
                         //if at the end of the segment, pause.
-                        if (object.position > Math.floor(object.duration)) { 
+                        if (object.position > Math.floor(object.duration)) {
                             this.pause(true);
-                            console.log("onTime");
+                            console.log('onTime');
                             onSegmentComplete(this);
                         }
-                    },
-                },
+                    }
+                }
             });
 
             // load the segments as playlist.
@@ -196,12 +195,12 @@ function setupJWplayer() {
 ***********************************/
 
 /**
- * Updates the player and the slider times based on 
+ * Updates the player and the slider times based on
  * the seek time value specified in the 'seek' text box.
  */
 function seekCallBack() {
     var seekTimeStr = document.getElementById('seekTime').value;
-    if ((seekTimeStr == null) || 
+    if ((seekTimeStr == null) ||
         (Object.keys(xgds_video.displaySegments).length < 1)) {
         return;
     }
@@ -209,17 +208,15 @@ function seekCallBack() {
     for (var key in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[key];
         var sourceName = segments[0].source.shortName;
-        
         //XXX for now assume seek time's date is same as first segment's end date
         var seekTime = seekTimeParser(seekTimeStr);
-        seekDateTime = new Date(segments[0].endTime); 
+        seekDateTime = new Date(segments[0].endTime);
         seekDateTime.setHours(parseInt(seekTime[0]));
         seekDateTime.setMinutes(parseInt(seekTime[1]));
         seekDateTime.setSeconds(parseInt(seekTime[2]));
-
         var player = jwplayer(sourceName);
         if (player != undefined) {
-            jumpToPosition(seekDateTime,sourceName);
+            jumpToPosition(seekDateTime, sourceName);
         }
     }
     if (seekDateTime != null) {

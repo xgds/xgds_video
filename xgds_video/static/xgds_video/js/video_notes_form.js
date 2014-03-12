@@ -18,57 +18,56 @@ var options = {
  * Form submission
  *
  */
-  $(function() {
+$(function() {
+$('.noteSubmit').on('click', function(e) {
+    var parent = $(this).closest('form');
+    // validate and process form here
+    var content = parent.find('input#id_content').val();
+    if (content == '') {
+    parent.find('input#content').focus();
+    return false;
+    }
+    var index = parent.find('input#id_index').val();
+    var tagsId = 'input#id_tags' + index;
+    var tags = parent.find(tagsId).val();
+    var label = parent.find('select#id_label option:selected').val();
+    var extras = parent.find('input#id_extras').val();
+    var dataString = 'content=' + content + '&label=' + label + '&tags=' + tags + '&extras=' + extras;
 
-	  $('.noteSubmit').on('click', function(e) {
-		  var parent = $(this).closest('form');
-		  // validate and process form here
-		  var content = parent.find('input#id_content').val();
-		  if (content == '') {
-			  parent.find('input#content').focus();
-			  return false;
-		  }
-		  var index = parent.find('input#id_index').val();
-		  var tagsId = 'input#id_tags' + index;
-		  var tags = parent.find(tagsId).val();
-		  var label = parent.find('select#id_label option:selected').val();
-		  var extras = parent.find('input#id_extras').val();
-		  var dataString = 'content=' + content + '&label=' + label + '&tags=' + tags  + '&extras=' + extras;
-		  
-		  // not live, pull the time out of the video
-		  if (isLive == false) {
-			  var event_time = getPlayerVideoTime(parent.find('input#source').val())
-			  var iso_string = event_time.toISOString();
-			  iso_string = iso_string.replace("T"," ");
-			  iso_string = iso_string.substring(0, 19);
-			  dataString = dataString + '&event_time=' + iso_string;
-		  }
-		  
-		  $.ajax({
-			  type: 'POST',
-			  url: submitNoteUrl,
-			  data: dataString,
-			  complete: function() {
-				  //alert ('complete')
-				  parent.find('input#id_content').val('');
-				  parent.find('select#id_label').prop('selectedIndex', 0);
-				  parent.find(tagsId).importTags('');
-			  },
-			  success: function(response) {
-				  //alert ('success')
-				  parent.find('input#id_content').val('');
-				  parent.find('select#id_label').prop('selectedIndex', 0);
-				  parent.find(tagsId).importTags('');
-			  },
-			  error: function(resp) {
-				  console.log(resp);
-				  //alert(resp.getAllResponseHeaders());
-			  }
+    // not live, pull the time out of the video
+    if (isLive == false) {
+    var event_time = getPlayerVideoTime(parent.find('input#source').val());
+    var iso_string = event_time.toISOString();
+    iso_string = iso_string.replace('T', ' ');
+    iso_string = iso_string.substring(0, 19);
+    dataString = dataString + '&event_time=' + iso_string;
+    }
 
-		  });
-		  e.preventDefault();
-	  });
-  });
+    $.ajax({
+        type: 'POST',
+        url: submitNoteUrl,
+        data: dataString,
+        complete: function() {
+        //alert ('complete')
+        parent.find('input#id_content').val('');
+        parent.find('select#id_label').prop('selectedIndex', 0);
+        parent.find(tagsId).importTags('');
+    },
+    success: function(response) {
+        //alert ('success')
+        parent.find('input#id_content').val('');
+        parent.find('select#id_label').prop('selectedIndex', 0);
+        parent.find(tagsId).importTags('');
+    },
+    error: function(resp) {
+        console.log(resp);
+        //alert(resp.getAllResponseHeaders());
+    }
+
+    });
+    e.preventDefault();
+});
+});
 /*
 
 // pre-submit callback

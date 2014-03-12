@@ -293,6 +293,5 @@ def videoIndexFile(request):
    
     # use regex substitution to replace hostname, etc.
     newIndex = util.updateIndexFilePrefix(path, "<prefix>", settings.SCRIPT_NAME)
-
     # return modified file in next line
     return HttpResponse(newIndex, content_type="application/x-mpegurl")

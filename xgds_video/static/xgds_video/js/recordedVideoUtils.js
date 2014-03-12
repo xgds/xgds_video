@@ -53,9 +53,9 @@ function getFilePaths(episode, segments) {
         var segment = segments[id];
         var source = segment.source;
         var sourceName = segment.source.shortName;
-        var path = xgds_video.baseUrl + episode.shortName + '_' + 
+        var path = xgds_video.baseUrl + episode.shortName + '_' +
             source.shortName + '/Video/Recordings/' +
-            segment.directoryName + padNum(segment.segNumber, 3) + 
+            segment.directoryName + padNum(segment.segNumber, 3) +
             '/' + segment.indexFileName;
         filePaths.push(path);
     });
@@ -88,7 +88,7 @@ function withinRange(position, offset) {
 
 
 /**
- * find the playlist item index and offset the current time 
+ * find the playlist item index and offset the current time
  * falls under for this player.
  */
 function getPlaylistIdxAndOffset(currTime, sourceName) {
@@ -96,11 +96,11 @@ function getPlaylistIdxAndOffset(currTime, sourceName) {
     var offset = null;
     var segments = xgds_video.displaySegments[sourceName];
     for (var i = 0; i < segments.length; i++) {
-        if ((currTime >= segments[i].startTime) && 
+        if ((currTime >= segments[i].startTime) &&
             (currTime <= segments[i].endTime)) {
             playlistIdx = i;
             //in seconds
-            offset = Math.round((currTime - segments[i].startTime) / 1000); 
+            offset = Math.round((currTime - segments[i].startTime) / 1000);
             break;
         }
     }
@@ -121,7 +121,7 @@ function jumpToPosition(currTime, sourceName) {
     //currTime falls in one of the segments.
     if (seekValues != false) {
         setPlaylistAndSeek(sourceName, seekValues.index, seekValues.offset);
-	if (xgds_video.playFlag) {
+        if (xgds_video.playFlag) {
             player.play(true);
         } else {
             player.pause(true);
@@ -147,7 +147,7 @@ function getNextAvailableSegment(currentTime) {
             var segment = segments[id];
             var delta = segment.startTime - currentTime;
 
-            if ((delta < minDelta) && (delta >= 0)) { 
+            if ((delta < minDelta) && (delta >= 0)) {
                 minDelta = delta;
                 nearestSeg = segment;
             }
@@ -155,7 +155,7 @@ function getNextAvailableSegment(currentTime) {
     }
 
     if (nearestSeg == null) {
-        return {'time': currentTime, 'source': ""};
+        return {'time': currentTime, 'source': ''};
     } else {
         return {'time': nearestSeg.startTime, 'source': nearestSeg.source.shortName}; // need to seek to this time.
     }
@@ -168,15 +168,15 @@ function onSegmentComplete(thisObj) {
     onTimeController(thisObj);
     // if all other players are paused, go the the next available segment and play.
     if (allPaused()) {
-        var time = getPlayerVideoTime(thisObj.id); 
+        var time = getPlayerVideoTime(thisObj.id);
         var seekTime = getNextAvailableSegment(time);
-        console.log("seekTime: ", seekTime.toString());
+        console.log('seekTime: ', seekTime.toString());
         seekAllPlayersToTime(seekTime['time']);
     }
 }
 
 
-/** 
+/**
  * Returns true if all players are paused or idle.
  */
 function allPaused() {
@@ -215,7 +215,7 @@ function seekAllPlayersToTime(datetime) {
         var sourceName = segments[0].source.shortName;
         var player = jwplayer(sourceName);
 
-        jumpToPosition(datetime,sourceName);
+        jumpToPosition(datetime, sourceName);
     }
 }
 

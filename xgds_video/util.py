@@ -1,5 +1,9 @@
 import pytz
+<<<<<<< Updated upstream
 import re
+=======
+import sys
+>>>>>>> Stashed changes
 
 from xgds_video import settings
 
@@ -43,3 +47,4 @@ def updateIndexFilePrefix(indexFilePath, pattern, subst):
         processedIndex.append("#EXT-X-ENDLIST")
     # Append final newline to match original file format
     return "\n".join(processedIndex) + "\n"
+

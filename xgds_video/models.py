@@ -8,6 +8,7 @@ from django.db import models
 from geocamUtil.models import UuidField
 from xgds_video import settings
 from xgds_video import util
+import sys
 
 # pylint: disable=C1001,E1101
 
@@ -24,7 +25,7 @@ class AbstractVideoSource(models.Model):
                                  help_text='ie, ROV')
     uuid = UuidField(db_index=True)
     displayColor = models.CharField(max_length=56, blank=True, null=True,
-                                help_text='in html format. i.e. #7B3221')
+                                    help_text='in html format. i.e. #7B3221')
 
     class Meta:
         abstract = True
@@ -33,8 +34,8 @@ class AbstractVideoSource(models.Model):
         return u'%s: %s' % (self.id, self.name)
 
     def getDict(self):
-        return {"name": self.name, "shortName": self.shortName, 
-                "displayColor": self.displayColor ,"uuid": self.uuid}
+        return {"name": self.name, "shortName": self.shortName,
+                "displayColor": self.displayColor, "uuid": self.uuid}
 
 
 class VideoSource(AbstractVideoSource):
@@ -112,6 +113,9 @@ class AbstractVideoSegment(models.Model):
     settings = models.ForeignKey(videoSettings.XGDS_VIDEO_SETTINGS_MODEL, null=True, blank=True, help_text="usually (640: 360)")
     source = models.ForeignKey(videoSettings.XGDS_VIDEO_SOURCE_MODEL, null=True, blank=True, help_text="from video source. same as NewFlight's AssetRole.")
     uuid = UuidField()
+
+    print >> sys.stderr, "startTime" + str(startTime)
+    print >> sys.stderr, "endTime" + str(endTime)
 
     def getDict(self):
         return {"directoryName": self.directoryName, "segNumber": self.segNumber,
@@ -200,7 +204,6 @@ class VideoSourceGroup(models.Model):
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True, help_text="a short mnemonic code suitable to embed in a URL")
     sources = models.ManyToManyField(settings.XGDS_VIDEO_SOURCE_MODEL, through='VideoSourceGroupEntry')
     uuid = UuidField(db_index=True)
-
 
 
 class VideoSourceGroupEntry(models.Model):
