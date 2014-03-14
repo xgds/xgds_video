@@ -26,22 +26,27 @@ def pythonDatetimeToJSON(pyDateTime):
     else:
         return ""
 
+
+def processLine(subst, line):
+    return line.rstrip('\n') % {"prefix": subst}  
+
+
+def findEndMarker(item):
+    if re.match("#EXT-X-ENDLIST", item):
+        return True
+
+
 '''
 search and replace in file
 pattern: regex pattern for searching
 subst: string you want to replace with.
 '''
-def updateIndexFilePrefix(indexFilePath, pattern, subst):
+def updateIndexFilePrefix(indexFilePath, subst):
     foundEndMarker = False
     baseFile = open(indexFilePath)
-    processedIndex = []
-    for line in baseFile:
-        processedIndex.append(re.sub(pattern, subst, line.rstrip("\n")))
-        if re.match("#EXT-X-ENDLIST", line):
-            foundEndMarker = True
+    processedIndex = [processLine(subst, line) for line in baseFile]
     baseFile.close()
-    if not foundEndMarker:
+    
+    if not any([findEndMarker(item) for item in processedIndex]):
         processedIndex.append("#EXT-X-ENDLIST")
-    # Append final newline to match original file format
     return "\n".join(processedIndex) + "\n"
-

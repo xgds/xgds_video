@@ -84,7 +84,6 @@ function showTimeOnHover(duration) {
             var val = (e.pageX - minX);
 
             //get the time
-            console.log('percentage: ', val / (maxX - minX));
             var dur = (duration * 1000) * (val / (maxX - minX));
             var currentTime = dur + xgds_video.firstSegment.startTime.getTime();
             currentTime = new Date(currentTime);

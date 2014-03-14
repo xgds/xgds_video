@@ -47,17 +47,18 @@ function padNum(num, size) {
 /**
  * Helper that returns file paths of video segments with same source
  */
+
 function getFilePaths(episode, segments) {
     var filePaths = [];
     $.each(segments, function(id) {
         var segment = segments[id];
         var source = segment.source;
         var sourceName = segment.source.shortName;
-        var path = xgds_video.baseUrl + episode.shortName + '_' +
-            source.shortName + '/Video/Recordings/' +
-            segment.directoryName + padNum(segment.segNumber, 3) +
-            '/' + segment.indexFileName;
-        filePaths.push(path);
+
+        var indexFileUrl = xgds_video.indexFileUrl.replace('flightAndSource', 
+                            episode.shortName + '_' + source.shortName);
+        indexFileUrl = indexFileUrl.replace('segmentIndex', padNum(segment.segNumber,3));
+        filePaths.push(indexFileUrl);
     });
     return filePaths;
 }

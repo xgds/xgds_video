@@ -282,16 +282,15 @@ def stopRecording(source, endTime):
 '''
     modifies index file of recorded video to the correct host.
 '''
-def videoIndexFile(request):
-    flightAndSource = request.GET["flightAndSource"]
-    segmentNumber = request.GET["segmentNumber"]
-    
+def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
     # Look up path to index file
     path = settings.PROJ_ROOT + "data/DW_Data/" + \
         str(flightAndSource) + "/Video/Recordings/Segment" + \
         segmentNumber + '/prog_index.m3u8'
    
     # use regex substitution to replace hostname, etc.
-    newIndex = util.updateIndexFilePrefix(path, "<prefix>", settings.SCRIPT_NAME)
+    newIndex = util.updateIndexFilePrefix(path, settings.SCRIPT_NAME)
     # return modified file in next line
-    return HttpResponse(newIndex, content_type="application/x-mpegurl")
+    response = HttpResponse(newIndex, content_type="application/x-mpegurl")
+    response['Content-Disposition'] = 'filename = "prog_index.m3u8"'
+    return response

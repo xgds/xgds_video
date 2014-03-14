@@ -91,9 +91,13 @@ function setupJWplayer() {
             var source = segments[0].source;
             // paths of the video segments
             var videoPaths = getFilePaths(xgds_video.episode, segments);
+            console.log("index file url: ", xgds_video.indexFileUrl);
+
             //width and height of the player
             var size = calculateSize(maxWidth, segments[0].settings.height,
                                          segments[0].settings.width);
+
+            console.log("VIDEO PATH: ", videoPaths[0]);
             jwplayer(source.shortName).setup({
                 file: videoPaths[0],
                 autostart: false,

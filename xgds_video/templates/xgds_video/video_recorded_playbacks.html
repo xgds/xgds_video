@@ -133,7 +133,7 @@
                        movingSlider: false, //if slider is moving, turn off onTime call
                        seekOffsetList: {}, //needed for seeking vid in flash mode
                        haltOtherEvents: false, //for onComplete, awaken idle players.
-	                   indexFileUrl: "{% url 'xgds_video_index_file' %}",
+	                   indexFileUrl: "{% url 'xgds_video_index_file' 'flightAndSource' 'segmentIndex' %}",
                      };
 
     // displaySegments are in json format like this:
