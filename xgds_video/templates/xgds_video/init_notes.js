@@ -1,6 +1,8 @@
 //prepare the form when the DOM is ready 
 $(document).ready(function() { 
 	
+	hideError();
+	
 	$('.create_note_form').each(function() {
 		var index = $(this).find("input#id_index").val();
 	   // bind form using 'ajaxForm' 

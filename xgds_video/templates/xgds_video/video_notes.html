@@ -1,15 +1,28 @@
 {% with form=data %}
+{% if user.is_authenticated %}
 <div style="float:left; padding-top:2px; padding-bottom:2px;" >
 	<form id="create_note{{ form.index }}" class="create_note_form" action="" method="POST">
-		<label for="id_content">Note:</label><input id="id_content" type="text" name="content" maxlength="500" size="20">
-        <label for="id_label">Label:</label>{{ form.label }}
-        <label for="id_tags">Tags:</label>
-        <input id="id_tags{{ form.index }}" type="text" class="tags" />
-		<input type="hidden" id="id_index" value="{{ form.index }}" >
-     	{{ form.extras }}
-        <input type="hidden" id="id_event_time" value="{{ form.event_time.value }}" >
-        <input type="hidden" id="source" value="{{ source }}" >
-        <input id="save_note{{ form.index }}" type="submit" value="Save" class="mybutton noteSubmit">
+		<div style="float:left" id="error_div" style="color:red">
+			{{ form.non_field_errors }}
+			{{ form.errors }}
+			<label id="error_content"></label>
+		</div>
+		<div style="float:left">
+			<label for="id_content">Note:</label><input id="id_content" type="text" name="content" maxlength="500" size="20">
+		</div>
+		<div style="float:left">
+        	<label for="id_label">Label:</label>{{ form.label }}
+        </div>
+        <div style="float:left">
+        	<label for="id_tags">Tags:</label>
+        	<input id="id_tags{{ form.index }}" type="text" class="tags" />
+			<input type="hidden" id="id_index" value="{{ form.index }}" >
+    	 	{{ form.extras }}
+        	<input type="hidden" id="id_event_time" value="{{ form.event_time.value }}" >
+        	<input type="hidden" id="source" value="{{ source }}" >
+        	<input id="save_note{{ form.index }}" type="submit" value="Save" class="mybutton noteSubmit">
+        </div>
   </form>
 </div>
+{% endif %}
 {% endwith %}

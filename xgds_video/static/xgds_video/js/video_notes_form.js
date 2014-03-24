@@ -14,6 +14,16 @@ var options = {
                 timeout: 3000
             };
 
+function showError(errorMessage){
+   $("#error_content").text(errorMessage);	
+   $("#error_div").show();	
+}
+
+function hideError(){
+	$("#error_content").text("");	
+	$("#error_div").hide();	
+}
+
 /*
  * Form submission
  *
@@ -36,12 +46,62 @@ $('.noteSubmit').on('click', function(e) {
 
     // not live, pull the time out of the video
     if (isLive == false) {
-    var event_time = getPlayerVideoTime(parent.find('input#source').val());
-    var iso_string = event_time.toISOString();
-    iso_string = iso_string.replace('T', ' ');
-    iso_string = iso_string.substring(0, 19);
-    dataString = dataString + '&event_time=' + iso_string;
+	    var event_time = getPlayerVideoTime(parent.find('input#source').val());
+	    var iso_string = event_time.toISOString();
+	    iso_string = iso_string.replace('T', ' ');
+	    iso_string = iso_string.substring(0, 19);
+	    dataString = dataString + '&event_time=' + iso_string;
     }
+	  $('.noteSubmit').on('click', function(e) {
+		  var parent = $(this).closest('form');
+		  // validate and process form here
+		  var content_text = parent.find('input#id_content')
+		  var content = content_text.val();
+		  if (content == '') {
+			  content_text.focus();
+			  showError('Note must not be empty.');
+			  return false;
+		  } 
+		  
+		  hideError();
+		  var index = parent.find('input#id_index').val();
+		  var tagsId = 'input#id_tags' + index;
+		  var tags = parent.find(tagsId).val();
+		  var label = parent.find('select#id_label option:selected').val();
+		  var extras = parent.find('input#id_extras').val();
+		  var dataString = 'content=' + content + '&label=' + label + '&tags=' + tags  + '&extras=' + extras;
+		  
+		  // not live, pull the time out of the video
+		  if (isLive == false) {
+			  var event_time = getPlayerVideoTime(parent.find('input#source').val())
+			  var iso_string = event_time.toISOString();
+			  iso_string = iso_string.replace("T"," ");
+			  iso_string = iso_string.substring(0, 19);
+			  dataString = dataString + '&event_time=' + iso_string;
+		  }
+		  
+		  $.ajax({
+			  type: 'POST',
+			  url: submitNoteUrl,
+			  data: dataString,
+			  complete: function() {
+				  //alert ('complete')
+				  showError("tra la la")
+				  parent.find('input#id_content').val('');
+				  parent.find('select#id_label').prop('selectedIndex', 0);
+				  parent.find(tagsId).importTags('');
+			  },
+			  success: function(response) {
+				  //alert ('success')
+				  parent.find('input#id_content').val('');
+				  parent.find('select#id_label').prop('selectedIndex', 0);
+				  parent.find(tagsId).importTags('');
+			  },
+			  error: function(resp) {
+				  console.log(resp);
+				  showError(resp.getAllResponseHeaders());
+				  //alert(resp.getAllResponseHeaders());
+			  }
 
     $.ajax({
         type: 'POST',
