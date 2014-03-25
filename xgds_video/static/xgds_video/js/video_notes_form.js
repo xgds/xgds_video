@@ -1,32 +1,34 @@
 var options = {
-                //target:        '#output0',   // target element(s) to be updated with server response
-                //beforeSubmit:  showRequest,  // pre-submit callback
-                //success:       showResponse,  // post-submit callback
+        // target: '#output0', // target element(s) to be updated with
+        // server response
+        // beforeSubmit: showRequest, // pre-submit callback
+        // success: showResponse, // post-submit callback
+				
+        // other available options:
+        url: submitNoteUrl, // override for form's 'action' attribute
+        type: 'post',		// 'get' or 'post', override for form's 'method' attribute
+        dataType: 'json',	// 'xml', 'script', or 'json' (expected server response type)
+        // clearForm: false // clear all form fields after successful
+        // submit
+        // resetForm: true // reset the form after successful submit
+				
+        // $.ajax options can be used here too, for example:
+        timeout: 3000
+};
 
-                // other available options:
-                url: submitNoteUrl,        // override for form's 'action' attribute
-                type: 'post',        // 'get' or 'post', override for form's 'method' attribute
-                dataType: 'json',        // 'xml', 'script', or 'json' (expected server response type)
-                //clearForm: false        // clear all form fields after successful submit
-                //resetForm: true        // reset the form after successful submit
-
-                // $.ajax options can be used here too, for example:
-                timeout: 3000
-            };
-
-function showError(errorMessage){
-   $("#error_content").text(errorMessage);	
-   $("#error_div").show();	
+function showError(errorMessage) {
+    $('#error_content').text(errorMessage);	
+    $('#error_div').show();
 }
 
-function hideError(){
-	$("#error_content").text("");	
-	$("#error_div").hide();	
+function hideError() {
+    $('#error_content').text('');	
+    $('#error_div').hide();
 }
 
 /*
  * Form submission
- *
+ * 
  */
 $(function() {
 $('.noteSubmit').on('click', function(e) {
@@ -73,55 +75,52 @@ $('.noteSubmit').on('click', function(e) {
 		  
 		  // not live, pull the time out of the video
 		  if (isLive == false) {
-			  var event_time = getPlayerVideoTime(parent.find('input#source').val())
-			  var iso_string = event_time.toISOString();
-			  iso_string = iso_string.replace("T"," ");
-			  iso_string = iso_string.substring(0, 19);
-			  dataString = dataString + '&event_time=' + iso_string;
+		      var event_time = getPlayerVideoTime(parent.find('input#source').val())
+		      var iso_string = event_time.toISOString();
+		      iso_string = iso_string.replace('T',' ');
+		      iso_string = iso_string.substring(0, 19);
+		      dataString = dataString + '&event_time=' + iso_string;
 		  }
 		  
 		  $.ajax({
-			  type: 'POST',
-			  url: submitNoteUrl,
-			  data: dataString,
-			  complete: function() {
-				  //alert ('complete')
-				  showError("tra la la")
-				  parent.find('input#id_content').val('');
-				  parent.find('select#id_label').prop('selectedIndex', 0);
-				  parent.find(tagsId).importTags('');
-			  },
-			  success: function(response) {
-				  //alert ('success')
-				  parent.find('input#id_content').val('');
-				  parent.find('select#id_label').prop('selectedIndex', 0);
-				  parent.find(tagsId).importTags('');
-			  },
-			  error: function(resp) {
-				  console.log(resp);
-				  showError(resp.getAllResponseHeaders());
-				  //alert(resp.getAllResponseHeaders());
-			  }
+		      type: 'POST',
+		      url: submitNoteUrl,
+		      data: dataString,
+		      complete: function() {
+// showError('tra la la')
+		          parent.find('input#id_content').val('');
+		          parent.find('select#id_label').prop('selectedIndex', 0);
+		          parent.find(tagsId).importTags('');
+		      },
+		      success: function(response) {
+		          parent.find('input#id_content').val('');
+		          parent.find('select#id_label').prop('selectedIndex', 0);
+		          parent.find(tagsId).importTags('');
+		      },
+		      error: function(resp) {
+		          console.log(resp);
+		          showError(resp.getAllResponseHeaders());
+		      }
 
     $.ajax({
         type: 'POST',
         url: submitNoteUrl,
         data: dataString,
         complete: function() {
-        //alert ('complete')
+        // alert ('complete')
         parent.find('input#id_content').val('');
         parent.find('select#id_label').prop('selectedIndex', 0);
         parent.find(tagsId).importTags('');
     },
     success: function(response) {
-        //alert ('success')
+        // alert ('success')
         parent.find('input#id_content').val('');
         parent.find('select#id_label').prop('selectedIndex', 0);
         parent.find(tagsId).importTags('');
     },
     error: function(resp) {
         console.log(resp);
-        //alert(resp.getAllResponseHeaders());
+        // alert(resp.getAllResponseHeaders());
     }
 
     });
@@ -129,24 +128,17 @@ $('.noteSubmit').on('click', function(e) {
 });
 });
 /*
-
-// pre-submit callback
-function showRequest(formData, jqForm, options) {
-    // formData is an array; here we use $.param to convert it to a string to display it
-    // but the form plugin does this for you automatically when it submits the data
-    var queryString = $.param(formData);
-
-    // jqForm is a jQuery object encapsulating the form element.  To access the
-    // DOM element for the form do this:
-    // var formElement = jqForm[0];
-
-    alert('About to submit: \n\n' + queryString);
-
-    // here we could return false to prevent the form from being submitted;
-    // returning anything other than false will allow the form submit to continue
-    return true;
-}
-*/
+ * // pre-submit callback function showRequest(formData, jqForm, options) { //
+ * formData is an array; here we use $.param to convert it to a string to
+ * display it // but the form plugin does this for you automatically when it
+ * submits the data var queryString = $.param(formData); // jqForm is a jQuery
+ * object encapsulating the form element. To access the // DOM element for the
+ * form do this: // var formElement = jqForm[0];
+ * 
+ * alert('About to submit: \n\n' + queryString); // here we could return false
+ * to prevent the form from being submitted; // returning anything other than
+ * false will allow the form submit to continue return true; }
+ */
 
 // post-submit callback
 function showResponse(responseText, statusText, xhr, $form)  {

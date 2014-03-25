@@ -1,6 +1,5 @@
 import pytz
 import re
-import sys
 
 from xgds_video import settings
 
@@ -28,7 +27,7 @@ def pythonDatetimeToJSON(pyDateTime):
 
 
 def processLine(subst, line):
-    return line.rstrip('\n') % {"prefix": subst}  
+    return line.rstrip('\n') % {"prefix": subst}
 
 
 def findEndMarker(item):
@@ -36,17 +35,17 @@ def findEndMarker(item):
         return True
 
 
-'''
+"""
 search and replace in file
 pattern: regex pattern for searching
 subst: string you want to replace with.
-'''
+"""
 def updateIndexFilePrefix(indexFilePath, subst):
-    foundEndMarker = False
+#     foundEndMarker = False
     baseFile = open(indexFilePath)
     processedIndex = [processLine(subst, line) for line in baseFile]
     baseFile.close()
-    
+
     if not any([findEndMarker(item) for item in processedIndex]):
         processedIndex.append("#EXT-X-ENDLIST")
     return "\n".join(processedIndex) + "\n"

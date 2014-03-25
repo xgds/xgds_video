@@ -2,8 +2,6 @@ from __future__ import division
 import stat
 import logging
 import os
-import re
-import sys
 
 try:
     import zerorpc
@@ -278,15 +276,15 @@ def stopRecording(source, endTime):
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
 
 
-'''
+"""
     modifies index file of recorded video to the correct host.
-'''
+"""
 def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
     # Look up path to index file
     path = settings.PROJ_ROOT + "data/DW_Data/" + \
         str(flightAndSource) + "/Video/Recordings/Segment" + \
         segmentNumber + '/prog_index.m3u8'
-   
+
     # use regex substitution to replace hostname, etc.
     newIndex = util.updateIndexFilePrefix(path, settings.SCRIPT_NAME)
     # return modified file in next line
