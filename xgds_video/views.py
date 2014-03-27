@@ -105,11 +105,15 @@ def getSegments(source, episode):
     """
     Helper for getting segments given source and episode.
     """
-    if episode.endTime:
-        segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime,
-                                                endTime__lte=episode.endTime)
-    else:  # endTime of segment might be null if flight has not been stopped.
-        segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
+    segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
+    
+    #if the segment's source group is part of the sourceGroup
+    for segment in segments:
+        segmentSources = set([source for source in segment.sources])
+
+        if segment.source not in segmentSources:
+            segments.remove(segment)
+
     return segments
 
 
@@ -210,7 +214,6 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
             break
     assert segmentNumber is not None
 
-    print "Recorded video dir:", recordedVideoDir
     makedirsIfNeeded(recordedVideoDir)
 
     videoSettings = SETTINGS_MODEL(width=videoFeed.settings.width,
@@ -226,6 +229,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
                                  endTime=None,
                                  settings=videoSettings,
                                  source=source)
+
     videoSegment.save()
 
     if settings.PYRAPTORD_SERVICE is True:
