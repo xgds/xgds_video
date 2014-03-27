@@ -3,7 +3,6 @@ import stat
 import logging
 import os
 import datetime
-import pydevd
 
 try:
     import zerorpc
@@ -128,7 +127,6 @@ def displayEpisodeRecordedVideo(request):
     """
     episodeName = request.GET.get("episode")
     sourceName = request.GET.get("source")
-    pydevd.settrace('10.10.80.167')
 
     if not episodeName:
         searchCriteria = 'episodes'
