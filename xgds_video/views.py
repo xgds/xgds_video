@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import sys
+import datetime
 
 try:
     import zerorpc
@@ -179,6 +180,7 @@ def displayEpisodeRecordedVideo(request):
                 'episode': episode,
                 'episodeJson': episodeJson,
                 'sources': sourcesWithVideo,
+                'switchViewTime': util.pythonDatetimeToJSON(datetime.datetime.now())
             }
         else:
             messages.add_message(request, messages.ERROR, 'No Video Segments Exist')
