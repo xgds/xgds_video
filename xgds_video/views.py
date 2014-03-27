@@ -2,6 +2,7 @@ from __future__ import division
 import stat
 import logging
 import os
+import datetime
 
 try:
     import zerorpc
@@ -102,11 +103,13 @@ def getSegments(source, episode):
     """
     Helper for getting segments given source and episode.
     """
-    if episode.endTime:
-        segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime,
-                                                endTime__lte=episode.endTime)
-    else:  # endTime of segment might be null if flight has not been stopped.
-        segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
+    segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
+    segmentSources = set([source for source in episode.sourceGroup.sources.all()])
+    #if the segment's source group is part of the sourceGroup
+    for segment in segments:
+        if segment.source not in segmentSources:
+            segments.remove(segment)
+
     return segments
 
 
@@ -174,6 +177,7 @@ def displayEpisodeRecordedVideo(request):
                 'episode': episode,
                 'episodeJson': episodeJson,
                 'sources': sourcesWithVideo,
+                'switchViewTime': util.pythonDatetimeToJSON(datetime.datetime.now())
             }
         else:
             messages.add_message(request, messages.ERROR, 'No Video Segments Exist')
@@ -207,7 +211,6 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
             break
     assert segmentNumber is not None
 
-    print "Recorded video dir:", recordedVideoDir
     makedirsIfNeeded(recordedVideoDir)
 
     videoSettings = SETTINGS_MODEL(width=videoFeed.settings.width,
@@ -223,6 +226,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
                                  endTime=None,
                                  settings=videoSettings,
                                  source=source)
+
     videoSegment.save()
 
     if settings.PYRAPTORD_SERVICE is True:

@@ -134,7 +134,9 @@
                        seekOffsetList: {}, //needed for seeking vid in flash mode
                        haltOtherEvents: false, //for onComplete, awaken idle players.
 	                   indexFileUrl: "{% url 'xgds_video_index_file' 'flightAndSource' 'segmentIndex' %}",
+                       switchViewTime: toJsDateTime({{ switchViewTime|safe }}) 
                      };
+
 
     // displaySegments are in json format like this:
     // displaySegments['RD1'] = {segment1, segment2, segment3}
@@ -155,7 +157,9 @@
         xgds_video.episode.startTime = toJsDateTime(xgds_video.episode.startTime);
         xgds_video.episode.endTime = toJsDateTime(xgds_video.episode.endTime);
     }
-       
+
+    console.log("xgds_video.episode.startTime: ", xgds_video.episode.startTime);
+    console.log("switchViewTime: ", xgds_video.switchViewTime);
 
     // convert segment start and end times to javascript dateTime
 
@@ -187,6 +191,13 @@
             });
         }
     {% endfor %}
+
+    //if none of the segments have endtimes (because it's still recording from live feed)
+    //and if episode doesn't have an end time (because flight is still active), then
+    //set the last segment's end time to the time that user entered the recorded page.
+    if (xgds_video.lastSegment.endTime == null) {
+        xgds_video.lastSegment.endTime = xgds_video.switchViewTime;
+    }
 
     //set up the slider and the player
     setupSlider();

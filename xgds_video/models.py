@@ -114,9 +114,6 @@ class AbstractVideoSegment(models.Model):
     source = models.ForeignKey(videoSettings.XGDS_VIDEO_SOURCE_MODEL, null=True, blank=True, help_text="from video source. same as NewFlight's AssetRole.")
     uuid = UuidField()
 
-    print >> sys.stderr, "startTime" + str(startTime)
-    print >> sys.stderr, "endTime" + str(endTime)
-
     def getDict(self):
         return {"directoryName": self.directoryName, "segNumber": self.segNumber,
                 "indexFileName": self.indexFileName, "source": self.source.getDict(),
