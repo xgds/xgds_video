@@ -3,6 +3,7 @@ import stat
 import logging
 import os
 import datetime
+import pydevd
 
 try:
     import zerorpc
@@ -65,7 +66,6 @@ def callGetNoteExtras(episodes, source):
 
 def liveVideoFeed(request, feedName):
     feedData = []
-
     # get the active episodes
     currentEpisodes = EPISODE_MODEL.objects.filter(endTime=None)
     if feedName.lower() != 'all':
@@ -128,6 +128,7 @@ def displayEpisodeRecordedVideo(request):
     """
     episodeName = request.GET.get("episode")
     sourceName = request.GET.get("source")
+    pydevd.settrace('10.10.80.167')
 
     if not episodeName:
         searchCriteria = 'episodes'
@@ -289,8 +290,14 @@ def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
         str(flightAndSource) + "/Video/Recordings/Segment" + \
         segmentNumber + '/prog_index.m3u8'
 
+    subst = settings.PROJ_ROOT + "data/DW_Data/" + \
+        str(flightAndSource) + "/Video/Recordings/Segment" + \
+        segmentNumber + '/fileSequence'
+
     # use regex substitution to replace hostname, etc.
-    newIndex = util.updateIndexFilePrefix(path, settings.SCRIPT_NAME)
+    #newIndex = util.updateIndexFilePrefix(path, settings.SCRIPT_NAME)
+    newIndex = util.updateIndexFilePrefix(path)
+    
     # return modified file in next line
     response = HttpResponse(newIndex, content_type="application/x-mpegurl")
     response['Content-Disposition'] = 'filename = "prog_index.m3u8"'

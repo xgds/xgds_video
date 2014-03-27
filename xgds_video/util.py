@@ -27,13 +27,15 @@ def pythonDatetimeToJSON(pyDateTime):
 
 
 def processLine(subst, line):
-    return line.rstrip('\n') % {"prefix": subst}
+    return line.rstrip('\n') % {"fileSequence": subst}
+
+#def processLine(subst, line):
+#    return line.rstrip('\n') % {"prefix": subst}
 
 
 def findEndMarker(item):
     if re.match("#EXT-X-ENDLIST", item):
         return True
-
 
 """
 search and replace in file
@@ -42,7 +44,10 @@ subst: string you want to replace with.
 """
 def updateIndexFilePrefix(indexFilePath, subst):
 #     foundEndMarker = False
+    #open the file
     baseFile = open(indexFilePath)
+
+    #edit the index file
     processedIndex = [processLine(subst, line) for line in baseFile]
     baseFile.close()
 
