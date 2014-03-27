@@ -106,11 +106,9 @@ def getSegments(source, episode):
     Helper for getting segments given source and episode.
     """
     segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
-    
+    segmentSources = set([source for source in episode.sourceGroup.sources.all()])
     #if the segment's source group is part of the sourceGroup
     for segment in segments:
-        segmentSources = set([source for source in segment.sources])
-
         if segment.source not in segmentSources:
             segments.remove(segment)
 
