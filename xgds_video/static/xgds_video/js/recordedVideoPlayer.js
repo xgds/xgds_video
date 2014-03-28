@@ -91,13 +91,13 @@ function setupJWplayer() {
             var source = segments[0].source;
             // paths of the video segments
             var videoPaths = getFilePaths(xgds_video.episode, segments);
-            console.log("index file url: ", xgds_video.indexFileUrl);
+            console.log('index file url: ', xgds_video.indexFileUrl);
 
             //width and height of the player
             var size = calculateSize(maxWidth, segments[0].settings.height,
                                          segments[0].settings.width);
 
-            console.log("VIDEO PATH: ", videoPaths[0]);
+            console.log('VIDEO PATH: ', videoPaths[0]);
             jwplayer(source.shortName).setup({
                 file: videoPaths[0],
                 autostart: false,
@@ -247,7 +247,12 @@ function playPauseButtonCallBack() {
     for (var key in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[key];
         var sourceName = segments[0].source.shortName;
-        jumpToPosition(currTime, sourceName);
+        
+        if (xgds_video.playFlag) {
+            jwplayer(sourceName).play(true);
+        } else {
+            jwplayer(sourceName).pause(true);
+        }
     }
     setSliderTime(currTime);
 }

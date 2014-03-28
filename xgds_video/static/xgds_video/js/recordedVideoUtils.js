@@ -55,9 +55,9 @@ function getFilePaths(episode, segments) {
         var source = segment.source;
         var sourceName = segment.source.shortName;
 
-        var indexFileUrl = xgds_video.indexFileUrl.replace('flightAndSource', 
+        var indexFileUrl = xgds_video.indexFileUrl.replace('flightAndSource',
                             episode.shortName + '_' + source.shortName);
-        indexFileUrl = indexFileUrl.replace('segmentIndex', padNum(segment.segNumber,3));
+        indexFileUrl = indexFileUrl.replace('segmentIndex', padNum(segment.segNumber, 3));
         filePaths.push(indexFileUrl);
     });
     return filePaths;

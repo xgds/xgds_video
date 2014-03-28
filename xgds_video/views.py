@@ -2,8 +2,6 @@ from __future__ import division
 import stat
 import logging
 import os
-import re
-import sys
 import datetime
 
 try:
@@ -24,7 +22,6 @@ from xgds_notes.forms import NoteForm
 from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
-
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -68,7 +65,6 @@ def callGetNoteExtras(episodes, source):
 
 def liveVideoFeed(request, feedName):
     feedData = []
-
     # get the active episodes
     currentEpisodes = EPISODE_MODEL.objects.filter(endTime=None)
     if feedName.lower() != 'all':
@@ -283,17 +279,23 @@ def stopRecording(source, endTime):
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
 
 
-'''
+"""
     modifies index file of recorded video to the correct host.
-'''
+"""
 def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
     # Look up path to index file
     path = settings.PROJ_ROOT + "data/DW_Data/" + \
         str(flightAndSource) + "/Video/Recordings/Segment" + \
         segmentNumber + '/prog_index.m3u8'
-   
+
+    subst = settings.PROJ_ROOT + "data/DW_Data/" + \
+        str(flightAndSource) + "/Video/Recordings/Segment" + \
+        segmentNumber + '/fileSequence'
+
     # use regex substitution to replace hostname, etc.
-    newIndex = util.updateIndexFilePrefix(path, settings.SCRIPT_NAME)
+    #newIndex = util.updateIndexFilePrefix(path, settings.SCRIPT_NAME)
+    newIndex = util.updateIndexFilePrefix(path)
+    
     # return modified file in next line
     response = HttpResponse(newIndex, content_type="application/x-mpegurl")
     response['Content-Disposition'] = 'filename = "prog_index.m3u8"'
