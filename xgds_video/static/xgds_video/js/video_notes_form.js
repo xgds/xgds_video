@@ -15,14 +15,24 @@ var options = {
     timeout: 3000
 };
 
-function showError(errorMessage) {
-    $('#error_content').text(errorMessage);	
-    $('#error_div').show();
+var check_image_url = 'url(' + STATIC_URL + 'xgds_video/images/check.png)';
+var cross_image_url = 'url(' + STATIC_URL + 'xgds_video/images/cross.png)';
+
+function showSuccess(errorMessage, index) {
+    $('#error_content' + index).text(errorMessage); 
+    $('#error_image' + index).css('background', check_image_url);
+    $('#error_div' + index).show();
 };
 
-function hideError() {
-    $('#error_content').text('');	
-    $('#error_div').hide();
+function showError(errorMessage, index) {
+    $('#error_content' + index).text(errorMessage);
+    $('#error_image' + index).css('background', cross_image_url);
+    $('#error_div' + index).show();
+};
+
+function hideError(index) {
+//    $('#error_content').text('');	
+    $('#error_div' + index).hide();
 };
 
 /*
@@ -32,26 +42,40 @@ function hideError() {
 $(function() {
     $('.noteSubmit').on('click', function(e) {
         var parent = $(this).closest('form');
+        // get the index
+        var index = parent.find('input#id_index').val();
+        
         // validate and process form here
         var content_text = parent.find('input#id_content')
         var content = content_text.val();
-        if (content == '') {
+
+        hideError(index);
+        var tagsId = 'input#id_tags' + index;
+        var tagInput = parent.find(tagsId);
+        var tags = tagInput.val();
+        
+        if (tags == '') {
+            var addtag = parent.find('input#id_tags' + index + '_tag');
+         // see if we have any contents in the tag that should be created as a tag
+            if (addtag.val() != '' && addtag.val() != 'add a tag') {
+                tagInput.addTag(addtag.val());
+                tags = tagInput.val();
+            }
+        }
+        if ((content == '') && (tags == '')) {
             content_text.focus();
-            showError('Note must not be empty.');
+            showError('Note must not be empty.', index);
             return false;
         } 
-
-        hideError();
-        var index = parent.find('input#id_index').val();
-        var tagsId = 'input#id_tags' + index;
-        var tags = parent.find(tagsId).val();
+        
         var extras = parent.find('input#id_extras').val();
         var dataString = 'content=' + content + '&tags=' + tags  + '&extras=' + extras;
 
         // not live, pull the time out of the video
+        var iso_string = '';
         if (isLive == false) {
             var event_time = getPlayerVideoTime(parent.find('input#source').val())
-            var iso_string = event_time.toISOString();
+            iso_string = event_time.toISOString();
             iso_string = iso_string.replace('T',' ');
             iso_string = iso_string.substring(0, 19);
             dataString = dataString + '&event_time=' + iso_string;
@@ -61,18 +85,18 @@ $(function() {
             type: 'POST',
             url: submitNoteUrl,
             data: dataString,
-            complete: function() {
-//                  showError('tra la la')
-                parent.find('input#id_content').val('');
-                parent.find(tagsId).importTags('');
-            },
             success: function(response) {
+                showSuccess('Saved ' + content + ' ' + iso_string, index);
                 parent.find('input#id_content').val('');
                 parent.find(tagsId).importTags('');
             },
-            error: function(resp) {
-                console.log(resp);
-                showError(resp.getAllResponseHeaders());
+            error: function( jqXHR, textStatus, errorThrown )  {
+                if (errorThrown == '' && textStatus == 'error') {
+                    showError("Lost server connection", index);
+                } else {
+                    showError(textStatus + " " + errorThrown, index);
+                }
+                console.log(jqXHR.getAllResponseHeaders());
             }
 
         });
