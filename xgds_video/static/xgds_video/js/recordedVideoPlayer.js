@@ -226,6 +226,9 @@ function seekCallBack() {
     if (seekDateTime != null) {
         setSliderTime(seekDateTime);
     }
+    var target = ui.handle || $('.ui-slider-handle');
+    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + getTimeString(seekDateTime) + '</div><div class="tooltip-arrow"></div></div>';
+     $(target).html(tooltip);
 }
 
 
