@@ -244,7 +244,12 @@ function playPauseButtonCallBack() {
     for (var key in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[key];
         var sourceName = segments[0].source.shortName;
-        jumpToPosition(currTime, sourceName);
+        
+        if (xgds_video.playFlag) {
+            jwplayer(sourceName).play(true);
+        } else {
+            jwplayer(sourceName).pause(true);
+        }
     }
     setSliderTime(currTime);
 }
