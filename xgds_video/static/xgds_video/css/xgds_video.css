@@ -151,3 +151,7 @@ div.ui-slider-range.ui-widget-header {
     color: white;
     float: right;
 }
+
+#seekTimeBox {
+    clear:both;
+}

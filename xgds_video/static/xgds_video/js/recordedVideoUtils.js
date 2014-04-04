@@ -59,6 +59,11 @@ function getFilePaths(episode, segments) {
                             episode.shortName + '_' + source.shortName);
         indexFileUrl = indexFileUrl.replace('segmentIndex', padNum(segment.segNumber, 3));
         filePaths.push(indexFileUrl);
+        /* //XXX for debug
+        console.log("wrong indexz file url: ", indexFileUrl);
+        console.log("right index file url: /data/DW_Data/20140325A_RD1/Video/Recordings/Segment000/prog_index.m3u8");
+        filePaths.push("/data/DW_Data/20140325A_RD1/Video/Recordings/Segment000/prog_index.m3u8");
+        */
     });
     return filePaths;
 }
@@ -66,6 +71,13 @@ function getFilePaths(episode, segments) {
 
 function getSliderTime() {
     return new Date(xgds_video.masterSlider.slider('value') * 1000);
+}
+
+//slider knob shows the time (at which slider knob is located) as a tool tip.
+function updateToolTip(ui, sliderTime) {
+    var target = ui.handle || $('.ui-slider-handle');
+    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + getTimeString(sliderTime) + '</div><div class="tooltip-arrow"></div></div>';
+    $(target).html(tooltip);
 }
 
 
@@ -230,7 +242,7 @@ function awakenIdlePlayers(datetime, exceptThisPlayer) {
         var player = jwplayer(sourceName);
         var state = player.getState();
         if (sourceName != exceptThisPlayer) {
-            if ((state == 'IDLE') || (state == 'PAUSED')) { //XXX TODO: and playflag is on!!
+            if ((state == 'IDLE') || (state == 'PAUSED')) {
                var canJump = true;
                 for (var s in segments) {
                     var segment = segments[s];

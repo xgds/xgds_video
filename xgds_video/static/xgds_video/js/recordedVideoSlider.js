@@ -128,10 +128,7 @@ function uponSliderMoveCallBack(event, ui) {
     xgds_video.movingSlider = true;
     var sliderTime = new Date(ui.value * 1000);
     $('#sliderTimeLabel').val(sliderTime.toTimeString());
-
-    var target = ui.handle || $('.ui-slider-handle');
-    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + getTimeString(sliderTime) + '</div><div class="tooltip-arrow"></div></div>';
-    $(target).html(tooltip);
+    updateToolTip(ui, sliderTime);
 }
 
 
@@ -181,8 +178,9 @@ function setupSlider() {
             });
             var sliderTime = new Date($('#masterSlider').slider('value') * 1000);
             $('#sliderTimeLabel').val(sliderTime.toTimeString());
+            updateToolTip(false, sliderTime);
             createSliderLegend();
-            showTimeOnHover(duration);
+            //showTimeOnHover(duration);
         } else {
             alert('The end time of video segment not available.' +
                   'Cannot setup slider');
