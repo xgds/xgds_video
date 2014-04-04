@@ -70,7 +70,7 @@
                     </div>
                     <div id="legend"></div>
                     
-                    <div>
+                    <div id=seekTimeBox>
                         <input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
                         <button type="submit" class="mybutton" id="seekButton" onclick=seekCallBack()>
                             <i class="fa fa-share"></i> Seek
@@ -132,7 +132,6 @@
                        onTimePlayer: "{{ sources.0.shortName }}",
                        movingSlider: false, //if slider is moving, turn off onTime call
                        seekOffsetList: {}, //needed for seeking vid in flash mode
-                       haltOtherEvents: false, //for onComplete, awaken idle players.
 	                   indexFileUrl: "{% url 'xgds_video_index_file' 'flightAndSource' 'segmentIndex' %}",
                        switchViewTime: toJsDateTime({{ switchViewTime|safe }}) 
                      };

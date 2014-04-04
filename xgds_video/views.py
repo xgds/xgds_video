@@ -22,6 +22,7 @@ from xgds_notes.forms import NoteForm
 from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
+#import pydevd
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -102,14 +103,15 @@ def getSegments(source, episode):
     """
     Helper for getting segments given source and episode.
     """
+    #pydevd.settrace('10.10.80.167')
     segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
     segmentSources = set([source for source in episode.sourceGroup.sources.all()])
     #if the segment's source group is part of the sourceGroup
+    validSegments = []
     for segment in segments:
-        if segment.source not in segmentSources:
-            segments.remove(segment)
-
-    return segments
+        if segment.source in segmentSources:
+            validSegments.append(segment)
+    return validSegments
 
 
 def makedirsIfNeeded(path):
@@ -152,6 +154,10 @@ def displayEpisodeRecordedVideo(request):
         segmentsDict = {}  # dictionary of segments in JSON
         index = 0
         for source in sources:
+            # trim the white spaces in source shortName
+            source.shortName = source.shortName.rstrip()
+            source.save()
+
             found = getSegments(source, episode)
             if found:
                 segmentsDict[source.shortName] = [seg.getDict() for seg in found]
