@@ -59,11 +59,6 @@ function getFilePaths(episode, segments) {
                             episode.shortName + '_' + source.shortName);
         indexFileUrl = indexFileUrl.replace('segmentIndex', padNum(segment.segNumber, 3));
         filePaths.push(indexFileUrl);
-        /* //XXX for debug
-        console.log("wrong indexz file url: ", indexFileUrl);
-        console.log("right index file url: /data/DW_Data/20140325A_RD1/Video/Recordings/Segment000/prog_index.m3u8");
-        filePaths.push("/data/DW_Data/20140325A_RD1/Video/Recordings/Segment000/prog_index.m3u8");
-        */
     });
     return filePaths;
 }

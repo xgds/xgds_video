@@ -144,6 +144,9 @@
     //helper for converting json datetime object to javascript date time
     function toJsDateTime(jsonDateTime) {
         if (jsonDateTime) {
+            //need to subtract one from month since Javascript datetime indexes month
+            //as 0 to 11.
+            jsonDateTime.month = jsonDateTime.month - 1;
             return new Date(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day, 
                             jsonDateTime.hour, jsonDateTime.min, jsonDateTime.seconds, 0);  
         } else { 
