@@ -30,13 +30,30 @@ def pythonDatetimeToJSON(pyDateTime):
 def processLine(subst, line):
     return line.rstrip('\n') % {"fileSequence": subst}
 
-#def processLine(subst, line):
-#    return line.rstrip('\n') % {"prefix": subst}
+
+def getTotalDuration(path):
+    indexFile = open(path)
+
+    totalDuration = 0
+    for line in indexFile:
+        if re.match("#EXTINF:[^\d]",line):
+           totalDuration += re.findall(r'[0-9]*\.[0-9]+',line)
+
+    indexFile.close()
+    return totalDuration
 
 
 def findEndMarker(item):
     if re.match("#EXT-X-ENDLIST", item):
         return True
+
+
+def getPathToIndexFile(flightAndSource, segmentNumber):
+    path = settings.PROJ_ROOT + "data/DW_Data/" + \
+        str(flightAndSource) + "/Video/Recordings/Segment" + \
+        segmentNumber + '/prog_index.m3u8'
+    return path
+
 
 """
 search and replace in file
@@ -45,8 +62,7 @@ subst: string you want to replace with.
 """
 def updateIndexFilePrefix(indexFilePath, subst):
 #     foundEndMarker = False
-    #open the file
-#    pydevd.settrace('10.10.80.167')
+    # open the file
     baseFile = open(indexFilePath)
 
     #edit the index file
