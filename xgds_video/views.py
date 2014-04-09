@@ -22,7 +22,6 @@ from xgds_notes.forms import NoteForm
 from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
-#import pydevd
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -290,7 +289,6 @@ def stopRecording(source, endTime):
 """
 def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
     # Look up path to index file
-    #pydevd.settrace('10.10.80.167')
     path = settings.PROJ_ROOT + "data/DW_Data/" + \
         str(flightAndSource) + "/Video/Recordings/Segment" + \
         segmentNumber + '/prog_index.m3u8'

@@ -1,6 +1,5 @@
 import pytz
 import re
-#import pydevd
 
 from xgds_video import settings
 
@@ -46,7 +45,6 @@ subst: string you want to replace with.
 def updateIndexFilePrefix(indexFilePath, subst):
 #     foundEndMarker = False
     #open the file
-#    pydevd.settrace('10.10.80.167')
     baseFile = open(indexFilePath)
 
     #edit the index file
