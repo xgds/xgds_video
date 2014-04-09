@@ -102,7 +102,6 @@ def getSegments(source, episode):
     """
     Helper for getting segments given source and episode.
     """
-
     segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
     segmentSources = set([source for source in episode.sourceGroup.sources.all()])
     #if the segment's source group is part of the sourceGroup
@@ -289,18 +288,12 @@ def stopRecording(source, endTime):
 """
 def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
     # Look up path to index file
-    path = settings.PROJ_ROOT + "data/DW_Data/" + \
-        str(flightAndSource) + "/Video/Recordings/Segment" + \
-        segmentNumber + '/prog_index.m3u8'
-
-    subst = settings.PROJ_ROOT + "data/DW_Data/" + \
-        str(flightAndSource) + "/Video/Recordings/Segment" + \
-        segmentNumber + '/fileSequence'
-
+    path = getPathToIndexFile(flightAndSource, segmentNumber)
+    
     # use regex substitution to replace hostname, etc.
     newIndex = util.updateIndexFilePrefix(path, settings.SCRIPT_NAME)
     #newIndex = util.updateIndexFilePrefix(path)
-    
+   
     # return modified file in next line
     response = HttpResponse(newIndex, content_type="application/x-mpegurl")
     response['Content-Disposition'] = 'filename = "prog_index.m3u8"'
