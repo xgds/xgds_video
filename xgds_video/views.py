@@ -253,12 +253,16 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
 
     segmenterSvc = '%s_segmenter' % assetName
 
-    segmenterCmd = ('%s -b %sSegment%s -f %s -t 5 -S 3 -p -program-duration %s'
-                    % (settings.XGDS_VIDEO_MEDIASTREAMSEGMENTER_PATH,
-                       recordingUrl,
-                       segmentNumber,
-                       recordedVideoDir,
-                       maxFlightDuration))
+    segmenterCmdTemplate = '%s %s' % (settings.XGDS_VIDEO_SEGMENTER_PATH,
+                                      settings.XGDS_VIDEO_SEGMENTER_ARGS)
+
+    segmenterCmdCtx = {
+        'recordingUrl': recordingUrl,
+        'segmentNumber': segmentNumber,
+        'recordedVideoDir': recordedVideoDir,
+        'maxFlightDuration': maxFlightDuration,
+    }
+    segmenterCmd = segmenterCmdTemplate % segmenterCmdCtx
 
     print vlcCmd + "|" + segmenterCmd
 

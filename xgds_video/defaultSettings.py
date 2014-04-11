@@ -4,6 +4,8 @@
 # All Rights Reserved.
 # __END_LICENSE__
 
+import platform
+
 XGDS_VIDEO_NEW_DIR_PERMISSIONS = 0777
 XGDS_VIDEO_MAX_EPISODE_DURATION_MINUTES = 180
 
@@ -15,9 +17,15 @@ XGDS_VIDEO_EPISODE_MODEL = 'xgds_video.VideoEpisode'
 
 XGDS_VIDEO_INDEX_FILE_NAME = "prog_index.m3u8"
 XGDS_VIDEO_INDEX_FILE_END_TAG = "#EXT-X-ENDLIST"
-XGDS_VIDEO_VLC_PATH = "/Applications/VLC.app/Contents/MacOS/VLC"
+if platform.system() == 'Linux':
+    XGDS_VIDEO_VLC_PATH = '/usr/bin/vlc'
+    XGDS_VIDEO_SEGMENTER_PATH = '/usr/local/bin/avconv'
+    XGDS_VIDEO_SEGMENTER_ARGS = '-i pipe:0 -strict experimental -codec copy -map 0 -g 30 -f hls -hls_time 5 -hls_list_size 99999 prog_index.m3u8'
+else:
+    XGDS_VIDEO_VLC_PATH = "/Applications/VLC.app/Contents/MacOS/VLC"
+    XGDS_VIDEO_SEGMENTER_PATH = "/usr/bin/mediastreamsegmenter"
+    XGDS_VIDEO_SEGMENTER_ARGS = '-b %(recordingUrl)sSegment%(segmentNumber)s -f %(recordedVideoDir)s -t 5 -S 3 -p -program-duration %(maxFlightDuration)s'
 XGDS_VIDEO_VLC_PARAMETERS = "--intf=dummy --sout='#std{access=file,mux=ts,dst=-}'"
-XGDS_VIDEO_MEDIASTREAMSEGMENTER_PATH = "/usr/bin/mediastreamsegmenter"
 
 XGDS_VIDEO_TIME_ZONE = {'name': 'Pacific', 'code': 'America/Los_Angeles'}
 
