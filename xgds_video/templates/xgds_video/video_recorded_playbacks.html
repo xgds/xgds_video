@@ -133,7 +133,6 @@
                        movingSlider: false, //if slider is moving, turn off onTime call
                        seekOffsetList: {}, //needed for seeking vid in flash mode
 	                   indexFileUrl: "{% url 'xgds_video_index_file' 'flightAndSource' 'segmentIndex' %}",
-                       switchViewTime: toJsDateTime({{ switchViewTime|safe }}) 
                      };
 
 
@@ -155,16 +154,18 @@
     }
 
     //convert episode start/end time to javascript dateTime
-    if (xgds_video.episode) { 
-        xgds_video.episode.startTime = toJsDateTime(xgds_video.episode.startTime);
-        xgds_video.episode.endTime = toJsDateTime(xgds_video.episode.endTime);
+    if (xgds_video.episode) {
+        if (xgds_video.episode.startTime) {
+            xgds_video.episode.startTime = toJsDateTime(xgds_video.episode.startTime);
+        }
+        if (xgds_video.episode.endTime) {
+            xgds_video.episode.endTime = toJsDateTime(xgds_video.episode.endTime);
+        }
     }
 
     console.log("xgds_video.episode.startTime: ", xgds_video.episode.startTime);
-    console.log("switchViewTime: ", xgds_video.switchViewTime);
 
     // convert segment start and end times to javascript dateTime
-
     {% for source in sources %}
         var segments = xgds_video.displaySegments["{{ source.shortName }}"]; 
         if ((segments != undefined) && (segments.length > 0)) {
@@ -194,19 +195,11 @@
         }
     {% endfor %}
 
-    //if none of the segments have endtimes (because it's still recording from live feed)
-    //and if episode doesn't have an end time (because flight is still active), then
-    //set the last segment's end time to the time that user entered the recorded page.
-    if (xgds_video.lastSegment.endTime == null) {
-        xgds_video.lastSegment.endTime = xgds_video.switchViewTime;
-    }
-
     //set up the slider and the player
     setupSlider();
     setupJWplayer();
 
 {% endif %}
- 
  	//update masonry sizing
  	$('#container').masonry().masonry();
 {% endblock jsInit %}

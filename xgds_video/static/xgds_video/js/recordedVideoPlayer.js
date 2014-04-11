@@ -102,6 +102,10 @@ function setupJWplayer() {
                 height: maxWidth * (9/16),
                 skin: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml',
                 mute: true,
+                analytics: {
+                    enabled: false,
+                    cookies: false
+                },       
                 controls: true, //for debugging
                 events: {
                     onReady: function() {

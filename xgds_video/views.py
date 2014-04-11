@@ -22,7 +22,6 @@ from xgds_notes.forms import NoteForm
 from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
-#import pydevd
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -103,7 +102,6 @@ def getSegments(source, episode):
     """
     Helper for getting segments given source and episode.
     """
-    #pydevd.settrace('10.10.80.167')
     segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
     segmentSources = set([source for source in episode.sourceGroup.sources.all()])
     #if the segment's source group is part of the sourceGroup
@@ -150,17 +148,26 @@ def displayEpisodeRecordedVideo(request):
         sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]
 
     sourcesWithVideo = []
+    
     if episode:
-        segmentsDict = {}  # dictionary of segments in JSON
+        segmentsDict = {}  # dictionary of segments (in JSON) within given episode
+        sourceSegmentsDict = {} # dictionary of source and segments.
         index = 0
         for source in sources:
             # trim the white spaces in source shortName
             source.shortName = source.shortName.rstrip()
             source.save()
-
             found = getSegments(source, episode)
+            if found: 
+                sourceSegmentsDict[source.shortName] = found    
+        #this command changes the value of segment object (sets end time)
+        util.setSegmentEndTimes(sourceSegmentsDict, episode)
+        
+        for source in sources:
+            found = getSegments(source, episode) 
             if found:
                 segmentsDict[source.shortName] = [seg.getDict() for seg in found]
+                #this is used for getSliderEndTime
                 form = NoteForm()
                 form.index = index
                 form.fields["index"] = index
@@ -168,9 +175,9 @@ def displayEpisodeRecordedVideo(request):
                 form.fields["source"] = source
                 form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
                 source.form = form
-                sourcesWithVideo.append(source)
+                sourcesWithVideo.append(source)                
                 index = index + 1
-
+        
         segmentsJson = "null"
         episodeJson = "null"
         if segmentsDict:
@@ -181,8 +188,7 @@ def displayEpisodeRecordedVideo(request):
                 'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
                 'episode': episode,
                 'episodeJson': episodeJson,
-                'sources': sourcesWithVideo,
-                'switchViewTime': util.pythonDatetimeToJSON(datetime.datetime.now())
+                'sources': sourcesWithVideo
             }
         else:
             messages.add_message(request, messages.ERROR, 'No Video Segments Exist')
@@ -290,7 +296,7 @@ def stopRecording(source, endTime):
 """
 def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
     # Look up path to index file
-    path = getPathToIndexFile(flightAndSource, segmentNumber)
+    path = util.getPathToIndexFile(flightAndSource, segmentNumber)
     
     # use regex substitution to replace hostname, etc.
     newIndex = util.updateIndexFilePrefix(path, settings.SCRIPT_NAME)

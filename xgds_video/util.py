@@ -1,6 +1,6 @@
 import pytz
 import re
-#import pydevd
+import datetime
 
 from xgds_video import settings
 
@@ -31,16 +31,51 @@ def processLine(subst, line):
     return line.rstrip('\n') % {"fileSequence": subst}
 
 
+"""
+If both the episode endtime and segments' endtimes are not available, 
+set the segment end time as endTime value inferred from the index file
+Given dictionary of segments (key = source, value = segment).
+"""
+def setSegmentEndTimes(sourceSegmentsDict, episode):
+    if episode:
+        if episode.endTime == None:
+            for sourceShortName, segments in sourceSegmentsDict.iteritems():
+                flightAndSource = episode.shortName + '_' + sourceShortName
+                for segment in segments:
+                    if segment.endTime == None:
+                        path = getPathToIndexFile(flightAndSource, segment.segNumber)
+                        segmentDuration = getTotalDuration(path)
+                        segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
+                        segment.save()
+
+
+"""
+Helper that finds the substring between first and last strings.
+"""
+def find_between( s, first, last ):
+    try:
+        start = s.index( first ) + len( first )
+        end = s.index( last, start )
+        return s[start:end]
+    except ValueError:
+        return ""
+
+"""
+Given path to the index file of a segment, returns the total duration of the 
+segment
+"""
 def getTotalDuration(path):
     indexFile = open(path)
 
     totalDuration = 0
     for line in indexFile:
-        if re.match("#EXTINF:[^\d]",line):
-           totalDuration += re.findall(r'[0-9]*\.[0-9]+',line)
+        if line.startswith("#EXTINF"):
+            timeValue = find_between(line, ":", ",")
+            totalDuration += int(float(timeValue))
 
     indexFile.close()
     return totalDuration
+
 
 
 def findEndMarker(item):
@@ -48,10 +83,17 @@ def findEndMarker(item):
         return True
 
 
+def padNum(num, size):
+    s = str(num);
+    while (len(s) < size): 
+        s = '0' + s
+    return s
+
+
 def getPathToIndexFile(flightAndSource, segmentNumber):
     path = settings.PROJ_ROOT + "data/DW_Data/" + \
-        str(flightAndSource) + "/Video/Recordings/Segment" + \
-        segmentNumber + '/prog_index.m3u8'
+        flightAndSource + "/Video/Recordings/Segment" + \
+        padNum(segmentNumber, 3) + '/prog_index.m3u8'
     return path
 
 
