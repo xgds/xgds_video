@@ -272,7 +272,8 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
         pyraptord.updateServiceConfig(vlcSvc,
                                       {'command': vlcCmd})
         pyraptord.updateServiceConfig(segmenterSvc,
-                                      {'command': segmenterCmd})
+                                      {'command': segmenterCmd,
+                                       'cwd': recordedVideoDir})
         pyraptord.restart(vlcSvc)
         pyraptord.restart(segmenterSvc)
 
@@ -300,10 +301,10 @@ def stopRecording(source, endTime):
 """
 def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
     # Look up path to index file
-    path = util.getPathToIndexFile(flightAndSource, segmentNumber)
+    suffix = util.getIndexFileSuffix(flightAndSource, segmentNumber)
     
     # use regex substitution to replace hostname, etc.
-    newIndex = util.updateIndexFilePrefix(path, settings.SCRIPT_NAME)
+    newIndex = util.updateIndexFilePrefix(suffix, settings.SCRIPT_NAME)
     #newIndex = util.updateIndexFilePrefix(path)
    
     # return modified file in next line
