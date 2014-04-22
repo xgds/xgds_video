@@ -105,7 +105,7 @@ function setupJWplayer() {
                 analytics: {
                     enabled: false,
                     cookies: false
-                },       
+                },
                 controls: true, //for debugging
                 events: {
                     onReady: function() {

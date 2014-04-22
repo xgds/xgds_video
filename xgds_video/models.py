@@ -31,7 +31,7 @@ class AbstractVideoSource(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return u'%s: %s' % (self.id, self.name)
+        return u"%s(%s, name='%s')" % (self.__class__.__name__, self.id, self.name)
 
     def getDict(self):
         return {"name": self.name, "shortName": self.shortName,
@@ -64,7 +64,7 @@ class AbstractVideoSettings(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return u'%s: (%s: %s)' % (self.id, self.width, self.height)
+        return u"%s(%s, %s x %s)" % (self.__class__.__name__, self.id, self.width, self.height)
 
 
 class VideoSettings(AbstractVideoSettings):
@@ -91,8 +91,10 @@ class AbstractVideoFeed(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return (u'VideoFeed(%s, %s, %s)' %
-                (self.url,
+        return (u"%s(%s, url='%s', shortName='%s', active=%s)" %
+                (self.__class__.__name__,
+                 self.id,
+                 self.url,
                  self.shortName,
                  self.active))
 
@@ -126,8 +128,9 @@ class AbstractVideoSegment(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return (u'VideoSegment(%s, %s, %s, %s)' %
-                (self.id,
+        return (u"%s(%s, directoryName='%s', segNumber=%s, indexFileName='%s')" %
+                (self.__class__.__name__,
+                 self.id,
                  self.directoryName,
                  self.segNumber,
                  self.indexFileName))
@@ -168,11 +171,12 @@ class AbstractVideoEpisode(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return (u'VideoEpisode(%s, %s, %s, %s)' %
-                (self.id,
+        return (u"%s(%s, shortName='%s', startTime=%s, endTime=%s)" %
+                (self.__class__.__name__,
+                 self.id,
                  self.shortName,
-                 self.startTime,
-                 self.endTime))
+                 repr(self.startTime),
+                 repr(self.endTime)))
 
 
 class VideoEpisode(AbstractVideoEpisode):
@@ -202,6 +206,10 @@ class VideoSourceGroup(models.Model):
     sources = models.ManyToManyField(settings.XGDS_VIDEO_SOURCE_MODEL, through='VideoSourceGroupEntry')
     uuid = UuidField(db_index=True)
 
+    def __unicode__(self):
+        return (u"VideoSourceGroup(%s, name='%s', shortName='%s', %s sources)"
+                % (self.id, self.name, self.shortName, self.sources.count()))
+
 
 class VideoSourceGroupEntry(models.Model):
     """
@@ -213,3 +221,7 @@ class VideoSourceGroupEntry(models.Model):
 
     class Meta:
         ordering = ['rank']
+
+    def __unicode__(self):
+        return (u"VideoSourceGroupEntry(%s, rank=%s, source='%s', group='%s')"
+                % (self.id, self.rank, self.source.name, self.group.name))

@@ -1,6 +1,7 @@
 import pytz
 import re
 import datetime
+import os
 
 from xgds_video import settings
 
@@ -27,8 +28,14 @@ def pythonDatetimeToJSON(pyDateTime):
         return ""
 
 
-def processLine(subst, line):
-    return line.rstrip('\n') % {"fileSequence": subst}
+def processLine(videoDirUrl, line):
+    # line = 'prog_index0.ts\n'
+    # videoDirUrl = '/data/20140327A_OUT/Video/Recordings/Segment000'
+    line = line.rstrip("\n")
+    if line.startswith("prog_index"):
+        return videoDirUrl + "/" + line
+    else:
+        return line
 
 
 """
@@ -43,7 +50,9 @@ def setSegmentEndTimes(sourceSegmentsDict, episode):
                 flightAndSource = episode.shortName + '_' + sourceShortName
                 for segment in segments:
                     if segment.endTime == None:
-                        path = getPathToIndexFile(flightAndSource, segment.segNumber)
+                        suffix = getIndexFileSuffix(flightAndSource,
+                                                    segment.segNumber)
+                        path = settings.DATA_ROOT + suffix
                         segmentDuration = getTotalDuration(path)
                         segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
                         segment.save()
@@ -90,8 +99,8 @@ def padNum(num, size):
     return s
 
 
-def getPathToIndexFile(flightAndSource, segmentNumber):
-    path = settings.PROJ_ROOT + "data/DW_Data/" + \
+def getIndexFileSuffix(flightAndSource, segmentNumber):
+    path = "DW_Data/" + \
         flightAndSource + "/Video/Recordings/Segment" + \
         padNum(segmentNumber, 3) + '/prog_index.m3u8'
     return path
@@ -102,13 +111,20 @@ search and replace in file
 pattern: regex pattern for searching
 subst: string you want to replace with.
 """
-def updateIndexFilePrefix(indexFilePath, subst):
+def updateIndexFilePrefix(indexFileSuffix, subst):
 #     foundEndMarker = False
     # open the file
+    indexFilePath = settings.DATA_ROOT + indexFileSuffix
+    segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
     baseFile = open(indexFilePath)
 
     #edit the index file
-    processedIndex = [processLine(subst, line) for line in baseFile]
+    clips = baseFile.read().split('#EXTINF:')
+    header = clips.pop(0)
+    badFirstClip = clips.pop(0)
+    processedClips = '#EXTINF:'.join([header] + clips)
+    processedIndex = [processLine(segmentDirectoryUrl, line)
+                      for line in processedClips.split("\n")]
     baseFile.close()
 
     if not any([findEndMarker(item) for item in processedIndex]):
