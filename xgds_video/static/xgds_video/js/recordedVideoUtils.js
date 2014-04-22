@@ -12,6 +12,33 @@ var windowWidth = $(window).width();
 });
 
 
+//helper for converting json datetime object to javascript date time
+function toJsDateTime(jsonDateTime) {
+    if (jsonDateTime) {
+        //need to subtract one from month since Javascript datetime indexes month
+        //as 0 to 11.
+        jsonDateTime.month = jsonDateTime.month - 1;
+        return new Date(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day, 
+                jsonDateTime.hour, jsonDateTime.min, jsonDateTime.seconds, 0);  
+    } else { 
+        return null;
+    }
+}
+
+
+//convert episode start/end time to javascript dateTime
+function convertJSONtoJavascriptDateTime(episode) {
+    if (episode) {
+        if (episode.startTime) {
+            episode.startTime = toJsDateTime(episode.startTime);
+        }
+        if (episode.endTime) {
+            episode.endTime = toJsDateTime(episode.endTime);
+        }
+    }
+}
+
+
 //checks if json dict is empty
 function isEmpty(ob) {
   for (var i in ob) {

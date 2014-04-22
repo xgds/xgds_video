@@ -271,8 +271,10 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
         pyraptord.updateServiceConfig(vlcSvc,
                                       {'command': vlcCmd})
+        
         pyraptord.updateServiceConfig(segmenterSvc,
-                                      {'command': segmenterCmd})
+                                      {'command': segmenterCmd, 
+                                       'cwd': recordedVideoDir})
         pyraptord.restart(vlcSvc)
         pyraptord.restart(segmenterSvc)
 
