@@ -67,15 +67,49 @@ function onTimeController(thisObj) {
 /**
  * Only called once onReady. Kickstarts the player with earliest starttime.
  */
-function playFirstSegment() {
+function startPlayers() {
+    if (xgds_video.noteTimeStamp != "None") { //if timeOffset has chars other than empty space
+        var bits = xgds_video.noteTimeStamp.split(/\D/);
+        var datetime = new Date(bits[0], bits[1]-1, bits[2],bits[3],bits[4],bits[5])
+        //check if datetime is valid 
+        if ((datetime != "Invalid Date") && 
+            ((datetime > xgds_video.firstSegment.startTime) && 
+            (datetime < xgds_video.lastSegment.endTime))) {
+            seekAllPlayersToTime(datetime);
+            return;
+        }
+    } 
+    //find the first segment and play it.
     for (var key in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[key];
         var sourceName = segments[0].source.shortName;
 
         if (xgds_video.firstSegment.startTime == segments[0].startTime) {
             jwplayer(sourceName).play(true);
-            //unmute this player
-            jwplayer(sourceName).setMute(false);
+        }
+    }
+}
+
+
+/**
+ * If the source is a diver, and no other divers are enabled, turn it on.
+ */
+function soundController() {
+    var soundOn = false;
+    for (var source in xgds_video.displaySegments) {
+        if (source.match("RD")){ //if the source is a research diver     
+            //if no other player sounds are on, unmute this player
+            if (!soundOn) {
+                jwplayer(source).setMute(false);
+                soundOn = true;
+            } else {
+                //there is already a player that is not muted. Turn off this 
+                //player's sound.
+                if (!jwplayer(source).getMute()) {
+                    jwplayer(source).setMute(true);
+                }
+            }
+
         }
     }
 }
@@ -109,7 +143,8 @@ function setupJWplayer() {
                 controls: true, //for debugging
                 events: {
                     onReady: function() {
-                       playFirstSegment();
+                       startPlayers();
+                       soundController();
                     },
                     onBeforeComplete: function() {
                         //this.pause(true);

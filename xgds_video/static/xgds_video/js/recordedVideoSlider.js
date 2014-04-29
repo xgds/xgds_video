@@ -127,7 +127,7 @@ function uponSliderMoveCallBack(event, ui) {
     //update slider time label on top
     xgds_video.movingSlider = true;
     var sliderTime = new Date(ui.value * 1000);
-    $('#sliderTimeLabel').val(sliderTime.toTimeString());
+    setSliderTimeLabel(sliderTime);
     updateToolTip(ui, sliderTime);
 }
 
@@ -177,7 +177,7 @@ function setupSlider() {
                 range: 'min'
             });
             var sliderTime = new Date($('#masterSlider').slider('value') * 1000);
-            $('#sliderTimeLabel').val(sliderTime.toTimeString());
+            setSliderTimeLabel(sliderTime);
             updateToolTip(false, sliderTime);
             createSliderLegend();
             //showTimeOnHover(duration);

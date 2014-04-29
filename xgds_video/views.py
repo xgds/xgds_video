@@ -121,13 +121,20 @@ def makedirsIfNeeded(path):
         os.chmod(path, (stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU))
 
 
-def displayEpisodeRecordedVideo(request):
+def displayRecordedVideo(request, flightName = None, time = None):
     """
     Returns first segment of all sources that are part of a given episode.
+    Used for both playing back videos from active episode and also
+    for playing videos associated with each note.
     """
-    episodeName = request.GET.get("episode")
-    sourceName = request.GET.get("source")
-
+    if (flightName == None): #for videos from active episodes
+        episodeName = request.GET.get("episode")
+        sourceName = request.GET.get("source")
+    else: # for videos from notes which has flights
+        #infer episode from flightName
+        episodeName = flightName.split("_")[0]
+        sourceName = flightName.split("_")[1]
+    
     if not episodeName:
         searchCriteria = 'episodes'
         episodes = EPISODE_MODEL.objects.filter(endTime=None)[:1]
@@ -188,6 +195,7 @@ def displayEpisodeRecordedVideo(request):
                 'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
                 'episode': episode,
                 'episodeJson': episodeJson,
+                'noteTimeStamp': time,
                 'sources': sourcesWithVideo
             }
         else:
@@ -273,7 +281,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
                                       {'command': vlcCmd})
         
         pyraptord.updateServiceConfig(segmenterSvc,
-                                      {'command': segmenterCmd,
+                                      {'command': segmenterCmd, 
                                        'cwd': recordedVideoDir})
         pyraptord.restart(vlcSvc)
         pyraptord.restart(segmenterSvc)

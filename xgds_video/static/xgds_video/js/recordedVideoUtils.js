@@ -74,7 +74,6 @@ function padNum(num, size) {
 /**
  * Helper that returns file paths of video segments with same source
  */
-
 function getFilePaths(episode, segments) {
     var filePaths = [];
     $.each(segments, function(id) {
@@ -95,6 +94,7 @@ function getSliderTime() {
     return new Date(xgds_video.masterSlider.slider('value') * 1000);
 }
 
+
 //slider knob shows the time (at which slider knob is located) as a tool tip.
 function updateToolTip(ui, sliderTime) {
     var target = ui.handle || $('.ui-slider-handle');
@@ -103,11 +103,17 @@ function updateToolTip(ui, sliderTime) {
 }
 
 
+function setSliderTimeLabel(datetime) {
+    var time = datetime.toTimeString().replace("GMT-0700","");
+    $('#sliderTimeLabel').val(time);
+}
+
+
 function setSliderTime(datetime) {
     //update the slider
     var seconds = Math.round(datetime.getTime() / 1000);
     xgds_video.masterSlider.slider('value', seconds);
-    $('#sliderTimeLabel').val(datetime.toTimeString());
+    setSliderTimeLabel(datetime);
 }
 
 
@@ -145,6 +151,7 @@ function getPlaylistIdxAndOffset(currTime, sourceName) {
         return false;
     }
 }
+
 
 /**
  * Given current time in javascript datetime,
@@ -195,6 +202,7 @@ function getNextAvailableSegment(currentTime) {
         return {'time': nearestSeg.startTime, 'source': nearestSeg.source.shortName}; // need to seek to this time.
     }
 }
+
 
 function onSegmentComplete(thisObj) {
     //awaken idle players.

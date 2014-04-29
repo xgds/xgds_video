@@ -42,11 +42,16 @@ div.tagsinput[style]{
 }
     
 #sliderGroup {
+    width: 90%;
     padding:8px;
     background:#CACACA;
     margin-bottom:5px;
     border-width:2px;
     border-style:solid;
+}
+
+#sliderLegendGroup {
+    background:#FFFFFF;
 }
 
 #sliderTimeLabel {
@@ -87,13 +92,7 @@ div.ui-slider-range.ui-widget-header {
 }
 
 #seekTimeBox {
-    background:#CACACA; 
-    padding:8px; 
-    margin-bottom:5px; 
-    border-width:2px; 
-    width:300px; 
-    height:100px;
-    border-style:solid;
+    clear:both;
 }
 
 .float-left {
