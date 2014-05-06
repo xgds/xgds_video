@@ -137,7 +137,7 @@ def displayRecordedVideo(request, flightName = None, time = None):
     
     if not episodeName:
         searchCriteria = 'episodes'
-        episodes = EPISODE_MODEL.objects.filter(endTime=None)[:1]
+        episodes = EPISODE_MODEL.objects.filter(endTime=None).order_by('-startTime')[:1]
         if episodes:
             episode = episodes[0]
         else:
