@@ -15,7 +15,12 @@ function createSliderLegend() {
         var endTime = xgds_video.masterSlider.slider('option', 'max');
         var totalDuration = endTime - startTime;  // in seconds
         var color = source.displayColor;
-
+        if (color == "") {
+        	//assign a random color
+        	alert("display color is not set in video source. Assigning random color.")
+        	color = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+        }
+        
         //handle empty space in front of first segment
         var segStartTimeInSeconds = Math.round(segments[0].startTime / 1000);
         var emptySegmentDuration = segStartTimeInSeconds - startTime;

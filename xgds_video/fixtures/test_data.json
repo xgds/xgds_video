@@ -1,0 +1,239 @@
+[
+    {
+        "pk": 1,
+        "model": "xgds_video.videosource",
+        "fields": {
+            "shortName": "RD1",
+            "displayColor": null,
+            "name": "RD1",
+            "uuid": "6303a5b6-a86e-404b-ba82-62edab541b6a"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "xgds_video.videosource",
+        "fields": {
+            "shortName": "RD2",
+            "displayColor": null,
+            "name": "RD2",
+            "uuid": "1ba9685c-4ff8-41fb-b95b-2ad88937168b"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "xgds_video.videosource",
+        "fields": {
+            "shortName": "VR1",
+            "displayColor": null,
+            "name": "Video Ray 1",
+            "uuid": "5f4812c9-071e-4214-b7b9-8b17f6a3dbf1"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "xgds_video.videosource",
+        "fields": {
+            "shortName": "VR2",
+            "displayColor": null,
+            "name": "Video Ray 2",
+            "uuid": "a5e485fb-149c-4e14-816f-ecab4a6471df"
+        }
+    },
+    {
+        "pk": 5,
+        "model": "xgds_video.videosource",
+        "fields": {
+            "shortName": "OUT",
+            "displayColor": "#7B3221",
+            "name": "Outland",
+            "uuid": "a965b2b3-c5fc-4ac5-a0c3-48dc503e4edb"
+        }
+    },
+    {
+        "pk": 6,
+        "model": "xgds_video.videosource",
+        "fields": {
+            "shortName": "SEA",
+            "displayColor": null,
+            "name": "Seamor",
+            "uuid": "896b26a1-7c14-49d5-aa69-767bb9feb4ad"
+        }
+    },
+    {
+        "pk": 7,
+        "model": "xgds_video.videosource",
+        "fields": {
+            "shortName": "LBV",
+            "displayColor": null,
+            "name": "LBV",
+            "uuid": "ce219910-29ae-448b-ab0d-05e98d541286"
+        }
+    },
+    {
+        "pk": 7,
+        "model": "xgds_video.videosettings",
+        "fields": {
+            "width": 640,
+            "uuid": "470a4077-9ffe-4a3a-874a-d7ed2a49e31f",
+            "compressionRate": null,
+            "playbackDataRate": null,
+            "height": 360
+        }
+    },
+    {
+        "pk": 8,
+        "model": "xgds_video.videosettings",
+        "fields": {
+            "width": 640,
+            "uuid": "ae08f978-228d-4b94-919a-6c5b736b272d",
+            "compressionRate": null,
+            "playbackDataRate": null,
+            "height": 360
+        }
+    },
+    {
+        "pk": 9,
+        "model": "xgds_video.videosettings",
+        "fields": {
+            "width": 640,
+            "uuid": "e70dc2be-e67d-4b94-b0fd-23e1d66afabc",
+            "compressionRate": null,
+            "playbackDataRate": null,
+            "height": 360
+        }
+    },
+    {
+        "pk": 1,
+        "model": "xgds_video.videofeed",
+        "fields": {
+            "name": "Outland ROV",
+            "settings": 7,
+            "url": "rtsp://plrp.xgds.org:7070/proxyStream",
+            "source": 5,
+            "active": true,
+            "shortName": "OUT",
+            "uuid": "52fd7d7d-e64c-4640-a91d-44a0aecdd985"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "xgds_video.videofeed",
+        "fields": {
+            "name": "WebCam",
+            "settings": 7,
+            "url": "rtsp://plrp.xgds.org:7070/sample-uni.sdp",
+            "source": 3,
+            "active": true,
+            "shortName": "WEB",
+            "uuid": "495735bf-d84b-4e42-bd12-39ad2227bf50"
+        }
+    },
+    {
+        "pk": 6,
+        "model": "xgds_video.videosegment",
+        "fields": {
+            "directoryName": "Segment",
+            "indexFileName": "prog_index.m3u8",
+            "settings": 8,
+            "source": 1,
+            "segNumber": 2,
+            "startTime": "2013-09-26T18:50:02",
+            "endTime": "2013-09-26T18:52:00",
+            "uuid": "ca5ad3f8-ed5a-4b8c-9b6d-1311305f5015"
+        }
+    },
+    {
+        "pk": 7,
+        "model": "xgds_video.videosegment",
+        "fields": {
+            "directoryName": "Segment",
+            "indexFileName": "prog_index.m3u8",
+            "settings": 9,
+            "source": 1,
+            "segNumber": 1,
+            "startTime": "2013-09-26T18:57:39",
+            "endTime": "2013-09-26T20:07:29",
+            "uuid": "15d40cae-548e-4943-b168-52b0bda93259"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "xgds_video.videoepisode",
+        "fields": {
+            "shortName": "20130926A",
+            "endTime": null,
+            "uuid": "1b9cf240-b1fc-4132-ac12-2ceb2d3d96b0",
+            "startTime": "2013-09-26T18:45:36",
+            "sourceGroup": 1
+        }
+    },
+    {
+        "pk": 1,
+        "model": "xgds_video.videosourcegroup",
+        "fields": {
+            "shortName": "VSG1",
+            "name": "VSG1",
+            "uuid": "b25c61b6-d0d8-4c7a-9372-d3c8874aada2"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "xgds_video.videosourcegroupentry",
+        "fields": {
+            "source": 5,
+            "group": 1,
+            "rank": 1
+        }
+    },
+    {
+        "pk": 2,
+        "model": "xgds_video.videosourcegroupentry",
+        "fields": {
+            "source": 1,
+            "group": 1,
+            "rank": 1
+        }
+    },
+        {
+        "pk": "ca3ff941-e556-4476-a4cf-a968ba4e6c68",
+        "model": "plrpExplorer.newflight",
+        "fields": {
+            "plan2013": 17,
+            "locked": false,
+            "name": "20130926A_RD1",
+            "backroom_stenographer": null,
+            "source": 1,
+            "stenographer": null,
+            "assetRole": 1,
+            "start_time": "2013-09-26T17:27:25",
+            "beacon": 2,
+            "capcom": null,
+            "flight_director": null,
+            "backroom_lead": null,
+            "end_time": "2013-09-26T19:00:21",
+            "vehicle": 3,
+            "group": 13,
+            "plan": 62,
+            "notes": "",
+            "pilot": null
+        }
+    },
+    {
+        "pk": 7933,
+        "model": "plrpExplorer.note",
+        "fields": {
+            "flight": "ca3ff941-e556-4476-a4cf-a968ba4e6c68",
+            "uuid": "16a74bfea55445409fc3e7238d164ab8",
+            "event_time": "2013-09-26T18:58:55",
+            "author": 1,
+            "asset_position": "d3041037-5c13-42b1-8456-41b428b6ad91",
+            "still_frame": null,
+            "creation_time": "2013-09-26T11:20:31",
+            "label": null,
+            "content": "this is a good place to watch",
+            "modification_time": "2014-05-05T15:11:26",
+            "draft": false,
+            "console_position": 1
+        }
+    }
+]

@@ -23,6 +23,9 @@ from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
 
+if settings.PYDEVD_ECLIPSE_DEBUG == True:
+    import pydevd
+
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
@@ -127,6 +130,12 @@ def displayRecordedVideo(request, flightName = None, time = None):
     Used for both playing back videos from active episode and also
     for playing videos associated with each note.
     """
+    noteTime = ""
+    if time != None:
+        # time is passed as string (yy-mm-dd hh:mm:ss)
+        noteTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
+        noteTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(noteTime))
+    
     if (flightName == None): #for videos from active episodes
         episodeName = request.GET.get("episode")
         sourceName = request.GET.get("source")
@@ -137,7 +146,7 @@ def displayRecordedVideo(request, flightName = None, time = None):
     
     if not episodeName:
         searchCriteria = 'episodes'
-        episodes = EPISODE_MODEL.objects.filter(endTime=None)[:1]
+        episodes = EPISODE_MODEL.objects.filter(endTime=None).order_by('-startTime')[:1]
         if episodes:
             episode = episodes[0]
         else:
@@ -195,7 +204,7 @@ def displayRecordedVideo(request, flightName = None, time = None):
                 'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
                 'episode': episode,
                 'episodeJson': episodeJson,
-                'noteTimeStamp': time,
+                'noteTimeStamp': noteTime, #in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
                 'sources': sourcesWithVideo
             }
         else:

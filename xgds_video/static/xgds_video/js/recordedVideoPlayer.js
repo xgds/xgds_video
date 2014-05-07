@@ -1,27 +1,6 @@
 var pendingPlayerActions = {};
 
 /**
- * Ensures that seeking to a playlist item and offset works on both
- * html 5 and flash.
- * Example: setPlaylistAndSeek('ROV', 1, 120)
- */
-function setPlaylistAndSeek(playerName, playlist, offset) {
-    var p = jwplayer(playerName);
-    var actionObj = new Object();
-    actionObj.action = p.seek;
-    actionObj.arg = offset;
-    // Calling immediately seems to work better for HTML5,
-    // Queuing in list for handling in onPlay(), below, works better for Flash. Yuck!
-    if (p.getRenderingMode() == 'html5') {
-        p.playlistItem(playlist).seek(offset);
-    }
-    else {
-        pendingPlayerActions[playerName] = [actionObj];
-        p.playlistItem(playlist);
-    }
-}
-
-/**
  * ensures that only one onTime event is enabled
  */
 function onTimeController(thisObj) {
@@ -68,13 +47,13 @@ function onTimeController(thisObj) {
  * Only called once onReady. Kickstarts the player with earliest starttime.
  */
 function startPlayers() {
-    if (xgds_video.noteTimeStamp != "None") { //if timeOffset has chars other than empty space
-        var bits = xgds_video.noteTimeStamp.split(/\D/);
-        var datetime = new Date(bits[0], bits[1]-1, bits[2],bits[3],bits[4],bits[5])
+    if (xgds_video.noteTimeStamp != null) { // noteTimeStamp is in local time (i.e. PDT) 
+    	var datetime = xgds_video.noteTimeStamp;
         //check if datetime is valid 
         if ((datetime != "Invalid Date") && 
             ((datetime > xgds_video.firstSegment.startTime) && 
             (datetime < xgds_video.lastSegment.endTime))) {
+        	xgds_video.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
             seekAllPlayersToTime(datetime);
             return;
         }
@@ -158,10 +137,19 @@ function setupJWplayer() {
                     onPlay: function(e) { //gets called per source
                         onTimeController(this);
                         var pendingActions = pendingPlayerActions[this.id];
-                        for (var i = 0; i < pendingActions.length; i++) {
-                            pendingActions[i].action(pendingActions[i].arg);
+                         if (pendingActions.length != 0) {
+                        	for (var i = 0; i < pendingActions.length; i++) {
+                        		pendingActions[i].action(pendingActions[i].arg);
+                        	}
+                        	pendingPlayerActions[this.id] = [];
+                        	if (xgds_video.initialState == true) {
+                        		xgds_video.initialState = false;
+                        	}
+                        } else {
+                        	if (xgds_video.initialState == true) {
+                        		xgds_video.initialState = false;
+                        	}
                         }
-                        pendingPlayerActions[this.id] = [];
                     },
                     onPause: function(e) {
                         //just make sure the item does get paused.
@@ -173,7 +161,6 @@ function setupJWplayer() {
                     onIdle: function(e) {
                         if (e.position > Math.floor(e.duration)) {
                             this.pause(true);
-                            console.log('onIdle');
                             onSegmentComplete(this);
                         }
                         onTimeController(this);
@@ -193,18 +180,19 @@ function setupJWplayer() {
                         var testSiteTime = getPlayerVideoTime(this.id);
                         setPlayerTimeLabel(testSiteTime, this.id);
 
-                        //if this call is from the current 'onTimePlayer'
-                        if (xgds_video.onTimePlayer == this.id) {
-                            // update the slider here.
-                            var updateTime = getPlayerVideoTime(this.id);
-                            awakenIdlePlayers(updateTime, this.id);
-                            setSliderTime(updateTime);
-                            updateToolTip(false, updateTime);
-                        }
+                        if (xgds_video.initialState != true) {
+                        	//if this call is from the current 'onTimePlayer'
+                        	if (xgds_video.onTimePlayer == this.id) {
+                        		// update the slider here.
+                            	var updateTime = getPlayerVideoTime(this.id);
+                            	awakenIdlePlayers(updateTime, this.id);
+                            	setSliderTime(updateTime);
+                            	updateToolTip(false, updateTime);
+                        	}
+                    	}
                         //if at the end of the segment, pause.
                         if (object.position > Math.floor(object.duration)) {
                             this.pause(true);
-                            console.log('onTime');
                             onSegmentComplete(this);
                         }
                     }
@@ -243,27 +231,16 @@ function seekCallBack() {
         (Object.keys(xgds_video.displaySegments).length < 1)) {
         return;
     }
+    var seekTime = seekTimeParser(seekTimeStr);
     var seekDateTime = null;
-    for (var key in xgds_video.displaySegments) {
-        var segments = xgds_video.displaySegments[key];
-        var sourceName = segments[0].source.shortName;
-        //XXX for now assume seek time's date is same as first segment's end date
-        var seekTime = seekTimeParser(seekTimeStr);
-        seekDateTime = new Date(segments[0].endTime);
-        seekDateTime.setHours(parseInt(seekTime[0]));
-        seekDateTime.setMinutes(parseInt(seekTime[1]));
-        seekDateTime.setSeconds(parseInt(seekTime[2]));
-        var player = jwplayer(sourceName);
-        if (player != undefined) {
-            jumpToPosition(seekDateTime, sourceName);
-        }
-    }
-    if (seekDateTime != null) {
-        setSliderTime(seekDateTime);
-    }
-    var target = ui.handle || $('.ui-slider-handle');
-    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + getTimeString(seekDateTime) + '</div><div class="tooltip-arrow"></div></div>';
-     $(target).html(tooltip);
+
+    //XXX for now assume seek time's date is same as first segment's end date
+    seekDateTime = new Date(segments[0].endTime);
+    seekDateTime.setHours(parseInt(seekTime[0]));
+    seekDateTime.setMinutes(parseInt(seekTime[1]));
+    seekDateTime.setSeconds(parseInt(seekTime[2]));
+    
+    seekAllPlayersToTime(seekDateTime);
 }
 
 

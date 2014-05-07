@@ -48,15 +48,15 @@ def setSegmentEndTimes(sourceSegmentsDict, episode):
         if episode.endTime == None:
             for sourceShortName, segments in sourceSegmentsDict.iteritems():
                 flightAndSource = episode.shortName + '_' + sourceShortName
-                for segment in segments:
-                    if segment.endTime == None:
-                        suffix = getIndexFileSuffix(flightAndSource,
+                segments = sorted(segments,key = lambda segment: segment.segNumber)
+                if segments[-1].endTime == None: # if last segment has no endTime
+                    segment = segments[-1] # last segment
+                    suffix = getIndexFileSuffix(flightAndSource,
                                                     segment.segNumber)
-                        path = settings.DATA_ROOT + suffix
-                        segmentDuration = getTotalDuration(path)
-                        segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
-                        segment.save()
-
+                    path = settings.DATA_ROOT + suffix
+                    segmentDuration = getTotalDuration(path)
+                    segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
+                    segment.save()
 
 """
 Helper that finds the substring between first and last strings.

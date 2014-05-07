@@ -14,7 +14,7 @@ var windowWidth = $(window).width();
 
 //helper for converting json datetime object to javascript date time
 function toJsDateTime(jsonDateTime) {
-    if (jsonDateTime) {
+    if ((jsonDateTime) && (jsonDateTime != "None") && (jsonDateTime != "") && (jsonDateTime != undefined)) {
         //need to subtract one from month since Javascript datetime indexes month
         //as 0 to 11.
         jsonDateTime.month = jsonDateTime.month - 1;
@@ -152,6 +152,26 @@ function getPlaylistIdxAndOffset(currTime, sourceName) {
     }
 }
 
+/**
+ * Ensures that seeking to a playlist item and offset works on both
+ * html 5 and flash.
+ * Example: setPlaylistAndSeek('ROV', 1, 120)
+ */
+function setPlaylistAndSeek(playerName, playlist, offset) {
+    var p = jwplayer(playerName);
+    var actionObj = new Object();
+    actionObj.action = p.seek;
+    actionObj.arg = offset;
+    // Calling immediately seems to work better for HTML5,
+    // Queuing in list for handling in onPlay(), below, works better for Flash. Yuck!
+    if (p.getRenderingMode() == 'html5') {
+        p.playlistItem(playlist).seek(offset);
+    }
+    else {
+        pendingPlayerActions[playerName] = [actionObj];
+        p.playlistItem(playlist);
+    }
+}
 
 /**
  * Given current time in javascript datetime,
@@ -253,16 +273,22 @@ function getPlayerVideoTime(source) {
 
 
 function seekAllPlayersToTime(datetime) {
-    for (var key in xgds_video.displaySegments) {
-        var segments = xgds_video.displaySegments[key];
-        var sourceName = segments[0].source.shortName;
-        var player = jwplayer(sourceName);
-
-        jumpToPosition(datetime, sourceName);
-    }
+	for (var key in xgds_video.displaySegments) {
+		var segments = xgds_video.displaySegments[key];
+		var sourceName = segments[0].source.shortName;
+		
+		var player = jwplayer(sourceName);
+		if (player != undefined) {
+			jumpToPosition(datetime, sourceName);
+		}
+	}
+	if (datetime != null) {
+		setSliderTime(datetime);
+	}
+	var target = $('.ui-slider-handle') || ui.handle;
+	var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + getTimeString(datetime) + '</div><div class="tooltip-arrow"></div></div>';
+	$(target).html(tooltip);
 }
-
-var counter = 0;
 
 
 function awakenIdlePlayers(datetime, exceptThisPlayer) {

@@ -9,6 +9,7 @@ from geocamUtil.models import UuidField
 from xgds_video import settings
 from xgds_video import util
 import sys
+import random
 
 # pylint: disable=C1001,E1101
 

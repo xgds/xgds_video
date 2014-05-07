@@ -134,7 +134,7 @@
     //globals
     var xgds_video = { masterSlider: '',
                        playFlag: true,
-                       initialState: true,
+                       initialState: false,
                        seekOffsetList: {},
                        baseUrl: "{{ baseUrl}}",
                        episode: ({{ episodeJson|safe }}=="None") ? null : {{ episodeJson|safe }},
@@ -146,7 +146,7 @@
                        movingSlider: false, //if slider is moving, turn off onTime call
                        seekOffsetList: {}, //needed for seeking vid in flash mode
 	                   indexFileUrl: "{% url 'xgds_video_index_file' 'flightAndSource' 'segmentIndex' %}",
-                       noteTimeStamp: "{{ noteTimeStamp }}", 
+                       noteTimeStamp: toJsDateTime({{ noteTimeStamp|safe }}), 
                      };
 
     // displaySegments are in json format like this:
