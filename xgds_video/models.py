@@ -220,6 +220,9 @@ class VideoSourceGroupEntry(models.Model):
     source = models.ForeignKey(settings.XGDS_VIDEO_SOURCE_MODEL)
     group = models.ForeignKey('VideoSourceGroup')
 
+    def __unicode__(self):
+        return u'%s: %s' % (self.group, self.source)
+
     class Meta:
         ordering = ['rank']
 
