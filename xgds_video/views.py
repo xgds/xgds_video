@@ -23,9 +23,6 @@ from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
 
-if settings.PYDEVD_ECLIPSE_DEBUG == True:
-    import pydevd
-
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
