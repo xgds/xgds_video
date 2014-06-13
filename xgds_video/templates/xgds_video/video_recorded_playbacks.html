@@ -61,28 +61,47 @@
         <div style="font-size: 1.5em; margin: 20px;">Couldn't find any {{ searchCriteria }}.</div>
     {% else %}
         {% if segmentsJson %}
-                <div id="sliderGroup">
-                    <div id="sliderLabel">
-                        Local Flight Time: <input type="text" id="sliderTimeLabel" readonly>
-                        Episode (Flight) Name: {{ episode.shortName }}
-                    </div>
-                  
-                    <div id="masterSlider" class="masterSlider"></div>
-                    
-                    <div> 
-                        <a class="btn btn-small btn-info" href="#" onclick=playPauseButtonCallBack()>
-                            <i id="playbutton" class="fa fa-pause fa-2x"></i>
-                        </a>
-                    </div>
-                    <div id="legend"></div>
-                    
-                    <div id="seekTimeBox">
-                        <input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
-                        <button type="submit" class="mybutton" id="seekButton" onclick=seekCallBack()>
+        		<table>
+        			<tr>
+        				<td>
+        					<b> Local Flight Time: </b>
+        				</td>
+        				<td>
+        					<input type="text" id="sliderTimeLabel" readonly>
+        				</td>
+        			</tr>
+        			
+        			<tr>
+        				<td>
+        					<b> Episode (Flight) Name: </b>
+        				</td>
+        				<td>
+        					{{ episode.shortName }}
+        				</td>
+        			</tr>
+        		</table>
+      	 		<fieldset style=" border-color: #e5e5e5">
+	      	 		<div id="masterSlider" class="masterSlider"></div>
+	                <div> 
+	                	<a class="btn btn-small btn-info" href="#" onclick=playPauseButtonCallBack()>
+	                    <i id="playbutton" class="fa fa-pause fa-2x"></i>
+	                    </a>
+	                </div>
+	        		<div id="legend"></div>
+        		</fieldset>
+        		<table>
+        			<tr id="seekTimeBox">
+        				<td>
+        				<input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
+        				</td>
+        				<td>
+        				<button type="submit" class="mybutton" id="seekButton" onclick=seekCallBack()>
                             <i class="fa fa-share"></i> Seek
                         </button>
-                    </div>
-                </div>
+        				</td>
+        			</tr>
+        		</table>
+        		<br>
   
             <div id="container" class="js-masonry" data-masonry-options='{"itemSelector": ".item", "gutter":5, "isInitLayout":false}'>
             {% for source in sources %}
