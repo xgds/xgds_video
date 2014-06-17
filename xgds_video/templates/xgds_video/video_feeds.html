@@ -50,6 +50,11 @@ If plugin is missing, download <a href="https://support.google.com/chrome/answer
  <div class="item" id="item{{ forloop.counter }}">
 	     <div class="buttons">
 	     	<div class="toprow-left"><b>Live feed: {{ feed.name }}</b></div>
+   			<select class="toprow-right" onchange="if (this.selectedIndex > -1) resizeWindow(this.selectedIndex, {{forloop.counter}});">
+		  		<option value="half">Half Size</option>
+  		  		<option value="actual" selected="selected">Actual Size</option>	  
+		  		<option value="full">Full Size</option>
+			</select>
 	     	<a class="mybutton toprow-right" href="{% url xgds_video_recorded %}?source={{ feed.source.shortName }}">Recorded</a>
 	     </div>
 	     <section>
@@ -68,6 +73,34 @@ If plugin is missing, download <a href="https://support.google.com/chrome/answer
 
 {% block jsInit %}
 {% include "xgds_video/init_notes.js" %}
+function resizeWindow(index, counter){
+	width = 0;
+	height = 0;
+	
+	maxWidth = window.innerWidth ||document.documentElement.clientWidth ||document.body.clientWidth;
+	maxWidth = maxWidth - 100;
+	actualSize = size
+	
+	if(index == 0) { //half
+		width = actualSize[0] / 2;
+		height = (actualSize[1]/2) +100;
+ 	} else if (index == 1) { //actual
+		width = actualSize[0];
+		height = actualSize[1] + 100;
+	} else if (index == 2) { //full
+		width = actualSize[0]*2;	
+		height = actualSize[1]*2 +100;
+	} else{
+		console.log("wrong size selected!!!");
+	}
+	$("#item"+counter).css({"width":width,"height":height});
+	
+	//rearrange the windows
+	var $container = $('#container');
+	$container.masonry({
+    	reload: true
+  	});
+}
 {% endblock jsInit %}
 
 
