@@ -99,13 +99,10 @@ function soundController() {
  */
 function setupJWplayer() {
     if (xgds_video.episode) { //if episode exists
-        var numSources = Object.keys(xgds_video.displaySegments).length;
-    	if (numSources < 2) {
-    		numSources = 2;
-    	}
+    	var numSources = Object.keys(xgds_video.displaySegments).length;
     	
         var maxWidth = getMaxWidth(numSources);
-	for (var key in xgds_video.displaySegments) {
+        for (var key in xgds_video.displaySegments) {
             // list of video segments with same source & episode
             var segments = xgds_video.displaySegments[key];
             // source of the video segments
@@ -134,7 +131,7 @@ function setupJWplayer() {
                         //this.pause(true);
                     },
                     onComplete: function() {
-                        //stop until start of the next segment.
+        //stop until start of the next segment.
                         var counter = 0;
                         jwplayer(this.id).pause(true);
                         onSegmentComplete(this);
