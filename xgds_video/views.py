@@ -173,7 +173,9 @@ def displayRecordedVideo(request, flightName = None, time = None):
             found = getSegments(source, episode)
             if found: 
                 sourceSegmentsDict[source.shortName] = found    
-        #this command changes the value of segment object (sets end time)
+        
+        # if the flight is active, or if both episode end time and segment endtimes are missing,
+        # change the value of segment object (sets end time)
         util.setSegmentEndTimes(sourceSegmentsDict, episode)
         
         for source in sources:

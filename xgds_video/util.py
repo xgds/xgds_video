@@ -40,23 +40,42 @@ def processLine(videoDirUrl, line):
 
 """
 If both the episode endtime and segments' endtimes are not available, 
+OR if the flight is active (episode endtime is none and flight is active)
 set the segment end time as endTime value inferred from the index file
 Given dictionary of segments (key = source, value = segment).
 """
 def setSegmentEndTimes(sourceSegmentsDict, episode):
-    if episode:
-        if episode.endTime == None:
-            for sourceShortName, segments in sourceSegmentsDict.iteritems():
-                flightAndSource = episode.shortName + '_' + sourceShortName
+    groupflight = None
+    flight = None 
+    active = False
+    
+    for sourceShortName, segments in sourceSegmentsDict.iteritems():
+        try:
+            groupflight = GroupFlight.objects.filter(episode_id=episode.id)[0]
+        except:
+            print "Cannot find group flight from episode!"
+        if groupflight:
+            try:
+                flight = NewFlight.objects.filter(group=groupflight, source=sourceShortName)[0]
+            except:
+                print "Cannot find flight from group flight and source name"
+            
+            if flight:
+                active = ActiveFlight.objects.get(flight_id=flight.uuid)
+#         flightName = episode.shortName + '_' + sourceShortName
                 segments = sorted(segments,key = lambda segment: segment.segNumber)
-                if segments[-1].endTime == None: # if last segment has no endTime
+                # if last segment has no endTime OR if flight is active
+                if (segments[-1].endTime == None) or active:
                     segment = segments[-1] # last segment
-                    suffix = getIndexFileSuffix(flightAndSource,
-                                                    segment.segNumber)
+                    suffix = getIndexFileSuffix(flight.name,
+                                                segment.segNumber)
                     path = settings.DATA_ROOT + suffix
                     segmentDuration = getTotalDuration(path)
                     segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
                     segment.save()
+            else:
+                print "Flight was not located so no end times were set"
+                
 
 """
 Helper that finds the substring between first and last strings.
@@ -68,6 +87,7 @@ def find_between( s, first, last ):
         return s[start:end]
     except ValueError:
         return ""
+    
 
 """
 Given path to the index file of a segment, returns the total duration of the 
