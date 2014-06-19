@@ -51,31 +51,31 @@ def setSegmentEndTimes(sourceSegmentsDict, episode):
     active = False
     
     for sourceShortName, segments in sourceSegmentsDict.iteritems():
-        try:
-            groupflight = GroupFlight.objects.filter(episode_id=episode.id)[0]
-        except:
-            print "Cannot find group flight from episode!"
-        if groupflight:
-            try:
-                flight = NewFlight.objects.filter(group=groupflight, source=sourceShortName)[0]
-            except:
-                print "Cannot find flight from group flight and source name"
-            
-            if flight:
-                active = ActiveFlight.objects.get(flight_id=flight.uuid)
-#         flightName = episode.shortName + '_' + sourceShortName
-                segments = sorted(segments,key = lambda segment: segment.segNumber)
-                # if last segment has no endTime OR if flight is active
-                if (segments[-1].endTime == None) or active:
-                    segment = segments[-1] # last segment
-                    suffix = getIndexFileSuffix(flight.name,
-                                                segment.segNumber)
-                    path = settings.DATA_ROOT + suffix
-                    segmentDuration = getTotalDuration(path)
-                    segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
-                    segment.save()
-            else:
-                print "Flight was not located so no end times were set"
+#        try:
+#            groupflight = GroupFlight.objects.filter(episode_id=episode.id)[0]
+#        except:
+#            print "Cannot find group flight from episode!"
+#        if groupflight:
+#            try:
+#                flight = NewFlight.objects.filter(group=groupflight, source=sourceShortName)[0]
+#            except:
+#                print "Cannot find flight from group flight and source name"
+#            
+#            if flight:
+#                active = ActiveFlight.objects.get(flight_id=flight.uuid)
+        flightName = episode.shortName + '_' + sourceShortName
+        segments = sorted(segments,key = lambda segment: segment.segNumber)
+        # if last segment has no endTime OR if flight is active
+        if True: #if (segments[-1].endTime == None) or active:
+            segment = segments[-1] # last segment
+            suffix = getIndexFileSuffix(flightName,
+                                        segment.segNumber)
+            path = settings.DATA_ROOT + suffix
+            segmentDuration = getTotalDuration(path)
+            segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
+            segment.save()
+        else:
+            print "Flight was not located so no end times were set"
                 
 
 """
@@ -142,9 +142,9 @@ def updateIndexFilePrefix(indexFileSuffix, subst):
     if videoDelayInSecs < 0:
         videoDelayInSecs = 0
     videoDelayInSegments = int(round(videoDelayInSecs / settings.XGDS_VIDEO_SEGMENT_SEC))
-    videoDelayInLines = 2*videoDelayInSegments + 2
-    print "Video delay in seconds:", videoDelayInSecs
-    print "Video delay in segments:", videoDelayInSegments
+    videoDelayInLines = 2*videoDelayInSegments + 1
+#    print "Video delay in seconds:", videoDelayInSecs
+#    print "Video delay in segments:", videoDelayInSegments
 
     #edit the index file
     clips = baseFile.read().split('#EXTINF:')
