@@ -119,14 +119,14 @@ def getSegments(source, episode):
             print "Cannot find flight from group flight and source name"
         if flight:
             active = ActiveFlight.objects.get(flight=flight)
-    #if active:
-    segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
-    #else:    
-    #    segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime)
-    #segmentSources = set([source for source in episode.sourceGroup.sources.all()])
+    if active:
+        segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
+    else:    
+        segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime)
+#     segmentSources = set([source for source in episode.sourceGroup.sources.all()])
     if not episode.sourceGroup:
         print "EPISODE HAS NO SOURCE GROUP " + str(episode)
-	return []
+        return []
     segmentSources = episode.sourceGroup.sources.all()
 
     #if the segment's source group is part of the sourceGroup

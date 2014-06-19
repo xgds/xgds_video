@@ -48,25 +48,29 @@ Given dictionary of segments (key = source, value = segment).
 def setSegmentEndTimes(sourceSegmentsDict, episode):
     groupflight = None
     flight = None 
-    active = False
+    active = None
+    
+    if not episode:
+        print "CANNOT set segment end times for empty episode" + str(episode)
+        return
+    
+    try:
+        groupflight = GroupFlight.objects.get(episode=episode)
+    except:
+        print "Cannot find group flight from episode!"
+    if groupflight:
+        try:
+            flight = NewFlight.objects.get(group=groupflight, source=source.shortName)
+        except:
+            print "Cannot find flight from group flight and source name"
+        if flight:
+            active = ActiveFlight.objects.get(flight=flight)
     
     for sourceShortName, segments in sourceSegmentsDict.iteritems():
-#        try:
-#            groupflight = GroupFlight.objects.filter(episode_id=episode.id)[0]
-#        except:
-#            print "Cannot find group flight from episode!"
-#        if groupflight:
-#            try:
-#                flight = NewFlight.objects.filter(group=groupflight, source=sourceShortName)[0]
-#            except:
-#                print "Cannot find flight from group flight and source name"
-#            
-#            if flight:
-#                active = ActiveFlight.objects.get(flight_id=flight.uuid)
         flightName = episode.shortName + '_' + sourceShortName
         segments = sorted(segments,key = lambda segment: segment.segNumber)
         # if last segment has no endTime OR if flight is active
-        if True: #if (segments[-1].endTime == None) or active:
+        if (segments[-1].endTime == None) or active:
             segment = segments[-1] # last segment
             suffix = getIndexFileSuffix(flightName,
                                         segment.segNumber)
