@@ -102,7 +102,24 @@ def getSegments(source, episode):
     """
     Helper for getting segments given source and episode.
     """
-    segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime)
+    groupflight = None
+    active = None
+    flight = None
+    try:
+        groupflight = GroupFlight.objects.filter(episode_id=episode.id)[0]
+    except:
+        print "Cannot find group flight from episode!"
+    if groupflight:
+        try:
+            flight = NewFlight.objects.filter(group=groupflight, source=sourceShortName)[0]
+        except:
+            print "Cannot find flight from group flight and source name"
+        if flight:
+            active = ActiveFlight.objects.get(flight_id=flight.uuid)
+    if active:
+    	segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
+    else:    
+        segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime)
     segmentSources = set([source for source in episode.sourceGroup.sources.all()])
     #if the segment's source group is part of the sourceGroup
     validSegments = []

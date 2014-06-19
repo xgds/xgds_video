@@ -4,6 +4,7 @@ import datetime
 import os
 
 from xgds_video import settings
+# from plrpExplorer.views import getVideoDelay # FIX-ME: should be abstracted better from video
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
 
@@ -137,16 +138,33 @@ def updateIndexFilePrefix(indexFileSuffix, subst):
     indexFilePath = settings.DATA_ROOT + indexFileSuffix
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
     baseFile = open(indexFilePath)
+    videoDelayInSecs = 0 # getVideoDelay() - settings.XGDS_VIDEO_DELAY_MINIMUM_SEC
+    if videoDelayInSecs < 0:
+        videoDelayInSecs = 0
+    videoDelayInSegments = int(round(videoDelayInSecs / settings.XGDS_VIDEO_SEGMENT_SEC))
+    videoDelayInLines = 2*videoDelayInSegments + 2
+    print "Video delay in seconds:", videoDelayInSecs
+    print "Video delay in segments:", videoDelayInSegments
 
     #edit the index file
     clips = baseFile.read().split('#EXTINF:')
     header = clips.pop(0)
     badFirstClip = clips.pop(0)
     processedClips = '#EXTINF:'.join([header] + clips)
-    processedIndex = [processLine(segmentDirectoryUrl, line)
-                      for line in processedClips.split("\n")]
+    lineList = processedClips.split("\n")
+    maxLineNum = len(lineList) - videoDelayInLines
+    processedIndex = []
+    for idx, line in enumerate(lineList):
+        if (idx < maxLineNum):
+            processedIndex.append(processLine(segmentDirectoryUrl, line))
+
+#    processedIndex = [processLine(segmentDirectoryUrl, line)
+#                      for line in processedClips.split("\n")]
     baseFile.close()
 
-    if not any([findEndMarker(item) for item in processedIndex]):
-        processedIndex.append("#EXT-X-ENDLIST")
+    if videoDelayInSecs == 0:
+        if not any([findEndMarker(item) for item in processedIndex]):
+            processedIndex.append("#EXT-X-ENDLIST")
+    else:
+        print "Video delay non-zero - NOT adding any extra end tag"
     return "\n".join(processedIndex) + "\n"
