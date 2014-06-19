@@ -125,7 +125,7 @@ def getSegments(source, episode):
     #    segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime)
     #segmentSources = set([source for source in episode.sourceGroup.sources.all()])
     if not episode.sourceGroup:
-	    print "EPISODE HAS NO SOURCE GROUP " + str(episode)
+        print "EPISODE HAS NO SOURCE GROUP " + str(episode)
 	return []
     segmentSources = episode.sourceGroup.sources.all()
 
