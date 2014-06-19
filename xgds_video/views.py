@@ -122,7 +122,11 @@ def getSegments(source, episode):
     if active:
         segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
     else:    
-        segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime)
+        if episode.endTime:
+            segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime)
+        else:
+            print "Episode endtime is None even though the flight is not active."
+            return []
 #     segmentSources = set([source for source in episode.sourceGroup.sources.all()])
     if not episode.sourceGroup:
         print "EPISODE HAS NO SOURCE GROUP " + str(episode)
