@@ -129,12 +129,12 @@ class AbstractVideoSegment(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return (u"%s(%s, directoryName='%s', segNumber=%s, indexFileName='%s')" %
+        return (u"%s(%s, segNumber=%s, self.startTime=%s, self.endTime='%s')" %
                 (self.__class__.__name__,
                  self.id,
-                 self.directoryName,
                  self.segNumber,
-                 self.indexFileName))
+                 self.startTime,
+                 self.endTime))
 
 
 class VideoSegment(AbstractVideoSegment):
