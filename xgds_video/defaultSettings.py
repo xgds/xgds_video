@@ -38,5 +38,8 @@ XGDS_VIDEO_SEGMENT_SEC = 5.0
 
 ZEROMQ_PORTS = 'path to ports.json file -- set this in siteSettings.py'
 
+
+XGDS_VIDEO_GET_SEGMENTS_METHOD = None
+XGDS_VIDEO_GET_EPISODE_FROM_NAME = None
 # set this in siteSettings.py example: DATA_URL
 RECORDED_VIDEO_URL_BASE = None

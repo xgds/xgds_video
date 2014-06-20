@@ -28,7 +28,8 @@ SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
 SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
-
+GET_SEGMENTS_METHOD = getClassByName(settings.XGDS_VIDEO_GET_SEGMENTS_METHOD)
+GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
 
 def getZerorpcClient(clientName):
     ports = json.loads(file(settings.ZEROMQ_PORTS, 'r').read())
@@ -98,47 +99,12 @@ def liveVideoFeed(request, feedName):
                               context_instance=RequestContext(request))
 
 
-def getSegments(source, episode):
+def getSegments(source=None, episode=None):
     """
-    Helper for getting segments given source and episode.
+    Point to site settings to see real implementation of this function
+    GET_SEGMENTS_METHOD
     """
-    if not episode:
-        print "CANNOT GET SEGMENTS FOR EMPTY EPISODE " + str(source)
-        return []
-    groupflight = None
-    active = None
-    flight = None
-    try:
-        groupflight = GroupFlight.objects.get(episode=episode)
-    except:
-        print "Cannot find group flight from episode!"
-    if groupflight:
-        try:
-            flight = NewFlight.objects.get(group=groupflight, source=source.shortName)
-        except:
-            print "Cannot find flight from group flight and source name"
-        if flight:
-            active = ActiveFlight.objects.get(flight=flight)
-    if active:
-        segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
-    else:    
-        if episode.endTime:
-            segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime)
-        else:
-            print "Episode endtime is None even though the flight is not active."
-            return []
-#     segmentSources = set([source for source in episode.sourceGroup.sources.all()])
-    if not episode.sourceGroup:
-        print "EPISODE HAS NO SOURCE GROUP " + str(episode)
-        return []
-    segmentSources = episode.sourceGroup.sources.all()
-
-    #if the segment's source group is part of the sourceGroup
-    validSegments = []
-    for segment in segments:
-        if segment.source in segmentSources:
-            validSegments.append(segment)
-    return validSegments
+    return None
 
 
 def makedirsIfNeeded(path):
@@ -148,6 +114,13 @@ def makedirsIfNeeded(path):
     if not os.path.exists(path):
         os.makedirs(path)
         os.chmod(path, (stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU))
+
+def getEpisodeFromName(flightName):
+    """
+    Point to site settings to see real implementation of this function
+    GET_EPISODE_FROM_NAME_METHOD
+    """
+    None
 
 
 def displayRecordedVideo(request, flightName = None, time = None):
@@ -167,29 +140,29 @@ def displayRecordedVideo(request, flightName = None, time = None):
         sourceName = request.GET.get("source")
     else: # for videos from notes which has flights
         #infer episode from flightName
-        episodeName = flightName.split("_")[0]
+        episode = GET_EPISODE_FROM_NAME_METHOD(flightName)  
+#         episodeName = flightName.split("_")[0]
         sourceName = flightName.split("_")[1]
     
-    if not episodeName:
-        searchCriteria = 'episodes'
-        episodes = EPISODE_MODEL.objects.filter(endTime=None).order_by('-startTime')[:1]
-        if episodes:
-            episode = episodes[0]
-        else:
-            episode = None
-    else:
-        searchCriteria = 'episodes named "%s"' % episodeName
-        try:
-            episode = EPISODE_MODEL.objects.get(shortName=episodeName)
-        except EPISODE_MODEL.DoesNotExist:
-            episode = None
+#     if not episode:
+#         searchCriteria = 'episodes'
+#         episodes = EPISODE_MODEL.objects.filter(endTime=None).order_by('-startTime')[:1]
+#         if episodes:
+#             episode = episodes[0]
+#         else:
+#             episode = None
+#     else:
+#         searchCriteria = 'episodes named "%s"' % episodeName
+#         try:
+#             episode = EPISODE_MODEL.objects.get(shortName=episodeName)
+#         except EPISODE_MODEL.DoesNotExist:
+#             episode = None       
 
-    if sourceName is None:
-        sources = SOURCE_MODEL.objects.all()
-    else:
-        sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]
-
-    sourcesWithVideo = []
+#     if sourceName is None:
+#         sources = SOURCE_MODEL.objects.all()
+#     else:
+    sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]
+#     sourcesWithVideo = []
     
     if episode:
         segmentsDict = {}  # dictionary of segments (in JSON) within given episode
@@ -199,19 +172,10 @@ def displayRecordedVideo(request, flightName = None, time = None):
             # trim the white spaces in source shortName
             source.shortName = source.shortName.rstrip()
             source.save()
-            found = getSegments(source, episode)
+            found = GET_SEGMENTS_METHOD(source, episode)
             if found: 
-                sourceSegmentsDict[source.shortName] = found    
-        
-        # if the flight is active, or if both episode end time and segment endtimes are missing,
-        # change the value of segment object (sets end time)
-        util.setSegmentEndTimes(sourceSegmentsDict, episode)
-        
-        for source in sources:
-            found = getSegments(source, episode) 
-            if found:
-                segmentsDict[source.shortName] = [seg.getDict() for seg in found]
-                #this is used for getSliderEndTime
+                sourceSegmentsDict[source.shortName] = found 
+                segmentsDict[source.shortName] = [seg.getDict() for seg in found]   
                 form = NoteForm()
                 form.index = index
                 form.fields["index"] = index
@@ -219,8 +183,31 @@ def displayRecordedVideo(request, flightName = None, time = None):
                 form.fields["source"] = source
                 form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
                 source.form = form
-                sourcesWithVideo.append(source)                
+#                 sourcesWithVideo.append(source)                
                 index = index + 1
+        util.setSegmentEndTimes(sourceSegmentsDict, episode)
+
+        
+        # if the flight is active, or if both episode end time and segment endtimes are missing,
+        # change the value of segment object (sets end time)
+#         util.setSegmentEndTimes(sourceSegmentsDict, episode)
+        
+        
+        
+#         for source in sources:
+#             found = GET_SEGMENTS_METHOD(source, episode) 
+#             if found:
+#                 segmentsDict[source.shortName] = [seg.getDict() for seg in found]
+                #this is used for getSliderEndTime
+#                 form = NoteForm()
+#                 form.index = index
+#                 form.fields["index"] = index
+#                 form.source = source
+#                 form.fields["source"] = source
+#                 form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
+#                 source.form = form
+#                 sourcesWithVideo.append(source)                
+#                 index = index + 1
         
         segmentsJson = "null"
         episodeJson = "null"
@@ -233,7 +220,7 @@ def displayRecordedVideo(request, flightName = None, time = None):
                 'episode': episode,
                 'episodeJson': episodeJson,
                 'noteTimeStamp': noteTime, #in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
-                'sources': sourcesWithVideo
+                'sources': [source] #sourcesWithVideo
             }
         else:
             messages.add_message(request, messages.ERROR, 'No Video Segments Exist')
@@ -243,8 +230,8 @@ def displayRecordedVideo(request, flightName = None, time = None):
             }
     else:
         messages.add_message(request, messages.ERROR, 'No Valid Episodes Exist')
-        ctx = {'episode': None,
-               'searchCriteria': searchCriteria}
+        ctx = {'episode': None}
+#                'searchCriteria': searchCriteria}
     return render_to_response('xgds_video/video_recorded_playbacks.html',
                               ctx,
                               context_instance=RequestContext(request))
