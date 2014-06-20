@@ -22,6 +22,7 @@ from xgds_notes.forms import NoteForm
 from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
+from xgds_video.models import *
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -153,28 +154,8 @@ def displayRecordedVideo(request, flightName=None, time=None):
         #infer episode from flightName
         GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
         episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
-#         episodeName = flightName.split("_")[0]
         sourceName = flightName.split("_")[1]
 
-#     if not episode:
-#         searchCriteria = 'episodes'
-#         episodes = EPISODE_MODEL.objects.filter(endTime=None).order_by('-startTime')[:1]
-#         if episodes:
-#             episode = episodes[0]
-#         else:
-#             episode = None
-#     else:
-#         searchCriteria = 'episodes named "%s"' % episodeName
-#         try:
-#             episode = EPISODE_MODEL.objects.get(shortName=episodeName)
-#         except EPISODE_MODEL.DoesNotExist:
-#             episode = None       
-
-#     if sourceName is None:
-#         sources = SOURCE_MODEL.objects.all()
-#     else:
-
-    foundEpisodes = []
     sources = []
     if not episode:
         # we are looking for live recorded so see what is active
@@ -202,13 +183,18 @@ def displayRecordedVideo(request, flightName=None, time=None):
         index = 0
         for source in sources:
             # trim the white spaces in source shortName
-            source.shortName = source.shortName.rstrip()
-            source.save()
-            GET_SEGMENTS_METHOD = getClassByName(settings.XGDS_VIDEO_GET_SEGMENTS_METHOD)
-            found = GET_SEGMENTS_METHOD(source, episode)
-            if found:
-                sourceSegmentsDict[source.shortName] = found 
-                segmentsDict[source.shortName] = [seg.getDict() for seg in found]   
+            cleanName = source.shortName.rstrip()
+            if (cleanName != source.shortName):
+                source.shortName = cleanName
+                source.save()
+
+            if episode.endTime:
+                segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime)
+            else:
+                segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
+            if segments:
+                sourceSegmentsDict[source.shortName] = segments
+                segmentsDict[source.shortName] = [seg.getDict() for seg in segments]
                 form = NoteForm()
                 form.index = index
                 form.fields["index"] = index
@@ -219,25 +205,6 @@ def displayRecordedVideo(request, flightName=None, time=None):
 #                 sourcesWithVideo.append(source)
                 index = index + 1
         util.setSegmentEndTimes(sourceSegmentsDict, episode)
-
-        # if the flight is active, or if both episode end time and segment endtimes are missing,
-        # change the value of segment object (sets end time)
-#         util.setSegmentEndTimes(sourceSegmentsDict, episode)
-
-#         for source in sources:
-#             found = GET_SEGMENTS_METHOD(source, episode)
-#             if found:
-#                 segmentsDict[source.shortName] = [seg.getDict() for seg in found]
-                #this is used for getSliderEndTime
-#                 form = NoteForm()
-#                 form.index = index
-#                 form.fields["index"] = index
-#                 form.source = source
-#                 form.fields["source"] = source
-#                 form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
-#                 source.form = form
-#                 sourcesWithVideo.append(source)
-#                 index = index + 1
 
         segmentsJson = "null"
         episodeJson = "null"
@@ -358,17 +325,17 @@ def stopRecording(source, endTime):
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
 
 
-"""
-    modifies index file of recorded video to the correct host.
-"""
 def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
+    """
+    modifies index file of recorded video to the correct host.
+    """
     # Look up path to index file
     suffix = util.getIndexFileSuffix(flightAndSource, segmentNumber)
-    
+
     # use regex substitution to replace hostname, etc.
     newIndex = util.updateIndexFilePrefix(suffix, settings.SCRIPT_NAME)
     #newIndex = util.updateIndexFilePrefix(path)
-   
+
     # return modified file in next line
     response = HttpResponse(newIndex, content_type="application/x-mpegurl")
     response['Content-Disposition'] = 'filename = "prog_index.m3u8"'
