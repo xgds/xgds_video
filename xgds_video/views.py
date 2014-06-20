@@ -3,6 +3,7 @@ import stat
 import logging
 import os
 import datetime
+import pydevd
 
 try:
     import zerorpc
@@ -28,8 +29,7 @@ SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
 SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
-GET_SEGMENTS_METHOD = getClassByName(settings.XGDS_VIDEO_GET_SEGMENTS_METHOD)
-GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
+
 
 def getZerorpcClient(clientName):
     ports = json.loads(file(settings.ZEROMQ_PORTS, 'r').read())
@@ -115,35 +115,49 @@ def makedirsIfNeeded(path):
         os.makedirs(path)
         os.chmod(path, (stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU))
 
+
 def getEpisodeFromName(flightName):
     """
     Point to site settings to see real implementation of this function
     GET_EPISODE_FROM_NAME_METHOD
     """
-    None
+    return None
 
 
-def displayRecordedVideo(request, flightName = None, time = None):
+def getActiveEpisode(flightName):
+    """
+    Point to site settings to see real implementation of this function
+    GET_ACTIVE_EPISODE
+    """
+    return None
+
+
+def displayRecordedVideo(request, flightName=None, time=None):
     """
     Returns first segment of all sources that are part of a given episode.
     Used for both playing back videos from active episode and also
     for playing videos associated with each note.
     """
+    pydevd.settrace('10.10.21.65')
     noteTime = ""
+    episode = None
+    sourceName = None
     if time != None:
         # time is passed as string (yy-mm-dd hh:mm:ss)
         noteTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
         noteTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(noteTime))
-    
-    if (flightName == None): #for videos from active episodes
+
+    if not flightName:  # for videos from active episodes
         episodeName = request.GET.get("episode")
         sourceName = request.GET.get("source")
-    else: # for videos from notes which has flights
+        # these may be empty if we are looking for a live recorded
+    else:  # for videos from notes which has flights
         #infer episode from flightName
-        episode = GET_EPISODE_FROM_NAME_METHOD(flightName)  
+        GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
+        episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
 #         episodeName = flightName.split("_")[0]
         sourceName = flightName.split("_")[1]
-    
+
 #     if not episode:
 #         searchCriteria = 'episodes'
 #         episodes = EPISODE_MODEL.objects.filter(endTime=None).order_by('-startTime')[:1]
@@ -161,19 +175,40 @@ def displayRecordedVideo(request, flightName = None, time = None):
 #     if sourceName is None:
 #         sources = SOURCE_MODEL.objects.all()
 #     else:
-    sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]
-#     sourcesWithVideo = []
-    
+
+    foundEpisodes = []
+    sources = []
+    if not episode:
+        # we are looking for live recorded so see what is active
+        GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
+        episode = GET_ACTIVE_EPISODE_METHOD()
+        if episode.sourceGroup:
+            entries = episode.sourceGroup.sources
+            for entry in entries.all():
+                sources.append(entry)
+        else:
+            # you are doomed.
+            messages.add_message(request, messages.ERROR, 'No active recorded flights to watch')
+            ctx = {'episode': None}
+            return render_to_response('xgds_video/video_recorded_playbacks.html',
+                                      ctx,
+                                      context_instance=RequestContext(request))
+
+    if not sources:
+        if sourceName:
+            sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]
+
     if episode:
         segmentsDict = {}  # dictionary of segments (in JSON) within given episode
-        sourceSegmentsDict = {} # dictionary of source and segments.
+        sourceSegmentsDict = {}  # dictionary of source and segments.
         index = 0
         for source in sources:
             # trim the white spaces in source shortName
             source.shortName = source.shortName.rstrip()
             source.save()
+            GET_SEGMENTS_METHOD = getClassByName(settings.XGDS_VIDEO_GET_SEGMENTS_METHOD)
             found = GET_SEGMENTS_METHOD(source, episode)
-            if found: 
+            if found:
                 sourceSegmentsDict[source.shortName] = found 
                 segmentsDict[source.shortName] = [seg.getDict() for seg in found]   
                 form = NoteForm()
@@ -183,19 +218,16 @@ def displayRecordedVideo(request, flightName = None, time = None):
                 form.fields["source"] = source
                 form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
                 source.form = form
-#                 sourcesWithVideo.append(source)                
+#                 sourcesWithVideo.append(source)
                 index = index + 1
         util.setSegmentEndTimes(sourceSegmentsDict, episode)
 
-        
         # if the flight is active, or if both episode end time and segment endtimes are missing,
         # change the value of segment object (sets end time)
 #         util.setSegmentEndTimes(sourceSegmentsDict, episode)
-        
-        
-        
+
 #         for source in sources:
-#             found = GET_SEGMENTS_METHOD(source, episode) 
+#             found = GET_SEGMENTS_METHOD(source, episode)
 #             if found:
 #                 segmentsDict[source.shortName] = [seg.getDict() for seg in found]
                 #this is used for getSliderEndTime
@@ -206,9 +238,9 @@ def displayRecordedVideo(request, flightName = None, time = None):
 #                 form.fields["source"] = source
 #                 form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
 #                 source.form = form
-#                 sourcesWithVideo.append(source)                
+#                 sourcesWithVideo.append(source)
 #                 index = index + 1
-        
+
         segmentsJson = "null"
         episodeJson = "null"
         if segmentsDict:
@@ -219,8 +251,8 @@ def displayRecordedVideo(request, flightName = None, time = None):
                 'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
                 'episode': episode,
                 'episodeJson': episodeJson,
-                'noteTimeStamp': noteTime, #in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
-                'sources': [source] #sourcesWithVideo
+                'noteTimeStamp': noteTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
+                'sources': [source]  # sourcesWithVideo
             }
         else:
             messages.add_message(request, messages.ERROR, 'No Video Segments Exist')
@@ -311,6 +343,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
 
 
 def stopRecording(source, endTime):
+    pydevd.settrace('10.10.21.65')
     if settings.PYRAPTORD_SERVICE is True:
         pyraptord = getZerorpcClient('pyraptord')
     assetName = source.shortName  # flight.assetRole.name

@@ -204,6 +204,9 @@ class VideoSourceGroup(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True, help_text="human-readable title")
     # shortName: a short mnemonic code suitable to embed in a URL
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True, help_text="a short mnemonic code suitable to embed in a URL")
+
+    #TAMAR TODO
+    # rename sources to entries
     sources = models.ManyToManyField(settings.XGDS_VIDEO_SOURCE_MODEL, through='VideoSourceGroupEntry')
     uuid = UuidField(db_index=True)
 
@@ -218,6 +221,9 @@ class VideoSourceGroupEntry(models.Model):
     """
     rank = models.PositiveIntegerField()
     source = models.ForeignKey(settings.XGDS_VIDEO_SOURCE_MODEL)
+
+    #TAMAR TODO
+    #remove the below and use reverse to look up
     group = models.ForeignKey('VideoSourceGroup')
 
     def __unicode__(self):
