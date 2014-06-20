@@ -3,7 +3,6 @@ import stat
 import logging
 import os
 import datetime
-import pydevd
 
 try:
     import zerorpc
@@ -138,7 +137,6 @@ def displayRecordedVideo(request, flightName=None, time=None):
     Used for both playing back videos from active episode and also
     for playing videos associated with each note.
     """
-    pydevd.settrace('10.10.21.65')
     noteTime = ""
     episode = None
     sourceName = None
@@ -343,7 +341,6 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
 
 
 def stopRecording(source, endTime):
-    pydevd.settrace('10.10.21.65')
     if settings.PYRAPTORD_SERVICE is True:
         pyraptord = getZerorpcClient('pyraptord')
     assetName = source.shortName  # flight.assetRole.name
