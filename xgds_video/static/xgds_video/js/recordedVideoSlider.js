@@ -10,6 +10,19 @@ function createSliderLegend() {
         //list of video segments with same source & episode
         var source = segments[0].source;
 
+        //do not create a legend if any of the segments are missing an end time
+        var endPointCheck = true;
+        $.each(segments, function(id) {
+        	var segment = segments[id];
+        	if (!segment.endTime) {
+        		endPointCheck = false;
+        		return false;
+        	}
+        });
+        if (!endPointCheck) {
+        	return;
+        }
+        
         //get the total slider range in seconds
         var startTime = xgds_video.masterSlider.slider('option', 'min');
         var endTime = xgds_video.masterSlider.slider('option', 'max');
@@ -30,17 +43,21 @@ function createSliderLegend() {
                                        '" width="' + emptySegmentWidth +
                                        '" height="5px" style="opacity:0.0;">');
 
+        
         //for each video segment
         $.each(segments, function(id) {
             var segment = segments[id];
             var source = segment.source;
+            
+            var segDuration = 0;
+            var width = 0;
 
             //get the duration of the video segment
-            var segDuration = Math.round((segment.endTime -
-                              segment.startTime) / 1000); //in seconds
-            var width = xgds_video.masterSlider.width() *
-                        (segDuration / totalDuration);
-
+            segDuration = Math.round((segment.endTime -
+	                              segment.startTime) / 1000); //in seconds
+            width = xgds_video.masterSlider.width() *
+	                        (segDuration / totalDuration);
+            
             //draw the visualization
             xgds_video.masterSlider.before('<img class="' +
                                             source.shortName + '" id=' +
@@ -48,7 +65,7 @@ function createSliderLegend() {
                                             '" height="5px" ' +
                                             'style="background-color:' +
                                             color + ';">');
-
+            
             if (segments[id + 1]) { //if there is a next segment
                 var nextSegment = segments[id + 1];
                 emptySegmentDuration = Math.round((nextSegment.startTime -

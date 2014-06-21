@@ -146,12 +146,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
         noteTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
         noteTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(noteTime))
 
-    if not flightName:  # for videos from active episodes
-        episodeName = request.GET.get("episode")
-        sourceName = request.GET.get("source")
-        # these may be empty if we are looking for a live recorded
-    else:  # for videos from notes which has flights
-        #infer episode from flightName
+    if flightName:
         GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
         episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
         sourceName = flightName.split("_")[1]
@@ -179,7 +174,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
 
     if episode:
         segmentsDict = {}  # dictionary of segments (in JSON) within given episode
-        sourceSegmentsDict = {}  # dictionary of source and segments.
+#         sourceSegmentsDict = {}  # dictionary of source and segments.
         index = 0
         for source in sources:
             # trim the white spaces in source shortName
@@ -193,7 +188,8 @@ def displayRecordedVideo(request, flightName=None, time=None):
             else:
                 segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
             if segments:
-                sourceSegmentsDict[source.shortName] = segments
+#                 sourceSegmentsDict[source.shortName] = segments
+                util.setSegmentEndTimes(segments, episode, source) #this passes back segments for this source.
                 segmentsDict[source.shortName] = [seg.getDict() for seg in segments]
                 form = NoteForm()
                 form.index = index
@@ -204,8 +200,6 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 source.form = form
 #                 sourcesWithVideo.append(source)
                 index = index + 1
-
-        util.setSegmentEndTimes(sourceSegmentsDict, episode)
 
         segmentsJson = "null"
         episodeJson = "null"
