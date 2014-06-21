@@ -39,7 +39,7 @@ def processLine(videoDirUrl, line):
         return line
 
 
-def setSegmentEndTimes(sourceSegmentsDict, episode):
+def setSegmentEndTimes(segments, episode, source):
     """
     If both the episode endtime and segments' endtimes are not available (we are live),
     set the segment end time as endTime value inferred from the index file
@@ -49,21 +49,20 @@ def setSegmentEndTimes(sourceSegmentsDict, episode):
         print "CANNOT set segment end times for empty episode" + str(episode)
         return
 
-    for sourceShortName, segments in sourceSegmentsDict.iteritems():
-        flightName = episode.shortName + '_' + sourceShortName
-        segments = sorted(segments, key=lambda segment: segment.segNumber)
-        # if last segment has no endTime OR if flight is active
-        if (segments[-1].endTime == None):
-            segment = segments[-1]  # last segment
-            suffix = getIndexFileSuffix(flightName,
-                                        segment.segNumber)
-            path = settings.DATA_ROOT + suffix
-            segmentDuration = getTotalDuration(path)
-            segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
-            segment.save()
-#         else:
-#             print "Flight was not located so no end times were set"
-
+#     for sourceShortName, segments in sourceSegmentsDict.iteritems():
+    flightName = episode.shortName + '_' + source.shortName
+#     segments = sourceSegmentsDict[source.shortName]
+    segments = sorted(segments, key=lambda segment: segment.segNumber)
+    # if last segment has no endTime OR if flight is active
+    if (segments[-1].endTime == None):
+        segment = segments[-1]  # last segment
+        suffix = getIndexFileSuffix(flightName,
+                                    segment.segNumber)
+        path = settings.DATA_ROOT + suffix
+        segmentDuration = getTotalDuration(path)
+        segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
+        segment.save()
+            
 
 def find_between(s, first, last):
     """
