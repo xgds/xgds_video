@@ -204,6 +204,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 source.form = form
 #                 sourcesWithVideo.append(source)
                 index = index + 1
+
         util.setSegmentEndTimes(sourceSegmentsDict, episode)
 
         segmentsJson = "null"

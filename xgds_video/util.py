@@ -61,14 +61,14 @@ def setSegmentEndTimes(sourceSegmentsDict, episode):
             segmentDuration = getTotalDuration(path)
             segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
             segment.save()
-        else:
-            print "Flight was not located so no end times were set"
+#         else:
+#             print "Flight was not located so no end times were set"
 
 
-"""
-Helper that finds the substring between first and last strings.
-"""
-def find_between( s, first, last ):
+def find_between(s, first, last):
+    """
+    Helper that finds the substring between first and last strings.
+    """
     try:
         start = s.index( first ) + len( first )
         end = s.index(last, start)
