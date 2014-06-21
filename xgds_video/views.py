@@ -218,7 +218,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 'episode': episode,
                 'episodeJson': episodeJson,
                 'noteTimeStamp': noteTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
-                'sources': [source]  # sourcesWithVideo
+                'sources': sources
             }
         else:
             messages.add_message(request, messages.ERROR, 'No Video Segments Exist')
