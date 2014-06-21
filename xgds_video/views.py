@@ -161,7 +161,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
         # we are looking for live recorded so see what is active
         GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
         episode = GET_ACTIVE_EPISODE_METHOD()
-        if episode.sourceGroup:
+        if episode and episode.sourceGroup:
             entries = episode.sourceGroup.sources
             for entry in entries.all():
                 sources.append(entry)
