@@ -7,7 +7,7 @@ from xgds_video import settings
 # from plrpExplorer.views import getVideoDelay # FIX-ME: should be abstracted better from video
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
-
+VIDEO_DELAY_SECONDS = 0
 
 def getShortTimeString(dateTime):
     return dateTime.strftime("%H:%M:%S")
@@ -128,7 +128,7 @@ def updateIndexFilePrefix(indexFileSuffix, subst):
     indexFilePath = settings.DATA_ROOT + indexFileSuffix
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
     baseFile = open(indexFilePath)
-    videoDelayInSecs = 0 # getVideoDelay() - settings.XGDS_VIDEO_DELAY_MINIMUM_SEC
+    videoDelayInSecs = VIDEO_DELAY_SECONDS # getVideoDelay() - settings.XGDS_VIDEO_DELAY_MINIMUM_SEC
     if videoDelayInSecs < 0:
         videoDelayInSecs = 0
     videoDelayInSegments = int(round(videoDelayInSecs / settings.XGDS_VIDEO_SEGMENT_SEC))
