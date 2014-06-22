@@ -24,7 +24,6 @@ from xgds_video import settings
 from xgds_video import util
 from xgds_video.models import *
 
-import pydevd
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -229,7 +228,6 @@ def displayRecordedVideo(request, flightName=None, time=None):
 
 
 def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDuration):
-    pydevd.settrace('10.10.21.176')
     if not source.videofeed_set.all():
         logging.info("video feeds set is empty")
         return
