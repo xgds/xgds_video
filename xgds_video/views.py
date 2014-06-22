@@ -189,7 +189,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
             else:
                 segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
             if segments:
-                util.setSegmentEndTimes(segments, episode, source) #this sets the end time of segment objects.
+                util.setSegmentEndTimes(segments, episode, source) #this passes back segments for this source.
                 segmentsDict[source.shortName] = [seg.getDict() for seg in segments]
                 form = NoteForm()
                 form.index = index
