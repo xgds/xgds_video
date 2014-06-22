@@ -11,4 +11,4 @@ urlpatterns = patterns(
     (r'videoIndexFile/(?P<flightAndSource>[^/]+)/(?P<segmentNumber>[^/]+)/prog_index.m3u8', views.videoIndexFile, {}, 'xgds_video_index_file'),
     (r'^noteVideo2013/(?P<flightName>\w+)/(?P<time>[^/]+)/$', views.displayRecordedVideo, {}, 'noteVideo2013'),  # recorded video for one note
     (r'^recorded/(?P<flightName>\w+)/$', views.displayRecordedVideo, {}, 'flight_video_recorded')  # recorded video for one flight
-)
+    )

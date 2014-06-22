@@ -24,6 +24,8 @@ from xgds_video import settings
 from xgds_video import util
 from xgds_video.models import *
 
+import pydevd
+
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
@@ -174,7 +176,6 @@ def displayRecordedVideo(request, flightName=None, time=None):
 
     if episode:
         segmentsDict = {}  # dictionary of segments (in JSON) within given episode
-#         sourceSegmentsDict = {}  # dictionary of source and segments.
         index = 0
         for source in sources:
             # trim the white spaces in source shortName
@@ -188,8 +189,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
             else:
                 segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
             if segments:
-#                 sourceSegmentsDict[source.shortName] = segments
-                util.setSegmentEndTimes(segments, episode, source) #this passes back segments for this source.
+                util.setSegmentEndTimes(segments, episode, source) #this sets the end time of segment objects.
                 segmentsDict[source.shortName] = [seg.getDict() for seg in segments]
                 form = NoteForm()
                 form.index = index
@@ -198,7 +198,6 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 form.fields["source"] = source
                 form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
                 source.form = form
-#                 sourcesWithVideo.append(source)
                 index = index + 1
 
         segmentsJson = "null"
@@ -230,6 +229,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
 
 
 def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDuration):
+    pydevd.settrace('10.10.21.176')
     if not source.videofeed_set.all():
         logging.info("video feeds set is empty")
         return
