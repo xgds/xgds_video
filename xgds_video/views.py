@@ -32,6 +32,13 @@ SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
 
+
+def imageCarousel(request):
+    return render_to_response("xgds_video/ImageCarousel.html",
+                              {'zmqURL': json.dumps(settings.XGDS_ZMQ_WEB_SOCKET_URL)},
+                              context_instance=RequestContext(request))
+
+
 def getZerorpcClient(clientName):
     ports = json.loads(file(settings.ZEROMQ_PORTS, 'r').read())
     rpcPort = ports[clientName]['rpc']
