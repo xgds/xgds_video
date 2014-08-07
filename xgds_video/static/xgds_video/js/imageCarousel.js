@@ -11,7 +11,6 @@
 
 xgds_video = {}; //namespace
 var imageSources = $("#imageSources");
-var counter = 0;
 
 $.extend(xgds_video, {
 	haveNewData: false,
@@ -19,29 +18,27 @@ $.extend(xgds_video, {
 	//client side websocket event handlers
 	onopen: function(zmq) {
 		$('#socketStatus').html('connected');
-		var topic = 'dds.Resolve.RESOLVE_CAM_ProcessedImage';
+		//there is a topic per camera source. I'm assuming that we'll know these sources beforehand.
+		var topic1 = 'dds.Resolve.RESOLVE_CAM_ProcessedImage';
+		var topic2 = 'dds.Resolve.RESOLVE_CAM_ProcessedImage2';
 		var handler = function() {
 			return function (zmq, topic, obj) {
 				//upon receiving the image, display it.
 				var data = obj.data.split(':');
 				var imgType = data[0];
 				var imgContent = data[1];
+				
 				haveNewData = true;
 				
-				//why don't I create a data package here and then do an append after existing html.
-				xgds_video.cameraImage.append();
-				
-				
-				$("#cameraImage").attr("src", "data:image/jpeg;base64,"+imgContent);
-				$("#cameraImage2").attr("src", "data:image/jpeg;base64,"+imgContent);
-				//how do I make sure it only displays the same image once?
-				//TODO: archive these images for archived view.
-			
+				if (topic =='dds.Resolve.RESOLVE_CAM_ProcessedImage') {
+					$("#cameraImage").attr("src", "data:image/jpeg;base64,"+imgContent);
+				} else if (topic == 'dds.Resolve.RESOLVE_CAM_ProcessedImage2') {
+					$("#cameraImage2").attr("src", "data:image/jpeg;base64,"+imgContent);
+				}
 			};
-		counter = counter +1;
 		}();
 		
-		zmq.subscribeJson(topic, handler);
+		zmq.subscribeJson(topic1, handler);
 	},
 	onclose: function(zmq) {
 		console.log("on close");
