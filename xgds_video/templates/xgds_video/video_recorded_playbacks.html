@@ -64,7 +64,7 @@
         		<table>
         			<tr>
         				<td>
-        					<b> Local Flight Time: </b>
+        					<b> <label for="sliderTimeLabel">Local Flight Time: </label></b>
         				</td>
         				<td>
         					<input type="text" id="sliderTimeLabel" readonly>
@@ -92,11 +92,11 @@
         		<table>
         			<tr id="seekTimeBox">
         				<td>
+        				<label for="seekTime">Jump to:</label>
         				<input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
         				</td>
         				<td>
-        				<button type="submit" class="mybutton" id="seekButton" onclick=seekCallBack()>
-                            <i class="fa fa-share"></i> Seek
+        				<button type="submit" class="mybutton" id="seekButton" onclick=seekCallBack()>Go
                         </button>
         				</td>
         			</tr>

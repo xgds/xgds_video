@@ -50,12 +50,15 @@ If plugin is missing, download <a href="https://support.google.com/chrome/answer
  <div class="item" id="item{{ forloop.counter }}">
 	     <div class="buttons">
 	     	<div class="toprow-left"><b>Live feed: {{ feed.name }}</b></div>
-   			<select class="toprow-right" onchange="if (this.selectedIndex > -1) resizeWindow(this.selectedIndex, {{forloop.counter}});">
-		  		<option value="half">Half Size</option>
-  		  		<option value="actual" selected="selected">Actual Size</option>	  
-		  		<option value="full">Full Size</option>
+	     	<span class="toprow-right">
+	     	<label for="id_size{{forloop.counter}}" >Size </label>
+   			<select  onchange="if (this.selectedIndex > -1) resizeWindow(this.selectedIndex, {{forloop.counter}});" id="id_size{{forloop.counter}}">
+		  		<option value="half">Half</option>
+  		  		<option value="actual" selected="selected">Actual</option>	  
+		  		<option value="full">Full</option>
 			</select>
-	     	<a class="mybutton toprow-right" href="{% url xgds_video_recorded %}?source={{ feed.source.shortName }}">Recorded</a>
+	     	<a class="mybutton" href="{% url xgds_video_recorded %}?source={{ feed.source.shortName }}">Recorded</a>
+	     	</span>
 	     </div>
 	     <section>
 	     {% include "xgds_video/video_notes.html" with data=form source=feed.source.shortName STATIC_URL=STATIC_URL %}

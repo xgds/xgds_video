@@ -40,6 +40,7 @@ function createSliderLegend() {
         var emptySegmentWidth = xgds_video.masterSlider.width() *
                                 (emptySegmentDuration / totalDuration);
         xgds_video.masterSlider.before('<img class="' + source.shortName +
+                                       '" alt="segment"' +
                                        '" width="' + emptySegmentWidth +
                                        '" height="5px" style="opacity:0.0;">');
 
@@ -62,6 +63,7 @@ function createSliderLegend() {
             xgds_video.masterSlider.before('<img class="' +
                                             source.shortName + '" id=' +
                                             id + ' width="' + width +
+                                            '"alt="' + id + '"' +
                                             '" height="5px" ' +
                                             'style="background-color:' +
                                             color + ';">');
@@ -73,6 +75,7 @@ function createSliderLegend() {
                 emptySegmentWidth = xgds_video.masterSlider.width() *
                                     (emptySegmentDuration / totalDuration);
                 xgds_video.masterSlider.before('<img class="' +
+                                        '"alt="' + source.shortName + '"' +
                                          source.shortName +
                                         '" width="' + emptySegmentWidth +
                                         '" height="5px" style="opacity:0.0;">');
