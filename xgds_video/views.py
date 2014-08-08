@@ -32,10 +32,33 @@ SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
 
+def liveImageStream(request):
+    #ASK TREY:
+    # how do I know that the topics are publishing images right now?
+    # Can I assume I know the image sources here? 
+    sources = ['HazCam', 'DownCam'] #for testing purposes, I'll stick the sources into an array.
+    #note forms
+    forms = []
+    
+    #create a noteform for each source
+    for source in sources:
+        form = NoteForm()
+        form.index = 0
+        form.fields["index"] = 0
+        form.source = source
+        form.fields["source"] = source
+        if form.fields["source"]:
+            form.fields["extras"].initial = ""
+        forms.append(form)
+    
+    return render_to_response("xgds_video/LiveImageStream.html",
+                              {'zmqURL': json.dumps(settings.XGDS_ZMQ_WEB_SOCKET_URL),
+                               'noteForms': forms},
+                              context_instance=RequestContext(request))
 
-def imageCarousel(request):
-    return render_to_response("xgds_video/ImageCarousel.html",
-                              {'zmqURL': json.dumps(settings.XGDS_ZMQ_WEB_SOCKET_URL)},
+
+def archivedImageStream(request):
+    return render_to_response("xgds_video/ArchivedImageStream.html", {},
                               context_instance=RequestContext(request))
 
 

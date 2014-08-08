@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load nav %}
+{% block siteSection %}{{ table_title }}{% endblock %}
+{% block nav %}
+   {{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+{{block.super}}
+{% endblock scripts %}
+
+{% block jsSetVars %}
+  {{ block.super }}
+
+{% endblock %}
+{% block contents %}	
+ {% endblock %}
+
+{% block jsInit %}
+  {{ block.super }}
+	
+{% endblock %}
