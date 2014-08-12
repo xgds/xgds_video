@@ -98,110 +98,111 @@ function soundController() {
  * Initialize jw player and call update values
  */
 function setupJWplayer() {
-    if (xgds_video.episode) { //if episode exists
-    	var numSources = Object.keys(xgds_video.displaySegments).length;
-    	
-        var maxWidth = getMaxWidth(numSources);
-        for (var key in xgds_video.displaySegments) {
-            // list of video segments with same source & episode
-            var segments = xgds_video.displaySegments[key];
-            // source of the video segments
-            var source = segments[0].source;
-            // paths of the video segments
-            var videoPaths = getFilePaths(xgds_video.episode, segments);
-
-            jwplayer(source.shortName).setup({
-                file: videoPaths[0],
-                autostart: false,
-                width: maxWidth,
-                height: maxWidth * (9/16),
-                skin: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml',
-                mute: true,
-                analytics: {
-                    enabled: false,
-                    cookies: false
+	var numSources = Object.keys(xgds_video.displaySegments).length;
+    var maxWidth = getMaxWidth(numSources);
+    for (var source in xgds_video.displaySegments) {
+        // list of video segments with same source & episode (if given)
+        var segments = xgds_video.displaySegments[source];
+        // paths of the video segments
+        var videoPaths = [];
+        if (isEmpty(xgds_video.episode)) { //if episode does not exist
+        	videoPaths = getFilePaths(null, segments);
+        } else {
+        	videoPaths = getFilePaths(xgds_video.episode, segments);        	
+        }
+        
+        jwplayer(source).setup({
+            file: videoPaths[0],
+            autostart: false,
+            width: maxWidth,
+            height: maxWidth * (9/16),
+            skin: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml',
+            mute: true,
+            analytics: {
+                enabled: false,
+                cookies: false
+            },
+            controls: true, //for debugging
+            events: {
+                onReady: function() {
+                   startPlayers();
+                   soundController();
                 },
-                controls: true, //for debugging
-                events: {
-                    onReady: function() {
-                       startPlayers();
-                       soundController();
-                    },
-                    onBeforeComplete: function() {
-                        //this.pause(true);
-                    },
-                    onComplete: function() {
-        //stop until start of the next segment.
-                        var counter = 0;
-                        jwplayer(this.id).pause(true);
-                        onSegmentComplete(this);
-                    },
-                    onPlay: function(e) { //gets called per source
-                        onTimeController(this);
-                        var pendingActions = pendingPlayerActions[this.id];
-                         if (pendingActions.length != 0) {
-                        	for (var i = 0; i < pendingActions.length; i++) {
-                        		pendingActions[i].action(pendingActions[i].arg);
-                        	}
-                        	pendingPlayerActions[this.id] = [];
-                        	if (xgds_video.initialState == true) {
-                        		xgds_video.initialState = false;
-                        	}
-                        } else {
-                        	if (xgds_video.initialState == true) {
-                        		xgds_video.initialState = false;
-                        	}
-                        }
-                    },
-                    onPause: function(e) {
-                        //just make sure the item does get paused.
-                        onTimeController(this);
-                    },
-                    onBuffer: function(e) {
-                        onTimeController(this);
-                    },
-                    onIdle: function(e) {
-                        if (e.position > Math.floor(e.duration)) {
-                            this.pause(true);
-                            onSegmentComplete(this);
-                        }
-                        onTimeController(this);
-                    },
-                    onTime: function(object) {
-                        // need this. otherwise slider jumps around while moving.
-                        if (xgds_video.movingSlider == true) {
-                            return;
-                        }
-
-                        if (!xgds_video.playFlag) {
-                            this.pause(true);
-                            return;
-                        }
-
-                        // update test site time (all sources that are 'PLAYING')
-                        var testSiteTime = getPlayerVideoTime(this.id);
-                        setPlayerTimeLabel(testSiteTime, this.id);
-
-                        if (xgds_video.initialState != true) {
-                        	//if this call is from the current 'onTimePlayer'
-                        	if (xgds_video.onTimePlayer == this.id) {
-                        		// update the slider here.
-                            	var updateTime = getPlayerVideoTime(this.id);
-                            	awakenIdlePlayers(updateTime, this.id);
-                            	setSliderTime(updateTime);
-                            	updateToolTip(false, updateTime);
-                        	}
+                onBeforeComplete: function() {
+                    //this.pause(true);
+                },
+                onComplete: function() {
+                //stop until start of the next segment.
+                    var counter = 0;
+                    jwplayer(this.id).pause(true);
+                    onSegmentComplete(this);
+                },
+                onPlay: function(e) { //gets called per source
+                    onTimeController(this);
+                    var pendingActions = pendingPlayerActions[this.id];
+                     if (pendingActions.length != 0) {
+                    	for (var i = 0; i < pendingActions.length; i++) {
+                    		pendingActions[i].action(pendingActions[i].arg);
                     	}
-                        //if at the end of the segment, pause.
-                        if (object.position > Math.floor(object.duration)) {
-                            this.pause(true);
-                            onSegmentComplete(this);
-                        }
+                    	pendingPlayerActions[this.id] = [];
+                    	if (xgds_video.initialState == true) {
+                    		xgds_video.initialState = false;
+                    	}
+                    } else {
+                    	if (xgds_video.initialState == true) {
+                    		xgds_video.initialState = false;
+                    	}
+                    }
+                },
+                onPause: function(e) {
+                    //just make sure the item does get paused.
+                    onTimeController(this);
+                },
+                onBuffer: function(e) {
+                    onTimeController(this);
+                },
+                onIdle: function(e) {
+                    if (e.position > Math.floor(e.duration)) {
+                        this.pause(true);
+                        onSegmentComplete(this);
+                    }
+                    onTimeController(this);
+                },
+                onTime: function(object) {
+                    // need this. otherwise slider jumps around while moving.
+                    if (xgds_video.movingSlider == true) {
+                        return;
+                    }
+
+                    if (!xgds_video.playFlag) {
+                        this.pause(true);
+                        return;
+                    }
+
+                    // update test site time (all sources that are 'PLAYING')
+                    var testSiteTime = getPlayerVideoTime(this.id);
+                    setPlayerTimeLabel(testSiteTime, this.id);
+
+                    if (xgds_video.initialState != true) {
+                    	//if this call is from the current 'onTimePlayer'
+                    	if (xgds_video.onTimePlayer == this.id) {
+                    		// update the slider here.
+                        	var updateTime = getPlayerVideoTime(this.id);
+                        	awakenIdlePlayers(updateTime, this.id);
+                        	setSliderTime(updateTime);
+                        	updateToolTip(false, updateTime);
+                    	}
+                	}
+                    //if at the end of the segment, pause.
+                    if (object.position > Math.floor(object.duration)) {
+                        this.pause(true);
+                        onSegmentComplete(this);
                     }
                 }
-            });
+            }
+        });
 
-            // load the segments as playlist.
+        // load the segments as playlist.
             var playlist = [];
             for (var k = 0; k < videoPaths.length; k++) {
                 var newItem = {
@@ -210,11 +211,8 @@ function setupJWplayer() {
                 };
                 playlist.push(newItem);
             }
-            jwplayer(source.shortName).load(playlist);
+            jwplayer(source).load(playlist);
          }
-    } else {
-        alert('episode not available. Cannot set up jwplayer');
-    }
 }
 
 
@@ -270,5 +268,3 @@ function playPauseButtonCallBack() {
     }
     setSliderTime(currTime);
 }
-
-

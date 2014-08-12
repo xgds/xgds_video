@@ -15,14 +15,10 @@
  	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoSlider.js"></script>
  	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoUtils.js"></script>
  	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoPlayer.js"></script>
- 	<!--script type="text/javascript" src="{ { STATIC_URL }}xgds_video/js/recordedVideoGoogleEarth.js"></script-->
     <script src="{{STATIC_URL}}external/js/jquery/jquery.tagsinput.js" type="text/javascript" ></script>
  	<script src="{{STATIC_URL}}external/js/jquery/jquery.form.min.js" type="text/javascript" ></script>
  	<script type="text/javascript" src="{{ STATIC_URL }}external/js/date.js"></script>
  	<script src="{{STATIC_URL}}xgds_video/js/video_notes_form.js" type="text/javascript" ></script>
-    <!-- google earth plugin -->
-    <!--script type="text/javascript" src="https://www.google.com/jsapi"></script-->
- 
 {% endblock headExtras %}
 
  {% block cssExtras %}
@@ -44,107 +40,102 @@
     {{ block.super }}
     {% endblock %}
     
-    {% block sitemenu-content-secondary %}
-	{% include "xgds_video/video_subnav.html" %}
+    {% block sitemenu-content-secondary %}    
+		{% if episode %}
+			{% include "xgds_video/video_subnav.html" %}
+    	{% else %}
+    		{% include "xgds_video/image_stream_subnav.html" %}
+    	{% endif %}
     {% endblock %}
+    
 {% block contents %}
+	{% if messages %}
+	    <ul class="messages" id="errorMessage" style="color:red;">
+	    {% for message in messages %}
+	        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+	    {% endfor %}
+	    </ul>
+	{% endif %}
+	
+    {% if segmentsJson %}
+    	<table>
+   			<tr>
+   				<td> <b> <label for="sliderTimeLabel">Local Flight Time: </label></b> </td>
+   				<td> <input type="text" id="sliderTimeLabel" readonly> </td>
+   			</tr>
+		   	
+		   	{% if episode %}
+	   			<tr>
+	   				<td> <b> Episode (Flight) Name: </b> </td>
+	   				<td> {{ episode.shortName }} </td>
+	   			</tr>
+   			{% endif %}
+   		</table>
+   		
+ 		<fieldset style=" border-color: #e5e5e5">
+	 		<div id="masterSlider" class="masterSlider"></div>
+          <div> 
+          	<a class="btn btn-small btn-info" href="#" onclick=playPauseButtonCallBack()>
+              <i id="playbutton" class="fa fa-pause fa-2x"></i>
+              </a>
+          </div>
+  		<div id="legend"></div>
+ 		</fieldset>
+ 		
+   		<table>
+   			<tr id="seekTimeBox">
+   				<td>
+   					<label for="seekTime">Jump to:</label>
+   					<input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
+   				</td>
+   				<td>
+   					<button type="submit" class="mybutton" id="seekButton" onclick=seekCallBack()> Go </button>
+   				</td>
+   			</tr>
+   		</table>
+    		
+    	<br>
 
-    {% if messages %}
-        <ul class="messages" id="errorMessage" style="color:red;">
-        {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        <div id="container" class="js-masonry" data-masonry-options='{"itemSelector": ".item", "gutter":5, "isInitLayout":false}'>
+        {% for source in sources %}
+			<div class="item" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
+	            <div class="buttons">
+	                 <div class="toprow-left">Recorded Segment: {{ source.name }}</div> 
+	                 {% if episode %}
+					 	<a class="mybutton toprow-right" 
+					 	href="{% url 'xgds_video_recorded' %}?source={{ source.shortName }}&episode={{ episode.shortName }}" 
+					 	target="new">New Window</a>
+					 {% else %}
+					 	<a class="mybutton toprow-right" 
+					 	href=# target="new">New Window</a>
+					 {% endif %}
+					 	
+	                 {% with feed=source.feed_set.all.0.shortName %}
+	                 {% if feed %}
+	                     <a class="mybutton" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>
+	                 {% endif %}
+	                 {% endwith %}
+	            </div>
+				<section>
+             		{% include "xgds_video/video_notes.html" with data=source.form source=source.shortName STATIC_URL=STATIC_URL %}
+             	</section>
+             	<!--embed the video-->
+             	<section>
+              		<div id="player_container" class="float-left">
+             			<div id="{{ source.shortName }}"></div>
+             		</div> <!--  player-container -->
+             		<div id="{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
+             	</section>
+             	<section>
+             		<div class="float-left">
+                 	Test Site Time: <span id="testSiteTime{{ source.shortName }}">0</span>
+             		</div>
+             	</section>
+            </div><!--  item -->
         {% endfor %}
-        </ul>
+        </div> <!--  js masonry container -->
+
     {% endif %}
-
-    {% if not episode %}
-        <div style="font-size: 1.5em; margin: 20px;">Couldn't find any Episode.</div>
-    {% else %}
-        {% if segmentsJson %}
-        		<table>
-        			<tr>
-        				<td>
-        					<b> <label for="sliderTimeLabel">Local Flight Time: </label></b>
-        				</td>
-        				<td>
-        					<input type="text" id="sliderTimeLabel" readonly>
-        				</td>
-        			</tr>
-        			
-        			<tr>
-        				<td>
-        					<b> Episode (Flight) Name: </b>
-        				</td>
-        				<td>
-        					{{ episode.shortName }}
-        				</td>
-        			</tr>
-        		</table>
-      	 		<fieldset style=" border-color: #e5e5e5">
-	      	 		<div id="masterSlider" class="masterSlider"></div>
-	                <div> 
-	                	<a class="btn btn-small btn-info" href="#" onclick=playPauseButtonCallBack()>
-	                    <i id="playbutton" class="fa fa-pause fa-2x"></i>
-	                    </a>
-	                </div>
-	        		<div id="legend"></div>
-        		</fieldset>
-        		<table>
-        			<tr id="seekTimeBox">
-        				<td>
-        				<label for="seekTime">Jump to:</label>
-        				<input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
-        				</td>
-        				<td>
-        				<button type="submit" class="mybutton" id="seekButton" onclick=seekCallBack()>Go
-                        </button>
-        				</td>
-        			</tr>
-        		</table>
-        		<br>
-  
-            <div id="container" class="js-masonry" data-masonry-options='{"itemSelector": ".item", "gutter":5, "isInitLayout":false}'>
-            {% for source in sources %}
-                <div class="item" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
-
-	                <div class="buttons">
-	                    <div class="toprow-left">Recorded Segment: {{ source.name }}</div> 
-	                    <a class="mybutton toprow-right" href="{% url 'xgds_video_recorded' %}?source={{ source.shortName }}&episode={{ episode.shortName }}" target="new">New Window</a>
-	                    {% with feed=source.feed_set.all.0.shortName %}
-	                    {% if feed %}
-	                        <a class="mybutton" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>
-	                    {% endif %}
-	                    {% endwith %}
-	                </div>
-					<section>
-	                {% include "xgds_video/video_notes.html" with data=source.form source=source.shortName STATIC_URL=STATIC_URL %}
-	                </section>
-	                <!--embed the video-->
-	                <section>
-	                 <div id="player_container" class="float-left">
-	                	<div id="{{ source.shortName }}"></div>
-	                </div> <!--  player-container -->
-	                <div id="{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
-	                </section>
-	                <section>
-	                <div class="float-left">
-	                    Test Site Time: <span id="testSiteTime{{ source.shortName }}">0</span>
-	                </div>
-	                </section>
-                </div><!--  item -->
-            {% endfor %}
-
-            <!-- google earth plugin --> 
-            <!--
-            <div class="item" id="item{ { forloop.counter }}" style="background-color:{ { source.displayColor }};">
-            <div id="map3d" style="height: 400px; width: 600px;"></div>
-            </div>
-            -->
-            </div> <!--  js masonry container -->
-
-        {% endif %}
-    {% endif %}
-
 {% endblock contents %}
 
 {% block jsInit %}
@@ -156,7 +147,7 @@
                        initialState: false,
                        seekOffsetList: {},
                        baseUrl: "{{ baseUrl}}",
-                       episode: ({{ episodeJson|safe }}=="None") ? null : {{ episodeJson|safe }},
+                       episode: {{ episodeJson|safe }},
                        displaySegments: {{ segmentsJson|safe }},
                        firstSegment: null,
                        lastSegment: null,
@@ -164,8 +155,7 @@
                        onTimePlayer: "{{ sources.0.shortName }}",
                        movingSlider: false, //if slider is moving, turn off onTime call
                        seekOffsetList: {}, //needed for seeking vid in flash mode
-	                   indexFileUrl: "{% url 'xgds_video_index_file' 'flightAndSource' 'segmentIndex' %}",
-                       noteTimeStamp: toJsDateTime({{ noteTimeStamp|safe }}), 
+	                   noteTimeStamp: toJsDateTime({{ noteTimeStamp|safe }}), 
                      };
 
     // displaySegments are in json format like this:
@@ -173,11 +163,13 @@
     // displaySegments['RD1'][0].startTime would return start time of one of the segments.
 
     //convert episode start/end time to javascript dateTime
-    convertJSONtoJavascriptDateTime(xgds_video.episode);
+    {% if episode %}
+    	convertJSONtoJavascriptDateTime(xgds_video.episode);
+	{% endif %}
 
     // convert segment start and end times to javascript dateTime
     {% for source in sources %}
-        var segments = xgds_video.displaySegments["{{ source.shortName }}"]; 
+        var segments = xgds_video.displaySegments["{{ source.shortName }}"];
         if ((segments != undefined) && (segments.length > 0)) {
             $.each(segments, function(id) {
                 var segment = segments[id];
@@ -208,12 +200,6 @@
     //set up the slider and the player
     setupSlider();
     setupJWplayer();
-   
-    /*
-    //google earth plugin
-    google.load("earth", "1", {"other_params":"sensor=true_or_false"});
-    google.setOnLoadCallback(init);
-    */
 {% endif %}
  	//update masonry sizing
  	$('#container').masonry().masonry();

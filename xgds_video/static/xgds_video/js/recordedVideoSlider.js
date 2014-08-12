@@ -2,7 +2,6 @@
  * Create a slider legend that shows breaks between segments
  */
 function createSliderLegend() {
-
     for (var key in xgds_video.displaySegments) {
         var labels = {}; //key: position, value: label
 
@@ -87,15 +86,6 @@ function createSliderLegend() {
 }
 
 function showTimeOnHover(duration) {
-    /*
-    xgds_video.masterSlider.hover(function() {
-    console.log("show time on hover");
-        xgds_video.masterSlider.tooltip( {
-            track: true;
-        });
-    });
-    */
-
     // Number of tick marks on slider
     var position = $('#masterSlider').position(),
         sliderWidth = $('#masterSlider').width(),
@@ -184,34 +174,38 @@ function uponSliderStopCallBack(event, ui) {
  * initialize master slider with range (episode start time->episode end time)
  */
 function setupSlider() {
-    if (xgds_video.episode) { //video episode needed to set slider range
-        var endTime = (xgds_video.episode.endTime) ? xgds_video.episode.endTime :
-                       xgds_video.lastSegment.endTime;
-
-        var duration = Math.ceil(endTime.getTime() / 1000) -
-                       Math.floor(xgds_video.firstSegment.startTime.getTime() / 1000);
-        //for time hover label
-        if (endTime) {
-            xgds_video.masterSlider = $('#masterSlider').slider({
-                step: 1,
-                //all times are in seconds
-                min: Math.floor(xgds_video.firstSegment.startTime.getTime() / 1000),
-                max: Math.ceil(endTime.getTime() / 1000),
-                stop: uponSliderStopCallBack,
-                slide: uponSliderMoveCallBack,
-                range: 'min'
-            });
-            var sliderTime = new Date($('#masterSlider').slider('value') * 1000);
-            setSliderTimeLabel(sliderTime);
-            updateToolTip(false, sliderTime);
-            createSliderLegend();
-            //showTimeOnHover(duration);
-        } else {
-            alert('The end time of video segment not available.' +
-                  'Cannot setup slider');
-        }
+	var endTime = null;
+    if (isEmpty(xgds_video.episode)) { 
+    	if (Object.keys(xgds_video.displaySegments).length < 1) {
+    		return;
+    	} else{
+        	endTime = xgds_video.lastSegment.endTime;
+    	}
+    } else { //video episode needed to set slider range
+    	endTime = (xgds_video.episode.endTime) ? xgds_video.episode.endTime :
+            xgds_video.lastSegment.endTime;
+    }
+       
+    var duration = Math.ceil(endTime.getTime() / 1000) -
+                   Math.floor(xgds_video.firstSegment.startTime.getTime() / 1000);
+    //for time hover label
+    if (endTime) {
+        xgds_video.masterSlider = $('#masterSlider').slider({
+            step: 1,
+            //all times are in seconds
+            min: Math.floor(xgds_video.firstSegment.startTime.getTime() / 1000),
+            max: Math.ceil(endTime.getTime() / 1000),
+            stop: uponSliderStopCallBack,
+            slide: uponSliderMoveCallBack,
+            range: 'min'
+        });
+        var sliderTime = new Date($('#masterSlider').slider('value') * 1000);
+        setSliderTimeLabel(sliderTime);
+        updateToolTip(false, sliderTime);
+        createSliderLegend();
+        //showTimeOnHover(duration);
     } else {
-        alert('The video episode is not available.');
+        alert('The end time of video segment not available.' +
+              'Cannot setup slider');
     }
 }
-

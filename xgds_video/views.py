@@ -33,14 +33,10 @@ EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
 
 def liveImageStream(request):
-    #ASK TREY:
-    # how do I know that the topics are publishing images right now?
-    # Can I assume I know the image sources here? 
-    sources = ['HazCam', 'DownCam'] #for testing purposes, I'll stick the sources into an array.
     #note forms
     forms = []
+    sources = SOURCE_MODEL.objects.all()
     
-    #create a noteform for each source
     for source in sources:
         form = NoteForm()
         form.index = 0
@@ -57,8 +53,64 @@ def liveImageStream(request):
                               context_instance=RequestContext(request))
 
 
-def archivedImageStream(request):
-    return render_to_response("xgds_video/ArchivedImageStream.html", {},
+#dateAndSource is like: 20140623A_HAZ1
+def archivedImageStream(request, dateAndSource = None):
+    date = dateAndSource
+    sources = SOURCE_MODEL.objects.all()
+    videoSegDict = {} #key: source, value: segments    
+    
+    if not date:
+        messages.add_message(request, messages.ERROR, 'Date is not valid')
+    else:
+        if date != 'today':
+        #convert the date string to a datetime object.
+            date = date[0:4] + "-" + date[4:6] + "-" + date[6:8]
+            dateObj = datetime.datetime.strptime(date, "%Y-%m-%d")
+        else: #date == 'today':
+            dateObj = datetime.datetime.now()
+            
+        index = 0
+        for source in sources:
+            #clean up the source shortName
+            cleanName = source.shortName.rstrip()
+            if (cleanName != source.shortName):
+                source.shortName = cleanName
+                source.save()
+            
+            #get segments that have start time same as search date.
+            segments = source.videosegment_set.all()
+            if segments.count() != 0:
+                sameDaySegments = filter(lambda seg: seg.startTime.date() == dateObj.date(), segments)
+                videoSegDict[source.shortName] = [seg.getDict() for seg in sameDaySegments]
+                
+                #create noteforms for each source
+                form = NoteForm()
+                form.index = index
+                form.fields["index"] = index
+                form.source = source
+                form.fields["source"] = source
+                form.fields["extras"] = ""
+                source.form = form
+                index = index + 1
+            else:
+                messages.add_message(request, messages.ERROR, 'No video segments for date:' + dateObj.isoformat())
+        ctx = {
+            'segmentsJson': json.dumps(videoSegDict),
+            'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
+            'episode': {},
+            'episodeJson': {},
+            'noteTimeStamp': "",  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
+            'sources': sources
+        }
+
+        return render_to_response("xgds_video/video_recorded_playbacks.html", 
+                                  ctx,
+                                  context_instance=RequestContext(request))
+
+
+def searchImageStreams(request, date=None):
+    return render_to_response("xgds_video/SearchImageStreams.html", 
+                              {},
                               context_instance=RequestContext(request))
 
 
@@ -229,8 +281,8 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 source.form = form
                 index = index + 1
 
-        segmentsJson = "null"
-        episodeJson = "null"
+        segmentsJson = {}
+        episodeJson = {}
         if segmentsDict:
             segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4)
             episodeJson = json.dumps(episode.getDict())

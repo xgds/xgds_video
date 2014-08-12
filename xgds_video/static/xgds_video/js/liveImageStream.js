@@ -18,11 +18,12 @@ $.extend(xgds_video, {
 	onopen: function(zmq) {
 		$('#socketStatus').html('connected');
 		//there is a topic per camera source. I'm assuming that we'll know these sources beforehand.
-		var topic1 = 'dds.Resolve.RESOLVE_CAM_ProcessedImage';
-		var topic2 = 'dds.Resolve.RESOLVE_CAM_ProcessedImage2';
+		var topic1 = 'RapidImagesensorSampleHazCamLeft';
+		var topic2 = 'RapidImagesensorSampleGroundCam';
 		
 		var handler = function() {
 			return function (zmq, topic, obj) {
+				console.log("data: ", obj.data);
 				//upon receiving the image, display it.
 				var data = obj.data.split(':');
 				var imgType = data[0];
@@ -30,9 +31,9 @@ $.extend(xgds_video, {
 				
 				haveNewData = true;
 				
-				if (topic =='dds.Resolve.RESOLVE_CAM_ProcessedImage') {
+				if (topic == topic1) {
 					$("#cameraImage1").attr("src", "data:image/jpeg;base64,"+imgContent);
-				} else if (topic == 'dds.Resolve.RESOLVE_CAM_ProcessedImage2') {
+				} else if (topic == topic2) {
 					$("#cameraImage2").attr("src", "data:image/jpeg;base64,"+imgContent);
 				}
 			};

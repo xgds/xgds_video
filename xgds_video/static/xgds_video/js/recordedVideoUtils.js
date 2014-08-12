@@ -28,13 +28,15 @@ function toJsDateTime(jsonDateTime) {
 
 //convert episode start/end time to javascript dateTime
 function convertJSONtoJavascriptDateTime(episode) {
-    if (episode) {
-        if (episode.startTime) {
-            episode.startTime = toJsDateTime(episode.startTime);
-        }
-        if (episode.endTime) {
-            episode.endTime = toJsDateTime(episode.endTime);
-        }
+    if (isEmpty(episode)) {
+    	return;
+    }
+    
+    if (episode.startTime) {
+        episode.startTime = toJsDateTime(episode.startTime);
+    }
+    if (episode.endTime) {
+        episode.endTime = toJsDateTime(episode.endTime);
     }
 }
 
@@ -75,18 +77,29 @@ function padNum(num, size) {
  * Helper that returns file paths of video segments with same source
  */
 function getFilePaths(episode, segments) {
-    var filePaths = [];
-    $.each(segments, function(id) {
-        var segment = segments[id];
-        var source = segment.source;
-        var sourceName = segment.source.shortName;
+	var filePaths = [];
+    var sourceName = null;
+    var segment = null;
 
-        var indexFileUrl = xgds_video.indexFileUrl.replace('flightAndSource',
-                            episode.shortName + '_' + source.shortName);
-        indexFileUrl = indexFileUrl.replace('segmentIndex', padNum(segment.segNumber, 3));
-        filePaths.push(indexFileUrl);
-    });
-    return filePaths;
+	if (isEmpty(episode)) {
+		//when episodes are not used. 
+		$.each(segments, function(id) {
+			//TODO
+		    segment = segments[id];
+		    sourceName = segment.source.shortName;
+		});
+	} else {
+		$.each(segments, function(id) {
+		    segment = segments[id];
+		    sourceName = segment.source.shortName;
+		    var indexFileUrl = xgds_video.indexFileUrl.replace('flightAndSource',
+	                            episode.shortName + '_' + sourceName);
+	        indexFileUrl = indexFileUrl.replace('segmentIndex', padNum(segment.segNumber, 3));
+	        filePaths.push(indexFileUrl);
+	    });    
+	}
+	
+	return filePaths;
 }
 
 
@@ -314,4 +327,3 @@ function awakenIdlePlayers(datetime, exceptThisPlayer) {
         }
     }
 }
-
