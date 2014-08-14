@@ -3,6 +3,7 @@ import stat
 import logging
 import os
 import datetime
+import re
 
 try:
     import zerorpc
@@ -47,8 +48,13 @@ def liveImageStream(request):
             form.fields["extras"].initial = ""
         forms.append(form)
     
+    socketUrl = settings.XGDS_ZMQ_WEB_SOCKET_URL
+    if request.META['wsgi.url_scheme'] == 'https':
+        # must use secure WebSockets if web site is secure
+        socketUrl = re.sub(r'^ws:', 'wss:', socketUrl)
+
     return render_to_response("xgds_video/LiveImageStream.html",
-                              {'zmqURL': json.dumps(settings.XGDS_ZMQ_WEB_SOCKET_URL),
+                              {'zmqURL': json.dumps(socketUrl),
                                'noteForms': forms},
                               context_instance=RequestContext(request))
 
