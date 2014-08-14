@@ -12,6 +12,6 @@ urlpatterns = patterns(
     (r'^noteVideo2013/(?P<flightName>\w+)/(?P<time>[^/]+)/$', views.displayRecordedVideo, {}, 'noteVideo2013'),  # recorded video for one note
     (r'^recorded/(?P<flightName>\w+)/$', views.displayRecordedVideo, {}, 'flight_video_recorded'),  # recorded video for one flight
     (r'^liveImageStream/$', views.liveImageStream, {}, 'live_image_stream'),  # shows image stream from rover.
-    (r'^archivedImageStream/(?P<dateAndSource>[^/]+)$', views.archivedImageStream, {}, 'archived_image_stream'),
+    (r'^archivedImageStream/(?P<date>[^/]+)$', views.archivedImageStream, {}, 'archived_image_stream'),
     (r'^searchImageStreams/$', views.searchImageStreams, {}, 'search_image_streams')
 )
