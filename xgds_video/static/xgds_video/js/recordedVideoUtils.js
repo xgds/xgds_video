@@ -1,8 +1,8 @@
 /***************************
            Helpers
-****************************/
+ ****************************/
 jQuery(function($) {
-var windowWidth = $(window).width();
+    var windowWidth = $(window).width();
     $(window).resize(function()  {
         if (windowWidth != $(window).width()) {
             location.reload();
@@ -14,13 +14,13 @@ var windowWidth = $(window).width();
 
 //helper for converting json datetime object to javascript date time
 function toJsDateTime(jsonDateTime) {
-    if ((jsonDateTime) && (jsonDateTime != "None") && (jsonDateTime != "") && (jsonDateTime != undefined)) {
+    if ((jsonDateTime) && (jsonDateTime != 'None') && (jsonDateTime != '') && (jsonDateTime != undefined)) {
         //need to subtract one from month since Javascript datetime indexes month
         //as 0 to 11.
         jsonDateTime.month = jsonDateTime.month - 1;
-        return new Date(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day, 
-                jsonDateTime.hour, jsonDateTime.min, jsonDateTime.seconds, 0);  
-    } else { 
+        return new Date(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day,
+                jsonDateTime.hour, jsonDateTime.min, jsonDateTime.seconds, 0);
+    } else {
         return null;
     }
 }
@@ -29,9 +29,8 @@ function toJsDateTime(jsonDateTime) {
 //convert episode start/end time to javascript dateTime
 function convertJSONtoJavascriptDateTime(episode) {
     if (isEmpty(episode)) {
-    	return;
+        return;
     }
-    
     if (episode.startTime) {
         episode.startTime = toJsDateTime(episode.startTime);
     }
@@ -43,10 +42,10 @@ function convertJSONtoJavascriptDateTime(episode) {
 
 //checks if json dict is empty
 function isEmpty(ob) {
-  for (var i in ob) {
-    return false;
-  }
-  return true;
+    for (var i in ob) {
+        return false;
+    }
+    return true;
 }
 
 
@@ -77,29 +76,27 @@ function padNum(num, size) {
  * Helper that returns file paths of video segments with same source
  */
 function getFilePaths(episode, segments) {
-	var filePaths = [];
+    var filePaths = [];
     var sourceName = null;
     var segment = null;
-
-	if (isEmpty(episode)) {
-		//when episodes are not used. 
-		$.each(segments, function(id) {
-			//TODO
-		    segment = segments[id];
-		    sourceName = segment.source.shortName;
-		});
-	} else {
-		$.each(segments, function(id) {
-		    segment = segments[id];
-		    sourceName = segment.source.shortName;
-		    var indexFileUrl = xgds_video.indexFileUrl.replace('flightAndSource',
-	                            episode.shortName + '_' + sourceName);
-	        indexFileUrl = indexFileUrl.replace('segmentIndex', padNum(segment.segNumber, 3));
-	        filePaths.push(indexFileUrl);
-	    });    
-	}
-	
-	return filePaths;
+    if (isEmpty(episode)) {
+        //when episodes are not used.
+        $.each(segments, function(id) {
+            //TODO
+            segment = segments[id];
+            sourceName = segment.source.shortName;
+        });
+    } else {
+        $.each(segments, function(id) {
+            segment = segments[id];
+            sourceName = segment.source.shortName;
+            var indexFileUrl = xgds_video.indexFileUrl.replace('flightAndSource',
+                    episode.shortName + '_' + sourceName);
+            indexFileUrl = indexFileUrl.replace('segmentIndex', padNum(segment.segNumber, 3));
+            filePaths.push(indexFileUrl);
+        });
+    }
+    return filePaths;
 }
 
 
@@ -117,7 +114,7 @@ function updateToolTip(ui, sliderTime) {
 
 
 function setSliderTimeLabel(datetime) {
-    var time = datetime.toTimeString().replace("GMT-0700","");
+    var time = datetime.toTimeString().replace('GMT-0700', '');
     $('#sliderTimeLabel').val(time);
 }
 
@@ -151,7 +148,7 @@ function getPlaylistIdxAndOffset(currTime, sourceName) {
     var segments = xgds_video.displaySegments[sourceName];
     for (var i = 0; i < segments.length; i++) {
         if ((currTime >= segments[i].startTime) &&
-            (currTime <= segments[i].endTime)) {
+                (currTime <= segments[i].endTime)) {
             playlistIdx = i;
             //in seconds
             offset = Math.round((currTime - segments[i].startTime) / 1000);
@@ -204,7 +201,7 @@ function jumpToPosition(currTime, sourceName) {
     } else { //current time is not in the playable range.
         //pause the player
         if ((player.getState() == 'PLAYING') ||
-            (player.getState() == 'IDLE')) {
+                (player.getState() == 'IDLE')) {
             player.pause(true);
         }
     }
@@ -286,21 +283,21 @@ function getPlayerVideoTime(source) {
 
 
 function seekAllPlayersToTime(datetime) {
-	for (var key in xgds_video.displaySegments) {
-		var segments = xgds_video.displaySegments[key];
-		var sourceName = segments[0].source.shortName;
-		
-		var player = jwplayer(sourceName);
-		if (player != undefined) {
-			jumpToPosition(datetime, sourceName);
-		}
-	}
-	if (datetime != null) {
-		setSliderTime(datetime);
-	}
-	var target = $('.ui-slider-handle') || ui.handle;
-	var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + getTimeString(datetime) + '</div><div class="tooltip-arrow"></div></div>';
-	$(target).html(tooltip);
+    for (var key in xgds_video.displaySegments) {
+        var segments = xgds_video.displaySegments[key];
+        var sourceName = segments[0].source.shortName;
+
+        var player = jwplayer(sourceName);
+        if (player != undefined) {
+            jumpToPosition(datetime, sourceName);
+        }
+    }
+    if (datetime != null) {
+        setSliderTime(datetime);
+    }
+    var target = $('.ui-slider-handle') || ui.handle;
+    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + getTimeString(datetime) + '</div><div class="tooltip-arrow"></div></div>';
+    $(target).html(tooltip);
 }
 
 
@@ -312,7 +309,7 @@ function awakenIdlePlayers(datetime, exceptThisPlayer) {
         var state = player.getState();
         if (sourceName != exceptThisPlayer) {
             if ((state == 'IDLE') || (state == 'PAUSED')) {
-               var canJump = true;
+                var canJump = true;
                 for (var s in segments) {
                     var segment = segments[s];
                     if (datetime.getTime() == segment.endTime.getTime()) {

@@ -55,7 +55,7 @@ def setSegmentEndTimes(segments, episode, source):
 #     segments = sourceSegmentsDict[source.shortName]
     segments = sorted(segments, key=lambda segment: segment.segNumber)
     # if last segment has no endTime OR if flight is active
-    if ((segments[-1].endTime == None) or (episode.endTime == None)):
+    if (segments[-1].endTime is None) or (episode.endTime is None):
         segment = segments[-1]  # last segment
         suffix = getIndexFileSuffix(flightName,
                                     segment.segNumber)
@@ -63,14 +63,14 @@ def setSegmentEndTimes(segments, episode, source):
         segmentDuration = getTotalDuration(path)
         segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
         segment.save()
-            
+
 
 def find_between(s, first, last):
     """
     Helper that finds the substring between first and last strings.
     """
     try:
-        start = s.index( first ) + len( first )
+        start = s.index(first) + len(first)
         end = s.index(last, start)
         return s[start:end]
     except ValueError:
@@ -104,8 +104,8 @@ def findEndMarker(item):
 
 
 def padNum(num, size):
-    s = str(num);
-    while (len(s) < size): 
+    s = str(num)
+    while len(s) < size:
         s = '0' + s
     return s
 
@@ -117,35 +117,35 @@ def getIndexFileSuffix(flightAndSource, segmentNumber):
     return path
 
 
-"""
-search and replace in file
-pattern: regex pattern for searching
-subst: string you want to replace with.
-"""
 def updateIndexFilePrefix(indexFileSuffix, subst):
-#     foundEndMarker = False
+    """
+    search and replace in file
+    pattern: regex pattern for searching
+    subst: string you want to replace with.
+    """
+    # foundEndMarker = False
     # open the file
     indexFilePath = settings.DATA_ROOT + indexFileSuffix
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
     baseFile = open(indexFilePath)
-    videoDelayInSecs = VIDEO_DELAY_SECONDS # getVideoDelay() - settings.XGDS_VIDEO_DELAY_MINIMUM_SEC
+    videoDelayInSecs = VIDEO_DELAY_SECONDS  # getVideoDelay() - settings.XGDS_VIDEO_DELAY_MINIMUM_SEC
     if videoDelayInSecs < 0:
         videoDelayInSecs = 0
     videoDelayInSegments = int(round(videoDelayInSecs / settings.XGDS_VIDEO_SEGMENT_SEC))
-    videoDelayInLines = 2*videoDelayInSegments + 1
+    videoDelayInLines = 2 * videoDelayInSegments + 1
 #    print "Video delay in seconds:", videoDelayInSecs
 #    print "Video delay in segments:", videoDelayInSegments
 
-    #edit the index file
+    #  edit the index file
     clips = baseFile.read().split('#EXTINF:')
     header = clips.pop(0)
-    badFirstClip = clips.pop(0)
+    clips.pop(0)  # badFirstClip
     processedClips = '#EXTINF:'.join([header] + clips)
     lineList = processedClips.split("\n")
     maxLineNum = len(lineList) - videoDelayInLines
     processedIndex = []
     for idx, line in enumerate(lineList):
-        if (idx < maxLineNum):
+        if idx < maxLineNum:
             processedIndex.append(processLine(segmentDirectoryUrl, line))
 
 #    processedIndex = [processLine(segmentDirectoryUrl, line)

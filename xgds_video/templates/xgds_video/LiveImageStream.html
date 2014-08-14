@@ -38,20 +38,19 @@
 {% endblock %}
 
 
-{% block contents %}						
+{% block contents %}
 	Socket Status: <div id="socketStatus"></div>
-	
 	<div id="container" class="js-masonry" data-masonry-options='{"itemSelector": ".item", "gutter":5, "isInitLayout":false}'>
-		{% for form in noteForms %}
-			<div class="item" id="item{{ forloop.counter }}" style="background-color:grey;">
+		{% for source in sources %}
+			<div class="item" id="item{{ forloop.counter }}" style="background-color:#e5e5e5;">
+	            <div> Camera Name: <b>{{ source.name }}</b> </div>
 				<section>
-	            {% include "xgds_video/video_notes.html" with data=form source=form.source STATIC_URL=STATIC_URL %}
+	            {% include "xgds_video/video_notes.html" with data=source.form source=source STATIC_URL=STATIC_URL %}
 	            </section>
-	 			<img style='display:block;' id="cameraImage{{ forloop.counter }}" src=""></img>
+	 			<img class='imageStream' style='display:block;' id="cameraImage{{ forloop.counter }}" src=""></img>
 	 		</div>
  		{% endfor %}
 	</div>
-	
  {% endblock %}
 
 {% block jsInit %}

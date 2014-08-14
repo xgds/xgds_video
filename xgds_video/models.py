@@ -8,12 +8,10 @@ from django.db import models
 from geocamUtil.models import UuidField
 from xgds_video import settings
 from xgds_video import util
-import sys
-import random
 
-# pylint: disable=C1001,E1101
+#  pylint: disable=C1001,E1101
 
-#incase settings is shadowed
+#  incase settings is shadowed
 videoSettings = settings
 
 
@@ -132,7 +130,7 @@ class AbstractVideoSegment(models.Model):
         return (u"%s(%s,sourceName=%s, segNumber=%s, self.startTime=%s, self.endTime='%s')" %
                 (self.__class__.__name__,
                  self.id,
-		 self.source.shortName,
+                 self.source.shortName,
                  self.segNumber,
                  self.startTime,
                  self.endTime))
@@ -206,8 +204,8 @@ class VideoSourceGroup(models.Model):
     # shortName: a short mnemonic code suitable to embed in a URL
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True, help_text="a short mnemonic code suitable to embed in a URL")
 
-    #TAMAR TODO
-    # rename sources to entries
+    #  TAMAR TODO
+    #  rename sources to entries
     sources = models.ManyToManyField(settings.XGDS_VIDEO_SOURCE_MODEL, through='VideoSourceGroupEntry')
     uuid = UuidField(db_index=True)
 
@@ -223,12 +221,9 @@ class VideoSourceGroupEntry(models.Model):
     rank = models.PositiveIntegerField()
     source = models.ForeignKey(settings.XGDS_VIDEO_SOURCE_MODEL)
 
-    #TAMAR TODO
-    #remove the below and use reverse to look up
+    #  TAMAR TODO
+    #  remove the below and use reverse to look up
     group = models.ForeignKey('VideoSourceGroup')
-
-    def __unicode__(self):
-        return u'%s: %s' % (self.group, self.source)
 
     class Meta:
         ordering = ['rank']

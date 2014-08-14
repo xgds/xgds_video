@@ -32,37 +32,18 @@
 <table id="image_streams_table">
 <thead>
 	<tr>
-		<th class="image_streams_table_headers">Video Name</th>
 		<th class="image_streams_table_headers">Date</th>
-		<th class="image_streams_table_headers">Location</th>
 	</tr>
 </thead>
-<tbody id="imageStreamsResults">
-	<!-- Use a for loop to fill this in -->
-	<tr>
-		<td>
-		<a href="{% url 'archived_image_stream' '20130407A_HAZ1' %}">20130407A_HAZ1</a>
-		</td>
-		<td>
-			2013, 4, 7
-		</td>
-		<td>
-			lat1, long1
-		</td>
-	</tr>
-	
-	<tr>
-		<td>
-		<a href="{% url 'archived_image_stream' '20130607A_HAZ1' %}">20130607A_HAZ1</a>
-		</td>
-		<td>
-			2013, 6, 7
-		</td>
-		<td>
-			lat2, long2
-		</td>
-	</tr>
 
+<tbody id="imageStreamsResults">
+	{% for date in dates %}
+		<tr>
+			<td>
+				<a href="{% url 'archived_image_stream' date %}">{{ date }}</a>
+			</td>
+		</tr>
+	{% endfor %}
 </tbody>
 </table>
 {% endblock %}
