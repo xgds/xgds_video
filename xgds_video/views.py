@@ -24,7 +24,7 @@ from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
 from xgds_video.models import *  # pylint: disable=W0401
-# import pydevd
+import pydevd
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -56,9 +56,8 @@ def liveImageStream(request):
                               context_instance=RequestContext(request))
 
 
-# dateAndSource is like: 20140623A_HAZ1
+# date is like 20140623
 def archivedImageStream(request, date=None):
-    # pydevd.settrace('10.10.80.151')
     sources = SOURCE_MODEL.objects.all()
     videoSegDict = {}  # key: source, value: segments
     if not date:
@@ -94,8 +93,9 @@ def archivedImageStream(request, date=None):
                 messages.add_message(request, messages.ERROR, 'No video segments for date: ' + str(dateObj.date()) + ' and source: ' + source.shortName)
         # Stringify (json.dumps) the videoSegDict only if there are segments:
         if videoSegDict != {}:
-            videoSegDict = json.dumps(videoSegDict)
+            videoSegDict = json.dumps(videoSegDict, sort_keys=True, indent=4)
         ctx = {
+            'date': str(dateObj.date()),
             'segmentsJson': videoSegDict,
             'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
             'episode': {},
@@ -402,11 +402,12 @@ def stopRecording(source, endTime):
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
 
-
+'''
 def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
     """
     modifies index file of recorded video to the correct host.
     """
+    pydevd.settrace('10.10.80.151')
     # Look up path to index file
     suffix = util.getIndexFileSuffix(flightAndSource, segmentNumber)
     # use regex substitution to replace hostname, etc.
@@ -415,3 +416,4 @@ def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
     response = HttpResponse(newIndex, content_type="application/x-mpegurl")
     response['Content-Disposition'] = 'filename = "prog_index.m3u8"'
     return response
+'''

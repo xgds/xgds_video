@@ -2,7 +2,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
     <head>
-		  <script type="text/javascript" src="{{ STATIC_URL }}external/js/jwplayer/jwplayer.js"></script>
+          <script type="text/javascript" src="{{ STATIC_URL }}external/js/jwplayer/jwplayer.js"></script>
+         <script type="text/javascript">
+                jwplayer.key="Wu88H+wZ8jZd7qICLr7IEKSmml1/EOMXWYcblA/CJVk=";
+		       var STATIC_URL='{{ STATIC_URL }}';
+		       var submitNoteUrl = '{% url record_simple %}';
+		       var isLive = false;
+        </script>
           <script type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.js"></script>
           <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery/jquery.tagsinput.css"></link>
           <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery/jquery-ui.css"></link>
@@ -11,130 +17,43 @@
     </head>
 
 
-	<body bgcolor="#EEE">
+    <body bgcolor="#EEE">
             <div id="masterSlider"></div>
-		    <br />	
+            <br />  
             <div id="container0"></div>
-			<br />
-			<div id="container1"></div>
             <br />
-			<div id="container2"></div>        
-            
+            <div id="container1"></div>
+            <br />
+            <div id="container2"></div>
             <script type="text/javascript">
             //onTime call is on for this player
-            var onTimePlayer = "container0"; //player id
-
-            function jumpToPosition(sourceName) {
-                var player = jwplayer(sourceName);
-                player.playlistItem(1).seek(20);
-            }
-
-            function uponSliderStopCallBack() {
-                //test code
-                for (var y=0; y<3; y++) {
-                    //jwplayer("container"+y).onPlaylist( function() { 
-                    //    console.log("testCode this id: ", this.id);
-                    //    console.log("state of ",this.id, this.getState());
-                    //    console.log("position of ", this.id, this.getPosition());
-                    //    jwplayer("container"+y).playlistItem(1);
-                    //    jwplayer("container"+y).seek(20);
-                    //} );
-                    jumpToPosition("container"+y);
-                }
-
-            }
-            function uponSliderMoveCallBack() {
-            }
-
-            function setupSlider() {
-                $('#masterSlider').slider({
-                    step: 1,
-                    min: 0, 
-                    max: 100, 
-                    stop: uponSliderStopCallBack,
-                    slide: uponSliderMoveCallBack,
-                    range: 'min'
-                });
-            }
-
-            /**
-             * ensures that only one onTime event is enabled
-             */
-            function onTimeController(thisObj) {
-                var switchPlayer = false;            
-    
-                if (thisObj.id == onTimePlayer) {
-                    var state = jwplayer(thisObj.id).getState();
-                    if (state != 'PLAYING') { //XXX later when there is a play button, make sure playFlag is also on. If it's on pause, do nothing. 
-                        switchPlayer = true;
-                    }
-                } else {
-                    if (jwplayer(onTimePlayer).getState() != 'PLAYING') { //XXX and if the play button is on.
-                        switchPlayer = true; 
-                    }
-                }
-
-                if (switchPlayer) {
-                    for (var x=0; x<3; x++) {
-                        if (jwplayer("container"+x).getState() == 'PLAYING') {
-                            onTimePlayer = "container"+x;
-                            break;
-                        }
-                    }
-                }
-            }
-
+            //var onTimePlayer = "container0"; //player id
 
             for (var i=0; i<3; i++) {
                 jwplayer("container"+i).setup({
-                file: "http://www.longtailvideo.com/jw/upload/bunny.mp4",
-                image: "http://www.longtailvideo.com/jw/upload/bunny.jpg",
-                flashplayer: "http://player.longtailvideo.com/player.swf",
-                primary: "flash",
-                height: 270,
-                width: 480,
-                autostart: true,
-                controlbar: "bottom",
-                stretching: "exactfit",
-                listbar: {
-                    position: 'right',
-                    size: 110
-                },
-                events: {
-                    onPlay: function() {
-                        //jwplayer('container2').stop();jwplayer('container3').stop();
-                        onTimeController(this);
-                    },
-                    onPause: function() {
-                        onTimeController(this);
-                    },
-                    onIdle: function ()  {
-                        onTimeController(this);
-                    },
-                    onBuffer: function () {
-                        onTimeController(this);
-                    },
-                    onTime: function(object) {
-                        if (onTimePlayer == this.id) {
-                            if(object.position > object.duration - 1) {this.pause();}
-                            console.log("this id is", this.id);
-                        }
-                    }
-                }
+	                file: "http://www.longtailvideo.com/jw/upload/bunny.mp4",
+	                height: 270,
+	                width: 480,
+	                autostart: true,
+	                controlbar: "bottom",
+	                stretching: "exactfit",
+	                listbar: {
+	                    position: 'right',
+	                    size: 110
+	                },
+	                events: {}
                 });
 
-                var playlist = [];
+                 var playlist = [];
                 for (var p=0; p<2; p++) {
-                    var newItem = { file: "http://content.bitsontherun.com/videos/3XnJSIm4-kNspJqnJ.mp4",
+                    var newItem = { file: "/data/20140715_HAZ1/Video/Recordings/Segment000/prog_index.m3u8",
                                     title:  "item"
                                   };
                     playlist.push(newItem);
                 }
-                jwplayer("container"+i).load(playlist);
+                jwplayer("container"+i).load(playlist); 
             }
-            
-            setupSlider();
 
-			</script>
-	</body>
+            </script>
+    </body>
 </html>

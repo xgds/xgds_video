@@ -110,7 +110,17 @@ function setupJWplayer() {
         // paths of the video segments
         var videoPaths = [];
         if (isEmpty(xgds_video.episode)) { //if episode does not exist
-            videoPaths = getFilePaths(null, segments);
+//            videoPaths = getFilePaths(null, segments);
+            //XXX for testing only
+            if (source == 'HAZ1') {
+//                videoPaths = ["http://www.longtailvideo.com/jw/upload/bunny.mp4", "http://www.longtailvideo.com/jw/upload/bunny.mp4"]
+                videoPaths = ["/data/20140619_HAZ1/Video/Recordings/Segment000/prog_index.m3u8",
+                              "/data/20140619_HAZ1/Video/Recordings/Segment001/prog_index.m3u8"]
+            } else if (source == 'STL1') {
+//                videoPaths = ["http://www.longtailvideo.com/jw/upload/bunny.mp4", "http://www.longtailvideo.com/jw/upload/bunny.mp4"]
+                videoPaths = ["/data/20140619_STL1/Video/Recordings/Segment000/prog_index.m3u8",
+                              "/data/20140619_STL1/Video/Recordings/Segment001/prog_index.m3u8"]
+            }
         } else {
             videoPaths = getFilePaths(xgds_video.episode, segments);
         }
@@ -235,7 +245,8 @@ function seekCallBack() {
     }
     var seekTime = seekTimeParser(seekTimeStr);
     var seekDateTime = null;
-    //XXX for now assume seek time's date is same as first segment's end date
+
+    // for now assume seek time's date is same as first segment's end date
     seekDateTime = new Date(segments[0].endTime);
     seekDateTime.setHours(parseInt(seekTime[0]));
     seekDateTime.setMinutes(parseInt(seekTime[1]));
