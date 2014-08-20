@@ -79,7 +79,7 @@ function getFilePaths(episode, segments) {
     var filePaths = [];
     var sourceName = null;
     var segment = null;
-    if (isEmpty(episode)){
+    if (isEmpty(episode)) {
         //when episodes are not used. (mvp)
         $.each(segments, function(id) {
             segment = segments[id];

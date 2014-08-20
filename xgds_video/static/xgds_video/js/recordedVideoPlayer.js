@@ -114,12 +114,12 @@ function setupJWplayer() {
             //XXX for testing only
             if (source == 'HAZ1') {
 //                videoPaths = ["http://www.longtailvideo.com/jw/upload/bunny.mp4", "http://www.longtailvideo.com/jw/upload/bunny.mp4"]
-                videoPaths = ["/data/20140619_HAZ1/Video/Recordings/Segment000/prog_index.m3u8",
-                              "/data/20140619_HAZ1/Video/Recordings/Segment001/prog_index.m3u8"]
+                videoPaths = ['/data/20140619_HAZ1/Video/Recordings/Segment000/prog_index.m3u8',
+                              '/data/20140619_HAZ1/Video/Recordings/Segment001/prog_index.m3u8'];
             } else if (source == 'STL1') {
 //                videoPaths = ["http://www.longtailvideo.com/jw/upload/bunny.mp4", "http://www.longtailvideo.com/jw/upload/bunny.mp4"]
-                videoPaths = ["/data/20140619_STL1/Video/Recordings/Segment000/prog_index.m3u8",
-                              "/data/20140619_STL1/Video/Recordings/Segment001/prog_index.m3u8"]
+                videoPaths = ['/data/20140619_STL1/Video/Recordings/Segment000/prog_index.m3u8',
+                              '/data/20140619_STL1/Video/Recordings/Segment001/prog_index.m3u8'];
             }
         } else {
             videoPaths = getFilePaths(xgds_video.episode, segments);

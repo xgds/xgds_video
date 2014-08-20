@@ -24,7 +24,6 @@ from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
 from xgds_video.models import *  # pylint: disable=W0401
-import pydevd
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -95,7 +94,7 @@ def archivedImageStream(request, date=None):
         if videoSegDict != {}:
             videoSegDict = json.dumps(videoSegDict, sort_keys=True, indent=4)
         ctx = {
-            'date': str(dateObj.date()),
+            'videoDate': str(dateObj.date()),
             'segmentsJson': videoSegDict,
             'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
             'episode': {},

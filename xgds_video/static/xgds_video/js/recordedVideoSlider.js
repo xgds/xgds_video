@@ -33,7 +33,7 @@ function createSliderLegend() {
         var segStartTimeInSeconds = Math.round(segments[0].startTime / 1000);
         var emptySegmentDuration = segStartTimeInSeconds - startTime;
         var emptySegmentWidth = xgds_video.masterSlider.width() * (emptySegmentDuration / totalDuration);
-        xgds_video.masterSlider.before('<img class="' + source.shortName + '-legend' + 
+        xgds_video.masterSlider.before('<img class="' + source.shortName + '-legend' +
                 '" alt="emptySegment"' +
                 '" width="' + emptySegmentWidth +
         '" height="5px" style="opacity:0.0;">');
@@ -48,8 +48,8 @@ function createSliderLegend() {
             width = xgds_video.masterSlider.width() * (segDuration / totalDuration);
             //draw the visualization
             xgds_video.masterSlider.before('<img class="' +
-                    source.shortName + '-legend' + '" id=' + 
-                    'Segment'+ id + ' width="' + width +
+                    source.shortName + '-legend' + '" id=' +
+                    'Segment' + id + ' width="' + width +
                     '"alt="Segment' + id + '"' +
                     '" height="5px" ' +
                     'style="background-color:' +
@@ -58,7 +58,7 @@ function createSliderLegend() {
                 var nextSegment = segments[id + 1];
                 emptySegmentDuration = Math.round((nextSegment.startTime - segment.endTime) / 1000);
                 emptySegmentWidth = xgds_video.masterSlider.width() * (emptySegmentDuration / totalDuration);
-                xgds_video.masterSlider.before('<img class="' + source.shortName + '-legend' + 
+                xgds_video.masterSlider.before('<img class="' + source.shortName + '-legend' +
                         '" alt="emptySegment"' +
                         '" width="' + emptySegmentWidth +
                 '" height="5px" style="opacity:0.0;">');
@@ -80,7 +80,6 @@ function showTimeOnHover(duration) {
         // If within the slider's width, follow it along
         if (e.pageX >= minX && e.pageX <= maxX) {
             var val = (e.pageX - minX);
-
             //get the time
             var dur = (duration * 1000) * (val / (maxX - minX));
             var currentTime = dur + xgds_video.firstSegment.startTime.getTime();
