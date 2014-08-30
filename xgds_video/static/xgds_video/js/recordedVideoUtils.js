@@ -11,8 +11,6 @@ jQuery(function($) {
 
 /**
  * Helper for converting json datetime object to javascript date time
- * @param jsonDateTime
- * @returns
  */
 function toJsDateTime(jsonDateTime) {
     if ((jsonDateTime) && (jsonDateTime != 'None') && (jsonDateTime != '') && (jsonDateTime != undefined)) {
@@ -28,9 +26,8 @@ function toJsDateTime(jsonDateTime) {
 
 
 /**
- * Used by both seekCallBack and seekFromUrlOffset 
+ * Used by both seekCallBack and seekFromUrlOffset
  * to seek all players to given time.
- * @param seekTimeStr
  */
 function seekHelper(seekTimeStr) {
     var seekTime = seekTimeParser(seekTimeStr);
@@ -46,7 +43,6 @@ function seekHelper(seekTimeStr) {
 
 /**
  * convert episode start/end time to javascript dateTime
- * @param episode
  */
 function convertJSONtoJavascriptDateTime(episode) {
     if (isEmpty(episode)) {
@@ -63,7 +59,6 @@ function convertJSONtoJavascriptDateTime(episode) {
 
 /**
  * Checks if json dict is empty
- * @param ob
  * @returns {Boolean}
  */
 function isEmpty(ob) {
@@ -81,8 +76,6 @@ function setText(id, messageText) {
 
 /**
  * Helper to parse seektime into hours, minutes, seconds
- * @param str
- * @returns
  */
 function seekTimeParser(str) {
     var hmsArray = str.split(':');
@@ -101,8 +94,6 @@ function padNum(num, size) {
 
 /**
  * Helper that returns file paths of video segments with same source
- * @param episode
- * @param segments
  * @returns {Array}
  */
 function getFilePaths(episode, segments) {
@@ -137,8 +128,6 @@ function getSliderTime() {
 
 /**
  * Slider knob shows the time (at which slider knob is located) as a tool tip.
- * @param ui
- * @param sliderTime
  */
 function updateToolTip(ui, sliderTime) {
     var target = ui.handle || $('.ui-slider-handle');
@@ -163,8 +152,6 @@ function setSliderTime(datetime) {
 
 /**
  * Set test site time of the player
- * @param datetime
- * @param sourceName
  */
 function setPlayerTimeLabel(datetime, sourceName) {
     setText('testSiteTime' + sourceName, datetime.toString());
@@ -179,9 +166,6 @@ function withinRange(position, offset) {
 /**
  * Find the playlist item index and offset the current time
  * falls under for this player.
- * @param currTime
- * @param sourceName
- * @returns
  */
 function getPlaylistIdxAndOffset(currTime, sourceName) {
     var playlistIdx = null;
@@ -208,9 +192,6 @@ function getPlaylistIdxAndOffset(currTime, sourceName) {
  * Ensures that seeking to a playlist item and offset works on both
  * html 5 and flash.
  * Example: setPlaylistAndSeek('ROV', 1, 120)
- * @param playerName
- * @param playlist
- * @param offset
  */
 function setPlaylistAndSeek(playerName, playlist, offset) {
     var p = jwplayer(playerName);
@@ -232,8 +213,6 @@ function setPlaylistAndSeek(playerName, playlist, offset) {
 /**
  * Given current time in javascript datetime,
  * find the playlist item and the offset (seconds) and seek to there.
- * @param currTime
- * @param sourceName
  */
 function jumpToPosition(currTime, sourceName) {
     var seekValues = getPlaylistIdxAndOffset(currTime, sourceName);
@@ -281,7 +260,6 @@ function getNextAvailableSegment(currentTime) {
 
 /**
  * When the segment is complete, go to the next available segment.
- * @param thisObj
  */
 function onSegmentComplete(thisObj) {
     //awaken idle players.
@@ -319,7 +297,6 @@ function allPaused() {
 
 /**
  * Helper for returning current test site time from the jwplayer.
- * @param source
  * @returns {Date}
  */
 function getPlayerVideoTime(source) {

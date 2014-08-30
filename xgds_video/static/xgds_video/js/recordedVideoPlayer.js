@@ -71,7 +71,7 @@ function startPlayers() {
 
 
 /**
- * Only called once onReady. Reads offset from URL hash 
+ * Only called once onReady. Reads offset from URL hash
  * (i.e. http://mvp.xgds.snrf/xgds_video/archivedImageStream/2014-06-19#19:00:00)
  * and seeks to that time.
  */
@@ -150,7 +150,7 @@ function setupJWplayer() {
             events: {
                 onReady: function() {
                     //if there is a seektime in the url, start videos at that time.
-                    if(window.location.hash) {
+                    if (window.location.hash) {
                         seekFromUrlOffset();
                     } else {
                         startPlayers();

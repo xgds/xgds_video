@@ -11,7 +11,6 @@ except ImportError:
     pass  # zerorpc not needed for most views
 
 from django.shortcuts import render_to_response
-from django.http import HttpResponse
 from django.template import RequestContext
 # from django.views.generic.list_detail import object_list
 from django.contrib import messages
@@ -400,14 +399,6 @@ def stopRecording(source, endTime):
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
-
-
-"""
-Notes for image sequence stuff
-avconv's wildcard for file name only supports up to four digits
-http://stackoverflow.com/questions/12361845/wildcard-for-sequential-images
-
-"""
 
 
 '''
