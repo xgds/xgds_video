@@ -42,7 +42,7 @@ def liveImageStream(request):
         form.source = source
         form.fields["source"] = source
         if form.fields["source"]:
-            form.fields["extras"].initial = ""
+            form.fields["extras"].initial = None
         source.form = form
     socketUrl = settings.XGDS_ZMQ_WEB_SOCKET_URL
     if request.META['wsgi.url_scheme'] == 'https':
@@ -85,7 +85,7 @@ def archivedImageStream(request, date=None):
                 form.fields["index"] = index
                 form.source = source
                 form.fields["source"] = source
-                form.fields["extras"] = ""
+                form.fields["extras"] = None
                 source.form = form
                 index = index + 1
             else:
@@ -400,6 +400,15 @@ def stopRecording(source, endTime):
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
+
+
+"""
+Notes for image sequence stuff
+avconv's wildcard for file name only supports up to four digits
+http://stackoverflow.com/questions/12361845/wildcard-for-sequential-images
+
+"""
+
 
 '''
 def videoIndexFile(request, flightAndSource=None, segmentNumber=None):

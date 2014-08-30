@@ -70,49 +70,8 @@ function createSliderLegend() {
 }
 
 
-function showTimeOnHover(duration) {
-    // Number of tick marks on slider
-    var position = $('#masterSlider').position(),
-    sliderWidth = $('#masterSlider').width(),
-    minX = position.left,
-    maxX = minX + sliderWidth;
-    $(this).mousemove(function(e) {
-        // If within the slider's width, follow it along
-        if (e.pageX >= minX && e.pageX <= maxX) {
-            var val = (e.pageX - minX);
-            //get the time
-            var dur = (duration * 1000) * (val / (maxX - minX));
-            var currentTime = dur + xgds_video.firstSegment.startTime.getTime();
-            currentTime = new Date(currentTime);
-            //display as a tooltip
-        }
-    });
-}
-
-
 function getPercent(width, totalWidth) {
     return Math.round(width / totalWidth * 100);
-}
-
-
-function getTimeString(datetime) {
-    var timeString = '';
-    if (datetime.getHours().toString().length == 1) {
-        timeString += '0' + datetime.getHours() + ':';
-    } else {
-        timeString += datetime.getHours() + ':';
-    }
-    if (datetime.getMinutes().toString().length == 1) {
-        timeString += '0' + datetime.getMinutes() + ':';
-    } else {
-        timeString += datetime.getMinutes() + ':';
-    }
-    if (datetime.getSeconds().toString().length == 1) {
-        timeString += '0' + datetime.getSeconds();
-    } else {
-        timeString += datetime.getSeconds();
-    }
-    return timeString;
 }
 
 
@@ -182,7 +141,6 @@ function setupSlider() {
         setSliderTimeLabel(sliderTime);
         updateToolTip(false, sliderTime);
         createSliderLegend();
-        //showTimeOnHover(duration);
     } else {
         alert('The end time of video segment not available.' +
         'Cannot setup slider');

@@ -71,6 +71,17 @@ function startPlayers() {
 
 
 /**
+ * Only called once onReady. Reads offset from URL hash 
+ * (i.e. http://mvp.xgds.snrf/xgds_video/archivedImageStream/2014-06-19#19:00:00)
+ * and seeks to that time.
+ */
+function seekFromUrlOffset() {
+    var timestr = window.location.hash.substr(1); //i.e. 19:00:00
+    seekHelper(timestr);
+}
+
+
+/**
  * If the source is a diver, and no other divers are enabled, turn it on.
  */
 function soundController() {
@@ -112,14 +123,14 @@ function setupJWplayer() {
         if (isEmpty(xgds_video.episode)) { //if episode does not exist
 //            videoPaths = getFilePaths(null, segments);
             //XXX for testing only
-            if (source == 'HAZ1') {
+            if (source == 'HAZ') {
 //                videoPaths = ["http://www.longtailvideo.com/jw/upload/bunny.mp4", "http://www.longtailvideo.com/jw/upload/bunny.mp4"]
-                videoPaths = ['/data/20140619_HAZ1/Video/Recordings/Segment000/prog_index.m3u8',
-                              '/data/20140619_HAZ1/Video/Recordings/Segment001/prog_index.m3u8'];
-            } else if (source == 'STL1') {
+                videoPaths = ['/data/20140619_HAZ/Video/Recordings/Segment000/prog_index.m3u8',
+                              '/data/20140619_HAZ/Video/Recordings/Segment001/prog_index.m3u8'];
+            } else if (source == 'STL') {
 //                videoPaths = ["http://www.longtailvideo.com/jw/upload/bunny.mp4", "http://www.longtailvideo.com/jw/upload/bunny.mp4"]
-                videoPaths = ['/data/20140619_STL1/Video/Recordings/Segment000/prog_index.m3u8',
-                              '/data/20140619_STL1/Video/Recordings/Segment001/prog_index.m3u8'];
+                videoPaths = ['/data/20140619_STL/Video/Recordings/Segment000/prog_index.m3u8',
+                              '/data/20140619_STL/Video/Recordings/Segment001/prog_index.m3u8'];
             }
         } else {
             videoPaths = getFilePaths(xgds_video.episode, segments);
@@ -138,7 +149,12 @@ function setupJWplayer() {
             controls: true, //for debugging
             events: {
                 onReady: function() {
-                    startPlayers();
+                    //if there is a seektime in the url, start videos at that time.
+                    if(window.location.hash) {
+                        seekFromUrlOffset();
+                    } else {
+                        startPlayers();
+                    }
                     soundController();
                 },
                 onBeforeComplete: function() {
@@ -214,7 +230,6 @@ function setupJWplayer() {
                 }
             }
         });
-
         // load the segments as playlist.
         var playlist = [];
         for (var k = 0; k < videoPaths.length; k++) {
@@ -240,18 +255,10 @@ function setupJWplayer() {
 function seekCallBack() {
     var seekTimeStr = document.getElementById('seekTime').value;
     if ((seekTimeStr == null) ||
-            (Object.keys(xgds_video.displaySegments).length < 1)) {
+        (Object.keys(xgds_video.displaySegments).length < 1)) {
         return;
     }
-    var seekTime = seekTimeParser(seekTimeStr);
-    var seekDateTime = null;
-
-    // for now assume seek time's date is same as first segment's end date
-    seekDateTime = new Date(segments[0].endTime);
-    seekDateTime.setHours(parseInt(seekTime[0]));
-    seekDateTime.setMinutes(parseInt(seekTime[1]));
-    seekDateTime.setSeconds(parseInt(seekTime[2]));
-    seekAllPlayersToTime(seekDateTime);
+    seekHelper(seekTimeStr);
 }
 
 

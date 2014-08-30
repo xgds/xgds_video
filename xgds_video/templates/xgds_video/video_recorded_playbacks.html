@@ -100,7 +100,7 @@
         {% for source in sources %}
 			<div class="item" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
 	            <div class="buttons">
-	                 <div class="toprow-left">Recorded Segment: {{ source.name }}</div>
+	                 <div class="toprow-left">Camera Name: <b>{{ source.name }}</b></div>
 	                 {% if episode %}
 					 	<a class="mybutton toprow-right"
 					 	 href="{% url 'xgds_video_recorded' %}?source={{ source.shortName }}&episode={{ episode.shortName }}"

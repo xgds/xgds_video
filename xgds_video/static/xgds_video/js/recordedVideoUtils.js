@@ -1,6 +1,3 @@
-/***************************
-           Helpers
- ****************************/
 jQuery(function($) {
     var windowWidth = $(window).width();
     $(window).resize(function()  {
@@ -12,7 +9,11 @@ jQuery(function($) {
 });
 
 
-//helper for converting json datetime object to javascript date time
+/**
+ * Helper for converting json datetime object to javascript date time
+ * @param jsonDateTime
+ * @returns
+ */
 function toJsDateTime(jsonDateTime) {
     if ((jsonDateTime) && (jsonDateTime != 'None') && (jsonDateTime != '') && (jsonDateTime != undefined)) {
         //need to subtract one from month since Javascript datetime indexes month
@@ -26,7 +27,27 @@ function toJsDateTime(jsonDateTime) {
 }
 
 
-//convert episode start/end time to javascript dateTime
+/**
+ * Used by both seekCallBack and seekFromUrlOffset 
+ * to seek all players to given time.
+ * @param seekTimeStr
+ */
+function seekHelper(seekTimeStr) {
+    var seekTime = seekTimeParser(seekTimeStr);
+    var seekDateTime = null;
+    //XXX for now assume seek time's date is same as first segment's end date
+    seekDateTime = new Date(xgds_video.firstSegment.endTime);
+    seekDateTime.setHours(parseInt(seekTime[0]));
+    seekDateTime.setMinutes(parseInt(seekTime[1]));
+    seekDateTime.setSeconds(parseInt(seekTime[2]));
+    seekAllPlayersToTime(seekDateTime);
+}
+
+
+/**
+ * convert episode start/end time to javascript dateTime
+ * @param episode
+ */
 function convertJSONtoJavascriptDateTime(episode) {
     if (isEmpty(episode)) {
         return;
@@ -40,7 +61,11 @@ function convertJSONtoJavascriptDateTime(episode) {
 }
 
 
-//checks if json dict is empty
+/**
+ * Checks if json dict is empty
+ * @param ob
+ * @returns {Boolean}
+ */
 function isEmpty(ob) {
     for (var i in ob) {
         return false;
@@ -55,7 +80,9 @@ function setText(id, messageText) {
 
 
 /**
- * helper to parse seektime into hours, minutes, seconds
+ * Helper to parse seektime into hours, minutes, seconds
+ * @param str
+ * @returns
  */
 function seekTimeParser(str) {
     var hmsArray = str.split(':');
@@ -74,6 +101,9 @@ function padNum(num, size) {
 
 /**
  * Helper that returns file paths of video segments with same source
+ * @param episode
+ * @param segments
+ * @returns {Array}
  */
 function getFilePaths(episode, segments) {
     var filePaths = [];
@@ -105,10 +135,14 @@ function getSliderTime() {
 }
 
 
-//slider knob shows the time (at which slider knob is located) as a tool tip.
+/**
+ * Slider knob shows the time (at which slider knob is located) as a tool tip.
+ * @param ui
+ * @param sliderTime
+ */
 function updateToolTip(ui, sliderTime) {
     var target = ui.handle || $('.ui-slider-handle');
-    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + getTimeString(sliderTime) + '</div><div class="tooltip-arrow"></div></div>';
+    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + sliderTime.toTimeString().replace('GMT-0700', '') + '</div><div class="tooltip-arrow"></div></div>';
     $(target).html(tooltip);
 }
 
@@ -127,8 +161,12 @@ function setSliderTime(datetime) {
 }
 
 
+/**
+ * Set test site time of the player
+ * @param datetime
+ * @param sourceName
+ */
 function setPlayerTimeLabel(datetime, sourceName) {
-    //set test site time of the player
     setText('testSiteTime' + sourceName, datetime.toString());
 }
 
@@ -139,8 +177,11 @@ function withinRange(position, offset) {
 
 
 /**
- * find the playlist item index and offset the current time
+ * Find the playlist item index and offset the current time
  * falls under for this player.
+ * @param currTime
+ * @param sourceName
+ * @returns
  */
 function getPlaylistIdxAndOffset(currTime, sourceName) {
     var playlistIdx = null;
@@ -162,10 +203,14 @@ function getPlaylistIdxAndOffset(currTime, sourceName) {
     }
 }
 
+
 /**
  * Ensures that seeking to a playlist item and offset works on both
  * html 5 and flash.
  * Example: setPlaylistAndSeek('ROV', 1, 120)
+ * @param playerName
+ * @param playlist
+ * @param offset
  */
 function setPlaylistAndSeek(playerName, playlist, offset) {
     var p = jwplayer(playerName);
@@ -183,9 +228,12 @@ function setPlaylistAndSeek(playerName, playlist, offset) {
     }
 }
 
+
 /**
  * Given current time in javascript datetime,
  * find the playlist item and the offset (seconds) and seek to there.
+ * @param currTime
+ * @param sourceName
  */
 function jumpToPosition(currTime, sourceName) {
     var seekValues = getPlaylistIdxAndOffset(currTime, sourceName);
@@ -208,11 +256,9 @@ function jumpToPosition(currTime, sourceName) {
 }
 
 
-
 function getNextAvailableSegment(currentTime) {
     var nearestSeg = null;
     var minDelta = Number.MAX_VALUE;
-
     for (var key in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[key];
         for (var id in segments) {
@@ -225,7 +271,6 @@ function getNextAvailableSegment(currentTime) {
             }
         }
     }
-
     if (nearestSeg == null) {
         return {'time': currentTime, 'source': ''};
     } else {
@@ -234,6 +279,10 @@ function getNextAvailableSegment(currentTime) {
 }
 
 
+/**
+ * When the segment is complete, go to the next available segment.
+ * @param thisObj
+ */
 function onSegmentComplete(thisObj) {
     //awaken idle players.
     var time = getSliderTime();
@@ -251,6 +300,7 @@ function onSegmentComplete(thisObj) {
 
 /**
  * Returns true if all players are paused or idle.
+ * @returns {Boolean}
  */
 function allPaused() {
     var allPaused = true;
@@ -269,6 +319,8 @@ function allPaused() {
 
 /**
  * Helper for returning current test site time from the jwplayer.
+ * @param source
+ * @returns {Date}
  */
 function getPlayerVideoTime(source) {
     var segments = xgds_video.displaySegments[source];
@@ -296,7 +348,7 @@ function seekAllPlayersToTime(datetime) {
         setSliderTime(datetime);
     }
     var target = $('.ui-slider-handle') || ui.handle;
-    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + getTimeString(datetime) + '</div><div class="tooltip-arrow"></div></div>';
+    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + datetime.toTimeString().replace('GMT-0700', '') + '</div><div class="tooltip-arrow"></div></div>';
     $(target).html(tooltip);
 }
 
