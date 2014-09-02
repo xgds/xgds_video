@@ -1,0 +1,13 @@
+{% load url from future %}
+{% block sitemenu-content-secondary %}
+{% load nav %}
+<form id="streamForm">
+<div class="sitemenu-nav-secondary">
+	<ul>
+		<li {% currentnav live_image_stream %}><a href="{% url 'live_image_stream' %}">Live</a></li>
+		<li {% currentnav archived_image_stream %}><a href="{% url 'archived_image_stream' 'today'%}">Archived</a></li>
+		<li {% currentnav search_image_streams %}><a href="{% url 'search_image_streams' %}">Search</a></li>
+  	</ul>
+</div>
+</form>
+{% endblock %}

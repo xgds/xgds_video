@@ -13,4 +13,3 @@ class xgds_videoTest(TestCase):
     """
     def test_xgds_video(self):
         print "testing git hook 7 in xgds_video"
-        assert(True)

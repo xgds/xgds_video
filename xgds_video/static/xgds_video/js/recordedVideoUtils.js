@@ -1,8 +1,5 @@
-/***************************
-           Helpers
-****************************/
 jQuery(function($) {
-var windowWidth = $(window).width();
+    var windowWidth = $(window).width();
     $(window).resize(function()  {
         if (windowWidth != $(window).width()) {
             location.reload();
@@ -12,39 +9,63 @@ var windowWidth = $(window).width();
 });
 
 
-//helper for converting json datetime object to javascript date time
+/**
+ * Helper for converting json datetime object to javascript date time
+ */
 function toJsDateTime(jsonDateTime) {
-    if ((jsonDateTime) && (jsonDateTime != "None") && (jsonDateTime != "") && (jsonDateTime != undefined)) {
+    if ((jsonDateTime) && (jsonDateTime != 'None') && (jsonDateTime != '') && (jsonDateTime != undefined)) {
         //need to subtract one from month since Javascript datetime indexes month
         //as 0 to 11.
         jsonDateTime.month = jsonDateTime.month - 1;
-        return new Date(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day, 
-                jsonDateTime.hour, jsonDateTime.min, jsonDateTime.seconds, 0);  
-    } else { 
+        return new Date(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day,
+                jsonDateTime.hour, jsonDateTime.min, jsonDateTime.seconds, 0);
+    } else {
         return null;
     }
 }
 
 
-//convert episode start/end time to javascript dateTime
+/**
+ * Used by both seekCallBack and seekFromUrlOffset
+ * to seek all players to given time.
+ */
+function seekHelper(seekTimeStr) {
+    var seekTime = seekTimeParser(seekTimeStr);
+    var seekDateTime = null;
+    //XXX for now assume seek time's date is same as first segment's end date
+    seekDateTime = new Date(xgds_video.firstSegment.endTime);
+    seekDateTime.setHours(parseInt(seekTime[0]));
+    seekDateTime.setMinutes(parseInt(seekTime[1]));
+    seekDateTime.setSeconds(parseInt(seekTime[2]));
+    seekAllPlayersToTime(seekDateTime);
+}
+
+
+/**
+ * convert episode start/end time to javascript dateTime
+ */
 function convertJSONtoJavascriptDateTime(episode) {
-    if (episode) {
-        if (episode.startTime) {
-            episode.startTime = toJsDateTime(episode.startTime);
-        }
-        if (episode.endTime) {
-            episode.endTime = toJsDateTime(episode.endTime);
-        }
+    if (isEmpty(episode)) {
+        return;
+    }
+    if (episode.startTime) {
+        episode.startTime = toJsDateTime(episode.startTime);
+    }
+    if (episode.endTime) {
+        episode.endTime = toJsDateTime(episode.endTime);
     }
 }
 
 
-//checks if json dict is empty
+/**
+ * Checks if json dict is empty
+ * @returns {Boolean}
+ */
 function isEmpty(ob) {
-  for (var i in ob) {
-    return false;
-  }
-  return true;
+    for (var i in ob) {
+        return false;
+    }
+    return true;
 }
 
 
@@ -54,7 +75,7 @@ function setText(id, messageText) {
 
 
 /**
- * helper to parse seektime into hours, minutes, seconds
+ * Helper to parse seektime into hours, minutes, seconds
  */
 function seekTimeParser(str) {
     var hmsArray = str.split(':');
@@ -73,19 +94,29 @@ function padNum(num, size) {
 
 /**
  * Helper that returns file paths of video segments with same source
+ * @returns {Array}
  */
 function getFilePaths(episode, segments) {
     var filePaths = [];
-    $.each(segments, function(id) {
-        var segment = segments[id];
-        var source = segment.source;
-        var sourceName = segment.source.shortName;
-
-        var indexFileUrl = xgds_video.indexFileUrl.replace('flightAndSource',
-                            episode.shortName + '_' + source.shortName);
-        indexFileUrl = indexFileUrl.replace('segmentIndex', padNum(segment.segNumber, 3));
-        filePaths.push(indexFileUrl);
-    });
+    var sourceName = null;
+    var segment = null;
+    if (isEmpty(episode)) {
+        //when episodes are not used. (mvp)
+        $.each(segments, function(id) {
+            segment = segments[id];
+            sourceName = segment.source.shortName;
+            //TODO
+        });
+    } else { // episode exists
+        $.each(segments, function(id) {
+            segment = segments[id];
+            sourceName = segment.source.shortName;
+            var indexFileUrl = xgds_video.indexFileUrl.replace('flightAndSource',
+                    episode.shortName + '_' + sourceName);
+            indexFileUrl = indexFileUrl.replace('segmentIndex', padNum(segment.segNumber, 3));
+            filePaths.push(indexFileUrl);
+        });
+    }
     return filePaths;
 }
 
@@ -95,16 +126,18 @@ function getSliderTime() {
 }
 
 
-//slider knob shows the time (at which slider knob is located) as a tool tip.
+/**
+ * Slider knob shows the time (at which slider knob is located) as a tool tip.
+ */
 function updateToolTip(ui, sliderTime) {
     var target = ui.handle || $('.ui-slider-handle');
-    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + getTimeString(sliderTime) + '</div><div class="tooltip-arrow"></div></div>';
+    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + sliderTime.toTimeString().replace('GMT-0700', '') + '</div><div class="tooltip-arrow"></div></div>';
     $(target).html(tooltip);
 }
 
 
 function setSliderTimeLabel(datetime) {
-    var time = datetime.toTimeString().replace("GMT-0700","");
+    var time = datetime.toTimeString().replace('GMT-0700', '');
     $('#sliderTimeLabel').val(time);
 }
 
@@ -117,8 +150,10 @@ function setSliderTime(datetime) {
 }
 
 
+/**
+ * Set test site time of the player
+ */
 function setPlayerTimeLabel(datetime, sourceName) {
-    //set test site time of the player
     setText('testSiteTime' + sourceName, datetime.toString());
 }
 
@@ -129,7 +164,7 @@ function withinRange(position, offset) {
 
 
 /**
- * find the playlist item index and offset the current time
+ * Find the playlist item index and offset the current time
  * falls under for this player.
  */
 function getPlaylistIdxAndOffset(currTime, sourceName) {
@@ -138,7 +173,7 @@ function getPlaylistIdxAndOffset(currTime, sourceName) {
     var segments = xgds_video.displaySegments[sourceName];
     for (var i = 0; i < segments.length; i++) {
         if ((currTime >= segments[i].startTime) &&
-            (currTime <= segments[i].endTime)) {
+                (currTime <= segments[i].endTime)) {
             playlistIdx = i;
             //in seconds
             offset = Math.round((currTime - segments[i].startTime) / 1000);
@@ -151,6 +186,7 @@ function getPlaylistIdxAndOffset(currTime, sourceName) {
         return false;
     }
 }
+
 
 /**
  * Ensures that seeking to a playlist item and offset works on both
@@ -173,6 +209,7 @@ function setPlaylistAndSeek(playerName, playlist, offset) {
     }
 }
 
+
 /**
  * Given current time in javascript datetime,
  * find the playlist item and the offset (seconds) and seek to there.
@@ -191,18 +228,16 @@ function jumpToPosition(currTime, sourceName) {
     } else { //current time is not in the playable range.
         //pause the player
         if ((player.getState() == 'PLAYING') ||
-            (player.getState() == 'IDLE')) {
+                (player.getState() == 'IDLE')) {
             player.pause(true);
         }
     }
 }
 
 
-
 function getNextAvailableSegment(currentTime) {
     var nearestSeg = null;
     var minDelta = Number.MAX_VALUE;
-
     for (var key in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[key];
         for (var id in segments) {
@@ -215,7 +250,6 @@ function getNextAvailableSegment(currentTime) {
             }
         }
     }
-
     if (nearestSeg == null) {
         return {'time': currentTime, 'source': ''};
     } else {
@@ -224,6 +258,9 @@ function getNextAvailableSegment(currentTime) {
 }
 
 
+/**
+ * When the segment is complete, go to the next available segment.
+ */
 function onSegmentComplete(thisObj) {
     //awaken idle players.
     var time = getSliderTime();
@@ -241,6 +278,7 @@ function onSegmentComplete(thisObj) {
 
 /**
  * Returns true if all players are paused or idle.
+ * @returns {Boolean}
  */
 function allPaused() {
     var allPaused = true;
@@ -259,6 +297,7 @@ function allPaused() {
 
 /**
  * Helper for returning current test site time from the jwplayer.
+ * @returns {Date}
  */
 function getPlayerVideoTime(source) {
     var segments = xgds_video.displaySegments[source];
@@ -273,21 +312,21 @@ function getPlayerVideoTime(source) {
 
 
 function seekAllPlayersToTime(datetime) {
-	for (var key in xgds_video.displaySegments) {
-		var segments = xgds_video.displaySegments[key];
-		var sourceName = segments[0].source.shortName;
-		
-		var player = jwplayer(sourceName);
-		if (player != undefined) {
-			jumpToPosition(datetime, sourceName);
-		}
-	}
-	if (datetime != null) {
-		setSliderTime(datetime);
-	}
-	var target = $('.ui-slider-handle') || ui.handle;
-	var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + getTimeString(datetime) + '</div><div class="tooltip-arrow"></div></div>';
-	$(target).html(tooltip);
+    for (var key in xgds_video.displaySegments) {
+        var segments = xgds_video.displaySegments[key];
+        var sourceName = segments[0].source.shortName;
+
+        var player = jwplayer(sourceName);
+        if (player != undefined) {
+            jumpToPosition(datetime, sourceName);
+        }
+    }
+    if (datetime != null) {
+        setSliderTime(datetime);
+    }
+    var target = $('.ui-slider-handle') || ui.handle;
+    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + datetime.toTimeString().replace('GMT-0700', '') + '</div><div class="tooltip-arrow"></div></div>';
+    $(target).html(tooltip);
 }
 
 
@@ -299,7 +338,7 @@ function awakenIdlePlayers(datetime, exceptThisPlayer) {
         var state = player.getState();
         if (sourceName != exceptThisPlayer) {
             if ((state == 'IDLE') || (state == 'PAUSED')) {
-               var canJump = true;
+                var canJump = true;
                 for (var s in segments) {
                     var segment = segments[s];
                     if (datetime.getTime() == segment.endTime.getTime()) {
@@ -314,4 +353,3 @@ function awakenIdlePlayers(datetime, exceptThisPlayer) {
         }
     }
 }
-

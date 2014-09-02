@@ -3,6 +3,7 @@ import stat
 import logging
 import os
 import datetime
+import re
 
 try:
     import zerorpc
@@ -10,7 +11,6 @@ except ImportError:
     pass  # zerorpc not needed for most views
 
 from django.shortcuts import render_to_response
-from django.http import HttpResponse
 from django.template import RequestContext
 # from django.views.generic.list_detail import object_list
 from django.contrib import messages
@@ -22,8 +22,7 @@ from xgds_notes.forms import NoteForm
 from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
-from xgds_video.models import *
-
+from xgds_video.models import *  # pylint: disable=W0401
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -32,10 +31,87 @@ SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
 
+def liveImageStream(request):
+    # note forms
+    sources = SOURCE_MODEL.objects.all()
+    for source in sources:
+        form = NoteForm()
+        form.index = 0
+        form.fields["index"] = 0
+        form.source = source
+        form.fields["source"] = source
+        if form.fields["source"]:
+            form.fields["extras"].initial = None
+        source.form = form
+    socketUrl = settings.XGDS_ZMQ_WEB_SOCKET_URL
+    if request.META['wsgi.url_scheme'] == 'https':
+        # must use secure WebSockets if web site is secure
+        socketUrl = re.sub(r'^ws:', 'wss:', socketUrl)
 
-def imageCarousel(request):
-    return render_to_response("xgds_video/ImageCarousel.html",
-                              {'zmqURL': json.dumps(settings.XGDS_ZMQ_WEB_SOCKET_URL)},
+    return render_to_response("xgds_video/LiveImageStream.html",
+                              {'zmqURL': json.dumps(socketUrl),
+                               'sources': sources},
+                              context_instance=RequestContext(request))
+
+
+# date is like 20140623
+def archivedImageStream(request, date=None):
+    sources = SOURCE_MODEL.objects.all()
+    videoSegDict = {}  # key: source, value: segments
+    if not date:
+        messages.add_message(request, messages.ERROR, 'Date is not valid')
+    else:
+        if date != 'today':
+            # convert the date string to a datetime object.
+            dateObj = datetime.datetime.strptime(date, "%Y-%m-%d")
+        else:  # date == 'today':
+            dateObj = datetime.datetime.now()
+        index = 0
+        for source in sources:
+            # clean up the source shortName
+            cleanName = source.shortName.rstrip()
+            if cleanName != source.shortName:
+                source.shortName = cleanName
+                source.save()
+            # get segments that have start time same as search date.
+            segments = source.videosegment_set.all()
+            sameDaySegments = [seg for seg in segments if seg.startTime.date() == dateObj.date()]
+            if len(sameDaySegments) != 0:
+                videoSegDict[source.shortName] = [seg.getDict() for seg in sameDaySegments]
+                # create noteforms for each source
+                form = NoteForm()
+                form.index = index
+                form.fields["index"] = index
+                form.source = source
+                form.fields["source"] = source
+                form.fields["extras"] = None
+                source.form = form
+                index = index + 1
+            else:
+                messages.add_message(request, messages.ERROR, 'No video segments for date: ' + str(dateObj.date()) + ' and source: ' + source.shortName)
+        # Stringify (json.dumps) the videoSegDict only if there are segments:
+        if videoSegDict != {}:
+            videoSegDict = json.dumps(videoSegDict, sort_keys=True, indent=4)
+        ctx = {
+            'videoDate': str(dateObj.date()),
+            'segmentsJson': videoSegDict,
+            'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
+            'episode': {},
+            'episodeJson': {},
+            "date": date,
+            'noteTimeStamp': "",  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
+            'sources': sources
+        }
+        return render_to_response("xgds_video/video_recorded_playbacks.html",
+                                  ctx,
+                                  context_instance=RequestContext(request))
+
+
+def searchImageStreams(request):
+    # get all the dates of the segments and remove duplicates
+    dates = list(set([str(segment.startTime.date()) for segment in SEGMENT_MODEL.objects.all()]))
+    return render_to_response("xgds_video/SearchImageStreams.html",
+                              {'dates': dates},
                               context_instance=RequestContext(request))
 
 
@@ -147,9 +223,9 @@ def displayRecordedVideo(request, flightName=None, time=None):
     for playing videos associated with each note.
     """
     noteTime = ""
-    episode = None
+    episode = {}
     sourceName = None
-    if time != None:
+    if time is not None:
         # time is passed as string (yy-mm-dd hh:mm:ss)
         noteTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
         noteTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(noteTime))
@@ -186,7 +262,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
         for source in sources:
             # trim the white spaces in source shortName
             cleanName = source.shortName.rstrip()
-            if (cleanName != source.shortName):
+            if cleanName != source.shortName:
                 source.shortName = cleanName
                 source.save()
 
@@ -195,7 +271,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
             else:
                 segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
             if segments:
-                util.setSegmentEndTimes(segments, episode, source) #this passes back segments for this source.
+                util.setSegmentEndTimes(segments, episode, source)  # this passes back segments for this source.
                 segmentsDict[source.shortName] = [seg.getDict() for seg in segments]
                 form = NoteForm()
                 form.index = index
@@ -206,8 +282,8 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 source.form = form
                 index = index + 1
 
-        segmentsJson = "null"
-        episodeJson = "null"
+        segmentsJson = {}
+        episodeJson = {}
         if segmentsDict:
             segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4)
             episodeJson = json.dumps(episode.getDict())
@@ -253,18 +329,18 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
 
     makedirsIfNeeded(recordedVideoDir)
 
-    videoSettings = SETTINGS_MODEL(width=videoFeed.settings.width,
-                                   height=videoFeed.settings.height,
-                                   compressionRate=None,
-                                   playbackDataRate=None)
-    videoSettings.save()
+    videoSettingsModel = SETTINGS_MODEL(width=videoFeed.settings.width,
+                                        height=videoFeed.settings.height,
+                                        compressionRate=None,
+                                        playbackDataRate=None)
+    videoSettingsModel.save()
 
     videoSegment = SEGMENT_MODEL(directoryName="Segment",
                                  segNumber=segmentNumber,
                                  indexFileName="prog_index.m3u8",
                                  startTime=startTime,
                                  endTime=None,
-                                 settings=videoSettings,
+                                 settings=videoSettingsModel,
                                  source=source)
 
     videoSegment.save()
@@ -301,7 +377,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
         pyraptord.updateServiceConfig(vlcSvc,
                                       {'command': vlcCmd})
         pyraptord.updateServiceConfig(segmenterSvc,
-                                      {'command': segmenterCmd, 
+                                      {'command': segmenterCmd,
                                        'cwd': recordedVideoDir})
         pyraptord.restart(vlcSvc)
         pyraptord.restart(segmenterSvc)
@@ -325,18 +401,18 @@ def stopRecording(source, endTime):
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
 
 
+'''
 def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
     """
     modifies index file of recorded video to the correct host.
     """
+    pydevd.settrace('10.10.80.151')
     # Look up path to index file
     suffix = util.getIndexFileSuffix(flightAndSource, segmentNumber)
-
     # use regex substitution to replace hostname, etc.
     newIndex = util.updateIndexFilePrefix(suffix, settings.SCRIPT_NAME)
-    #newIndex = util.updateIndexFilePrefix(path)
-
     # return modified file in next line
     response = HttpResponse(newIndex, content_type="application/x-mpegurl")
     response['Content-Disposition'] = 'filename = "prog_index.m3u8"'
     return response
+'''

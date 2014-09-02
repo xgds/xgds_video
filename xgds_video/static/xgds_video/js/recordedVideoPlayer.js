@@ -35,7 +35,7 @@ function onTimeController(thisObj) {
             var time = getSliderTime();
             var sourceName = getNextAvailableSegment(time)['source'];
             if (sourceName != '') { //there is only one segment for each source and
-            //none of the players are in 'PLAYING' state.
+                //none of the players are in 'PLAYING' state.
                 xgds_video.onTimePlayer = sourceName;
             } //else leave the onTimPlayer as it is.
         }
@@ -47,17 +47,17 @@ function onTimeController(thisObj) {
  * Only called once onReady. Kickstarts the player with earliest starttime.
  */
 function startPlayers() {
-    if (xgds_video.noteTimeStamp != null) { // noteTimeStamp is in local time (i.e. PDT) 
-    	var datetime = xgds_video.noteTimeStamp;
-        //check if datetime is valid 
-        if ((datetime != "Invalid Date") && 
-            ((datetime > xgds_video.firstSegment.startTime) && 
-            (datetime < xgds_video.lastSegment.endTime))) {
-        	xgds_video.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
+    if (xgds_video.noteTimeStamp != null) { // noteTimeStamp is in local time (i.e. PDT)
+        var datetime = xgds_video.noteTimeStamp;
+        //check if datetime is valid
+        if ((datetime != 'Invalid Date') &&
+                ((datetime > xgds_video.firstSegment.startTime) &&
+                        (datetime < xgds_video.lastSegment.endTime))) {
+            xgds_video.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
             seekAllPlayersToTime(datetime);
             return;
         }
-    } 
+    }
     //find the first segment and play it.
     for (var key in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[key];
@@ -71,18 +71,29 @@ function startPlayers() {
 
 
 /**
+ * Only called once onReady. Reads offset from URL hash
+ * (i.e. http://mvp.xgds.snrf/xgds_video/archivedImageStream/2014-06-19#19:00:00)
+ * and seeks to that time.
+ */
+function seekFromUrlOffset() {
+    var timestr = window.location.hash.substr(1); //i.e. 19:00:00
+    seekHelper(timestr);
+}
+
+
+/**
  * If the source is a diver, and no other divers are enabled, turn it on.
  */
 function soundController() {
     var soundOn = false;
     for (var source in xgds_video.displaySegments) {
-        if (source.match("RD")){ //if the source is a research diver     
+        if (source.match('RD')) { //if the source is a research diver
             //if no other player sounds are on, unmute this player
             if (!soundOn) {
                 jwplayer(source).setMute(false);
                 soundOn = true;
             } else {
-                //there is already a player that is not muted. Turn off this 
+                //there is already a player that is not muted. Turn off this
                 //player's sound.
                 if (!jwplayer(source).getMute()) {
                     jwplayer(source).setMute(true);
@@ -98,130 +109,144 @@ function soundController() {
  * Initialize jw player and call update values
  */
 function setupJWplayer() {
-    if (xgds_video.episode) { //if episode exists
-    	var numSources = Object.keys(xgds_video.displaySegments).length;
-    	
-        var maxWidth = getMaxWidth(numSources);
-        for (var key in xgds_video.displaySegments) {
-            // list of video segments with same source & episode
-            var segments = xgds_video.displaySegments[key];
-            // source of the video segments
-            var source = segments[0].source;
-            // paths of the video segments
-            var videoPaths = getFilePaths(xgds_video.episode, segments);
-
-            jwplayer(source.shortName).setup({
-                file: videoPaths[0],
-                autostart: false,
-                width: maxWidth,
-                height: maxWidth * (9/16),
-                skin: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml',
-                mute: true,
-                analytics: {
-                    enabled: false,
-                    cookies: false
+    var numSources = Object.keys(xgds_video.displaySegments).length;
+    var maxWidth = getMaxWidth(numSources);
+    for (var source in xgds_video.displaySegments) {
+        // list of video segments with same source & episode (if given)
+        var segments = xgds_video.displaySegments[source];
+        //if there are no segments to show, dont build a player.
+        if (typeof segments == 'undefined' || segments.length == 0) {
+            continue;
+        }
+        // paths of the video segments
+        var videoPaths = [];
+        if (isEmpty(xgds_video.episode)) { //if episode does not exist
+//            videoPaths = getFilePaths(null, segments);
+            //XXX for testing only
+            if (source == 'HAZ') {
+//                videoPaths = ["http://www.longtailvideo.com/jw/upload/bunny.mp4", "http://www.longtailvideo.com/jw/upload/bunny.mp4"]
+                videoPaths = ['/data/20140619_HAZ/Video/Recordings/Segment000/prog_index.m3u8',
+                              '/data/20140619_HAZ/Video/Recordings/Segment001/prog_index.m3u8'];
+            } else if (source == 'STL') {
+//                videoPaths = ["http://www.longtailvideo.com/jw/upload/bunny.mp4", "http://www.longtailvideo.com/jw/upload/bunny.mp4"]
+                videoPaths = ['/data/20140619_STL/Video/Recordings/Segment000/prog_index.m3u8',
+                              '/data/20140619_STL/Video/Recordings/Segment001/prog_index.m3u8'];
+            }
+        } else {
+            videoPaths = getFilePaths(xgds_video.episode, segments);
+        }
+        jwplayer(source).setup({
+            file: videoPaths[0],
+            autostart: false,
+            width: maxWidth,
+            height: maxWidth * (9 / 16),
+            skin: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml',
+            mute: true,
+            analytics: {
+                enabled: false,
+                cookies: false
+            },
+            controls: true, //for debugging
+            events: {
+                onReady: function() {
+                    //if there is a seektime in the url, start videos at that time.
+                    if (window.location.hash) {
+                        seekFromUrlOffset();
+                    } else {
+                        startPlayers();
+                    }
+                    soundController();
                 },
-                controls: true, //for debugging
-                events: {
-                    onReady: function() {
-                       startPlayers();
-                       soundController();
-                    },
-                    onBeforeComplete: function() {
-                        //this.pause(true);
-                    },
-                    onComplete: function() {
-        //stop until start of the next segment.
-                        var counter = 0;
-                        jwplayer(this.id).pause(true);
-                        onSegmentComplete(this);
-                    },
-                    onPlay: function(e) { //gets called per source
-                        onTimeController(this);
-                        var pendingActions = pendingPlayerActions[this.id];
-                         if (pendingActions.length != 0) {
-                        	for (var i = 0; i < pendingActions.length; i++) {
-                        		pendingActions[i].action(pendingActions[i].arg);
-                        	}
-                        	pendingPlayerActions[this.id] = [];
-                        	if (xgds_video.initialState == true) {
-                        		xgds_video.initialState = false;
-                        	}
-                        } else {
-                        	if (xgds_video.initialState == true) {
-                        		xgds_video.initialState = false;
-                        	}
+                onBeforeComplete: function() {
+                    //this.pause(true);
+                },
+                onComplete: function() {
+                    //stop until start of the next segment.
+                    var counter = 0;
+                    jwplayer(this.id).pause(true);
+                    onSegmentComplete(this);
+                },
+                onPlay: function(e) { //gets called per source
+                    onTimeController(this);
+                    var pendingActions = pendingPlayerActions[this.id];
+                    if (pendingActions.length != 0) {
+                        for (var i = 0; i < pendingActions.length; i++) {
+                            pendingActions[i].action(pendingActions[i].arg);
                         }
-                    },
-                    onPause: function(e) {
-                        //just make sure the item does get paused.
-                        onTimeController(this);
-                    },
-                    onBuffer: function(e) {
-                        onTimeController(this);
-                    },
-                    onIdle: function(e) {
-                        if (e.position > Math.floor(e.duration)) {
-                            this.pause(true);
-                            onSegmentComplete(this);
+                        pendingPlayerActions[this.id] = [];
+                        if (xgds_video.initialState == true) {
+                            xgds_video.initialState = false;
                         }
-                        onTimeController(this);
-                    },
-                    onTime: function(object) {
-                        // need this. otherwise slider jumps around while moving.
-                        if (xgds_video.movingSlider == true) {
-                            return;
-                        }
-
-                        if (!xgds_video.playFlag) {
-                            this.pause(true);
-                            return;
-                        }
-
-                        // update test site time (all sources that are 'PLAYING')
-                        var testSiteTime = getPlayerVideoTime(this.id);
-                        setPlayerTimeLabel(testSiteTime, this.id);
-
-                        if (xgds_video.initialState != true) {
-                        	//if this call is from the current 'onTimePlayer'
-                        	if (xgds_video.onTimePlayer == this.id) {
-                        		// update the slider here.
-                            	var updateTime = getPlayerVideoTime(this.id);
-                            	awakenIdlePlayers(updateTime, this.id);
-                            	setSliderTime(updateTime);
-                            	updateToolTip(false, updateTime);
-                        	}
-                    	}
-                        //if at the end of the segment, pause.
-                        if (object.position > Math.floor(object.duration)) {
-                            this.pause(true);
-                            onSegmentComplete(this);
+                    } else {
+                        if (xgds_video.initialState == true) {
+                            xgds_video.initialState = false;
                         }
                     }
-                }
-            });
+                },
+                onPause: function(e) {
+                    //just make sure the item does get paused.
+                    onTimeController(this);
+                },
+                onBuffer: function(e) {
+                    onTimeController(this);
+                },
+                onIdle: function(e) {
+                    if (e.position > Math.floor(e.duration)) {
+                        this.pause(true);
+                        onSegmentComplete(this);
+                    }
+                    onTimeController(this);
+                },
+                onTime: function(object) {
+                    // need this. otherwise slider jumps around while moving.
+                    if (xgds_video.movingSlider == true) {
+                        return;
+                    }
 
-            // load the segments as playlist.
-            var playlist = [];
-            for (var k = 0; k < videoPaths.length; k++) {
-                var newItem = {
+                    if (!xgds_video.playFlag) {
+                        this.pause(true);
+                        return;
+                    }
+
+                    // update test site time (all sources that are 'PLAYING')
+                    var testSiteTime = getPlayerVideoTime(this.id);
+                    setPlayerTimeLabel(testSiteTime, this.id);
+
+                    if (xgds_video.initialState != true) {
+                        //if this call is from the current 'onTimePlayer'
+                        if (xgds_video.onTimePlayer == this.id) {
+                            // update the slider here.
+                            var updateTime = getPlayerVideoTime(this.id);
+                            awakenIdlePlayers(updateTime, this.id);
+                            setSliderTime(updateTime);
+                            updateToolTip(false, updateTime);
+                        }
+                    }
+                    //if at the end of the segment, pause.
+                    if (object.position > Math.floor(object.duration)) {
+                        this.pause(true);
+                        onSegmentComplete(this);
+                    }
+                }
+            }
+        });
+        // load the segments as playlist.
+        var playlist = [];
+        for (var k = 0; k < videoPaths.length; k++) {
+            var newItem = {
                     file: videoPaths[k],
                     title: videoPaths[k]
-                };
-                playlist.push(newItem);
-            }
-            jwplayer(source.shortName).load(playlist);
-         }
-    } else {
-        alert('episode not available. Cannot set up jwplayer');
+            };
+            playlist.push(newItem);
+        }
+        jwplayer(source).load(playlist);
     }
 }
 
 
-
 /**********************************
             Call-backs
-***********************************/
+ ***********************************/
 
 /**
  * Updates the player and the slider times based on
@@ -233,16 +258,7 @@ function seekCallBack() {
         (Object.keys(xgds_video.displaySegments).length < 1)) {
         return;
     }
-    var seekTime = seekTimeParser(seekTimeStr);
-    var seekDateTime = null;
-
-    //XXX for now assume seek time's date is same as first segment's end date
-    seekDateTime = new Date(segments[0].endTime);
-    seekDateTime.setHours(parseInt(seekTime[0]));
-    seekDateTime.setMinutes(parseInt(seekTime[1]));
-    seekDateTime.setSeconds(parseInt(seekTime[2]));
-    
-    seekAllPlayersToTime(seekDateTime);
+    seekHelper(seekTimeStr);
 }
 
 
@@ -261,7 +277,7 @@ function playPauseButtonCallBack() {
     for (var key in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[key];
         var sourceName = segments[0].source.shortName;
-        
+
         if (xgds_video.playFlag) {
             jwplayer(sourceName).play(true);
         } else {
@@ -270,5 +286,3 @@ function playPauseButtonCallBack() {
     }
     setSliderTime(currTime);
 }
-
-

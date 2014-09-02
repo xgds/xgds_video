@@ -1,0 +1,60 @@
+﻿{% extends "base.html" %}
+
+{% block headExtras %}
+{{block.super}}
+	<script src="{{ STATIC_URL }}geocamUtil/js/zmq.js" type="text/javascript"></script>
+	<script src="{{ STATIC_URL }}external/js/jquery/jquery.js" type="text/javascript"></script>
+ 	<script src="{{ STATIC_URL }}external/js/masonry.pkgd.min.js" type="text/javascript"></script>
+  	<script src="{{STATIC_URL}}external/js/jquery/jquery-ui.js" type="text/javascript" ></script>
+ 	<script src="{{STATIC_URL}}external/js/jquery/jquery.tagsinput.js" type="text/javascript" ></script>
+ 	<script src="{{STATIC_URL}}external/js/jquery/jquery.form.min.js" type="text/javascript" ></script>
+  	<script src="{{STATIC_URL}}xgds_video/js/video_size_utils.js" type="text/javascript" ></script>
+  	<script type="text/javascript">
+    	var STATIC_URL = '{{STATIC_URL}}';
+        var submitNoteUrl = '{% url record_simple %}';
+    </script>
+ 	<script src="{{STATIC_URL}}xgds_video/js/liveImageStream.js" type="text/javascript"></script>
+ 	<script src="{{STATIC_URL}}xgds_video/js/video_notes_form.js" type="text/javascript" ></script>
+{% endblock headExtras %}
+
+{% block cssExtras %}
+ {{ block.super }}
+	<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery/jquery.tagsinput.css"></link>
+	<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery/jquery-ui.css"></link>
+	<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}xgds_video/css/xgds_video.css"></link>
+{% endblock cssExtras %}
+
+{% load nav %}
+{% block siteSection %} Video {% endblock %}
+
+{% block sitemenu-content-secondary %}
+	{% include "xgds_video/image_stream_subnav.html" %}
+{% endblock %}
+
+{% block jsSetVars %}
+  {{ block.super }}
+
+  zmqURL = {{ zmqURL|safe }};
+{% endblock %}
+
+{% block contents %}
+	Socket Status: <div id="socketStatus"></div>
+	<div id="container" class="js-masonry" data-masonry-options='{"itemSelector": ".item", "gutter":5, "isInitLayout":false}'>
+		{% for source in sources %}
+			<div class="item" id="item{{ forloop.counter }}" style="background-color:#e5e5e5;">
+	            <div> Camera Name: <b>{{ source.name }}</b> </div>
+				<section>
+	            {% include "xgds_video/video_notes.html" with data=source.form source=source STATIC_URL=STATIC_URL %}
+	            </section>
+	 			<img class='imageStream' style='display:block;' id="cameraImage{{ forloop.counter }}" src=""></img>
+	 		</div>
+ 		{% endfor %}
+	</div>
+ {% endblock %}
+
+{% block jsInit %}
+  {{ block.super }}
+	$(function() {
+		xgds_video.zmqInit();
+	});
+{% endblock %}

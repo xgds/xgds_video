@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block headExtras %}
+{{ block.super }}
+    <script type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
+ 	<script type="text/javascript" src="{{ STATIC_URL }}external/js/date.js"></script>
+{% endblock headExtras %}
+
+{% block cssExtras %}
+{{ block.super }}
+{% endblock cssExtras %}
+
+{% load url from future %}
+{% load nav %}
+
+{% block siteSection %}Archived Video{% endblock %}
+
+{% block nav %}
+   {{ block.super }}
+   <link rel="stylesheet" href="{{ STATIC_URL }}external/css/jquery/jquery-ui.css"></link>
+{% endblock %}
+
+{% block sitemenu-content-secondary %}
+	{% include "xgds_video/image_stream_subnav.html" %}
+{% endblock %}
+
+{% block jsSetVars %}
+  {{ block.super }}
+{% endblock %}
+
+{% block contents %}
+<table id="image_streams_table">
+<thead>
+	<tr>
+		<th class="image_streams_table_headers">Date</th>
+	</tr>
+</thead>
+
+<tbody id="imageStreamsResults">
+	{% for date in dates %}
+		<tr>
+			<td>
+				<a href="{% url 'archived_image_stream' date %}">{{ date }}</a>
+			</td>
+		</tr>
+	{% endfor %}
+</tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  	<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
+	<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.dataTables.js"></script>
+ 	<script src="{{STATIC_URL}}external/js/jquery/jquery.form.min.js" type="text/javascript" ></script>
+  	<script type="text/javascript">
+  	 var image_streams_table;
+	 
+  	 $(document).ready( function () {
+  		image_streams_table = $('#image_streams_table').dataTable( {
+	        bAutoWidth: true,
+	        stateSave: true,
+			bPaginate: true,
+	        iDisplayLength: 20,
+	        bLengthChange: false,
+			bSort: true,
+	        bJQueryUI: true,
+	        sScrollY: '28em'
+		} );
+			
+	    $(window).resize(function(){ image_streams_table.fnAdjustColumnSizing(); });
+	 }); 
+	</script>
+{% endblock %}

@@ -77,7 +77,9 @@ div.tagsinput[style]{
     border-radius: 4px;
     width: 0.4em;
     margin-left: -0.2em;
-    background: #202020;
+    background: black;
+    color: black;
+    border-color: black;
 }
 
 div.ui-slider-range.ui-widget-header {
@@ -123,8 +125,13 @@ div.ui-slider-range.ui-widget-header {
     padding-top:5px;
     margin-bottom:20px; 
     border-width:2px; 
-    border-style:solid;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    /*border-style:solid;*/
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+.imageStream {
+	border-width:1.5px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
 .divider {
@@ -147,7 +154,7 @@ div.ui-slider-range.ui-widget-header {
 .tooltip { 
     font-size: 17px;
     width: 100px;
-    color: white;
+    color: black;
     float: right;
+    background-color: rgba(184,184,184,0.5);
 }
-
