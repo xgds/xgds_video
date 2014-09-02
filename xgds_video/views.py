@@ -173,7 +173,7 @@ def liveVideoFeed(request, feedName):
             form.source = feed.source
             form.fields["source"] = feed.source
             if form.fields["source"]:
-                form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
+                form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source, request)
             index += 1
             feedData.append((feed, form))
 
@@ -278,7 +278,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 form.fields["index"] = index
                 form.source = source
                 form.fields["source"] = source
-                form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
+                form.fields["extras"].initial = callGetNoteExtras([episode], form.source, request)
                 source.form = form
                 index = index + 1
 
