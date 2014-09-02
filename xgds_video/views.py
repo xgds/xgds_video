@@ -59,15 +59,15 @@ def stopPyraptordServiceIfRunning(pyraptord, svcName):
 # activeEpisode = EPISODE_MODEL.objects.filter(endTime=none)
 # can find the groupflight that points to that episode
 # and then find the flight in the group flight that has the same source.
-def getNoteExtras(episodes=None, source=None):
+def getNoteExtras(episodes=None, source=None, request=None):
 #     print "RETURNING NONE FROM BASE GET NOTE EXTRAS CLASS"
     return None
 
 
-def callGetNoteExtras(episodes, source):
+def callGetNoteExtras(episodes, source, request):
     if settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION:
         noteExtrasFn = getClassByName(settings.XGDS_VIDEO_NOTE_EXTRAS_FUNCTION)
-        return noteExtrasFn(episodes, source)
+        return noteExtrasFn(episodes, source, request)
     else:
         return None
 
@@ -85,7 +85,7 @@ def liveVideoFeed(request, feedName):
             form.source = videofeeds[0].source
             form.fields["source"] = videofeeds[0].source
             if form.fields["source"]:
-                form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source)
+                form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source, request)
         feedData.append((videofeeds[0], form))
     else:
         videofeeds = FEED_MODEL.objects.filter(active=True)
