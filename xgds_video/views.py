@@ -23,6 +23,7 @@ from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
 from xgds_video.models import *  # pylint: disable=W0401
+# import pydevd
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -33,6 +34,7 @@ EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
 def liveImageStream(request):
     # note forms
+    currentEpisodes = EPISODE_MODEL.objects.filter(endTime=None)
     sources = SOURCE_MODEL.objects.all()
     for source in sources:
         form = NoteForm()
@@ -41,7 +43,7 @@ def liveImageStream(request):
         form.source = source
         form.fields["source"] = source
         if form.fields["source"]:
-            form.fields["extras"].initial = None
+            form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source, request)
         source.form = form
     socketUrl = settings.XGDS_ZMQ_WEB_SOCKET_URL
     if request.META['wsgi.url_scheme'] == 'https':
@@ -54,64 +56,100 @@ def liveImageStream(request):
                               context_instance=RequestContext(request))
 
 
-# date is like 20140623
-def archivedImageStream(request, date=None):
-    sources = SOURCE_MODEL.objects.all()
-    videoSegDict = {}  # key: source, value: segments
-    if not date:
-        messages.add_message(request, messages.ERROR, 'Date is not valid')
-    else:
-        if date != 'today':
-            # convert the date string to a datetime object.
-            dateObj = datetime.datetime.strptime(date, "%Y-%m-%d")
-        else:  # date == 'today':
-            dateObj = datetime.datetime.now()
-        index = 0
-        for source in sources:
-            # clean up the source shortName
-            cleanName = source.shortName.rstrip()
-            if cleanName != source.shortName:
-                source.shortName = cleanName
-                source.save()
-            # get segments that have start time same as search date.
-            segments = source.videosegment_set.all()
-            sameDaySegments = [seg for seg in segments if seg.startTime.date() == dateObj.date()]
-            if len(sameDaySegments) != 0:
-                videoSegDict[source.shortName] = [seg.getDict() for seg in sameDaySegments]
-                # create noteforms for each source
-                form = NoteForm()
-                form.index = index
-                form.fields["index"] = index
-                form.source = source
-                form.fields["source"] = source
-                form.fields["extras"] = None
-                source.form = form
-                index = index + 1
+# date is like 2014-06-23
+# If there are episodes, search video segments by episode. 
+# If episode is 'None', search video segments by date (if provided)
+#TODO: LOT OF DUPLICATE CODE BETWEEN THIS AND displayRecordedVideo. COMBINE THEM! 
+def archivedImageStream(request, date=None, episodeName=None):
+#     pydevd.settrace('10.10.80.151')
+#     sources = SOURCE_MODEL.objects.all()
+    segmentsJson = {}  # key: source, value: segments
+    episodeJson = {}
+    episode = {}
+    sources = []
+
+    if episodeName and str(episodeName) !='None':
+        episode = EPISODE_MODEL.objects.get(shortName = episodeName)
+    if not episode:
+        # we are looking for live recorded so see what is active
+        GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
+        episode = GET_ACTIVE_EPISODE_METHOD()
+    if episode and episode.sourceGroup:
+        entries = episode.sourceGroup.sources
+        for entry in entries.all():
+            sources.append(entry)
+    # episode is not available so search video segments by date.
+    else: 
+        if not date:
+            # you are doomed. either episode or date needs to be specified
+            messages.add_message(request, messages.ERROR, 'Date is not valid')
+            ctx = {'date': None,
+                   'episode': None}
+            return render_to_response("xgds_video/video_recorded_playbacks.html",
+                                      ctx,
+                                      context_instance=RequestContext(request))
+        else:  # date is present, episode is not
+            sources = list(SOURCE_MODEL.objects.all())
+            if date != 'today':
+                # convert the date string to a datetime object.
+                dateObj = datetime.datetime.strptime(date, "%Y-%m-%d")
+            else:  # date == 'today':
+                dateObj = datetime.datetime.now()
+    index = 0
+    for source in sources:
+        # clean up the source shortName
+        cleanName = source.shortName.rstrip()
+        if cleanName != source.shortName:
+            source.shortName = cleanName
+            source.save()
+        if episode:
+            if episode.endTime:
+                segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime)
             else:
-                messages.add_message(request, messages.ERROR, 'No video segments for date: ' + str(dateObj.date()) + ' and source: ' + source.shortName)
-        # Stringify (json.dumps) the videoSegDict only if there are segments:
-        if videoSegDict != {}:
-            videoSegDict = json.dumps(videoSegDict, sort_keys=True, indent=4)
-        ctx = {
-            'videoDate': str(dateObj.date()),
-            'segmentsJson': videoSegDict,
-            'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
-            'episode': {},
-            'episodeJson': {},
-            "date": date,
-            'noteTimeStamp': "",  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
-            'sources': sources
-        }
-        return render_to_response("xgds_video/video_recorded_playbacks.html",
-                                  ctx,
-                                  context_instance=RequestContext(request))
+                segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
+        else:  # only date is available
+            segments = SEGMENT_MODEL.objects.filter(startTime__range=(str(dateObj.date()), str(dateObj.date())))
+        if segments:
+            util.setSegmentEndTimes(segments, episode, source) #TODO: what if episode is None?
+            segmentsJson[source.shortName] = [seg.getDict() for seg in segments]
+            # create noteforms for each source
+            form = NoteForm()
+            form.index = index
+            form.fields["index"] = index
+            form.source = source
+            form.fields["source"] = source
+            form.fields["extras"] = callGetNoteExtras([episode], form.source, request)
+            source.form = form
+            index = index + 1
+        else:
+            messages.add_message(request, messages.ERROR, 'No video segments for available!')
+    # Stringify (json.dumps) the videoSegDict only if there are segments:
+    if segmentsJson != {}:
+        segmentsJson = json.dumps(segmentsJson, sort_keys=True, indent=4)
+        episodeJson = json.dumps(episode.getDict())
+
+    ctx = {
+        'videoDate': str(dateObj.date()),
+        'segmentsJson': segmentsJson,
+        'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
+        'episode': episode,
+        'episodeJson': episodeJson,
+        "date": date,
+        'noteTimeStamp': "",  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
+        'sources': sources
+    }
+    return render_to_response("xgds_video/video_recorded_playbacks.html",
+                              ctx,
+                              context_instance=RequestContext(request))
 
 
 def searchImageStreams(request):
     # get all the dates of the segments and remove duplicates
     dates = list(set([str(segment.startTime.date()) for segment in SEGMENT_MODEL.objects.all()]))
+    episodeJson = [json.dumps(episode.getDict()) for episode in EPISODE_MODEL.objects.all()]
     return render_to_response("xgds_video/SearchImageStreams.html",
-                              {'dates': dates},
+                              {'dates': dates, 
+                               'episodeJson': episodeJson},
                               context_instance=RequestContext(request))
 
 
@@ -278,7 +316,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 form.fields["index"] = index
                 form.source = source
                 form.fields["source"] = source
-                form.fields["extras"].initial = callGetNoteExtras([episode], form.source, request)
+                form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
                 source.form = form
                 index = index + 1
 
