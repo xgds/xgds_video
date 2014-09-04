@@ -113,6 +113,7 @@ class AbstractVideoSegment(models.Model):
     endTime = models.DateTimeField(null=True, blank=True, help_text="needs to be earlier than episode end time")
     settings = models.ForeignKey(videoSettings.XGDS_VIDEO_SETTINGS_MODEL, null=True, blank=True, help_text="usually (640: 360)")
     source = models.ForeignKey(videoSettings.XGDS_VIDEO_SOURCE_MODEL, null=True, blank=True, help_text="from video source. same as NewFlight's AssetRole.")
+    episode = models.ForeignKey(videoSettings.XGDS_VIDEO_EPISODE_MODEL, null=True, blank=True, help_text="episodes contain segments")
     uuid = UuidField()
 
     def getDict(self):
@@ -121,19 +122,21 @@ class AbstractVideoSegment(models.Model):
                 "startTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime)),
                 "endTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime)),
                 "timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'],
-                "settings": self.settings.getDict()}
+                "settings": self.settings.getDict(),
+                "episode": self.episode}
 
     class Meta:
         abstract = True
 
     def __unicode__(self):
-        return (u"%s(%s,sourceName=%s, segNumber=%s, self.startTime=%s, self.endTime='%s')" %
+        return (u"%s(%s,sourceName=%s, segNumber=%s, self.startTime=%s, self.endTime='%s', self.episode='%s')" %
                 (self.__class__.__name__,
                  self.id,
                  self.source.shortName,
                  self.segNumber,
                  self.startTime,
-                 self.endTime))
+                 self.endTime,
+                 self.episode))
 
 
 class VideoSegment(AbstractVideoSegment):
