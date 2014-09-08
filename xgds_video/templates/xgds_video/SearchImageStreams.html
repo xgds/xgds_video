@@ -37,10 +37,10 @@
 </thead>
 
 <tbody id="imageStreamsResults">
- 	{% for date in dates %}
+ 	{% for flight in flightNames %}
 		<tr>
 			<td>
-				<a href="{% url 'archived_image_stream' date 'None' %}">{{ date }}</a>
+				<a href="{% url 'flight_video_recorded' flight %}">{{ flight }}</a>
 			</td>
 		</tr>
 	{% endfor %}

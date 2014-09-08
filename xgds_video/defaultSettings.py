@@ -40,6 +40,7 @@ ZEROMQ_PORTS = 'path to ports.json file -- set this in siteSettings.py'
 
 XGDS_VIDEO_GET_EPISODE_FROM_NAME = 'xgds_video.views.getEpisodeFromName'
 XGDS_VIDEO_GET_ACTIVE_EPISODE = 'xgds_video.views.getActiveEpisode'
+XGDS_VIDEO_GET_SOURCES_FROM_VEHICLE = 'xgds_video.views.getSourcesFromVehicle'
 
 # set this in siteSettings.py example: DATA_URL
 RECORDED_VIDEO_URL_BASE = None

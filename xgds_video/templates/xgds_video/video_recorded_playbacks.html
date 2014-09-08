@@ -41,11 +41,7 @@
     {% endblock %}
 
     {% block sitemenu-content-secondary %}
-		{% if episode %}
-			{% include "xgds_video/video_subnav.html" %}
-    	{% else %}
-    		{% include "xgds_video/image_stream_subnav.html" %}
-    	{% endif %}
+   		{% include "xgds_video/image_stream_subnav.html" %}
     {% endblock %}
 
 {% block contents %}
@@ -142,10 +138,9 @@
 {% include "xgds_video/init_notes.js" %}
 
 var indexFileUrl = null;
+
 {% if episode %}
     indexFileUrl = "{% url 'xgds_video_index_file' 'flightAndSource' 'segmentIndex' %}";
-{% else %}
-    indexFileUrl = ""; //"{#% url 'xgds_video_index_file' 'date' 'segmentIndex' %#}"
 {% endif %}
 
  {% if segmentsJson %}

@@ -23,7 +23,6 @@ from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
 from xgds_video.models import *  # pylint: disable=W0401
-# import pydevd
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -53,103 +52,6 @@ def liveImageStream(request):
     return render_to_response("xgds_video/LiveImageStream.html",
                               {'zmqURL': json.dumps(socketUrl),
                                'sources': sources},
-                              context_instance=RequestContext(request))
-
-
-# date is like 2014-06-23
-# If there are episodes, search video segments by episode. 
-# If episode is 'None', search video segments by date (if provided)
-#TODO: LOT OF DUPLICATE CODE BETWEEN THIS AND displayRecordedVideo. COMBINE THEM! 
-def archivedImageStream(request, date=None, episodeName=None):
-#     pydevd.settrace('10.10.80.151')
-#     sources = SOURCE_MODEL.objects.all()
-    segmentsJson = {}  # key: source, value: segments
-    episodeJson = {}
-    episode = {}
-    sources = []
-
-    if episodeName and str(episodeName) !='None':
-        episode = EPISODE_MODEL.objects.get(shortName = episodeName)
-    if not episode:
-        # we are looking for live recorded so see what is active
-        GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
-        episode = GET_ACTIVE_EPISODE_METHOD()
-    if episode and episode.sourceGroup:
-        entries = episode.sourceGroup.sources
-        for entry in entries.all():
-            sources.append(entry)
-    # episode is not available so search video segments by date.
-    else: 
-        if not date:
-            # you are doomed. either episode or date needs to be specified
-            messages.add_message(request, messages.ERROR, 'Date is not valid')
-            ctx = {'date': None,
-                   'episode': None}
-            return render_to_response("xgds_video/video_recorded_playbacks.html",
-                                      ctx,
-                                      context_instance=RequestContext(request))
-        else:  # date is present, episode is not
-            sources = list(SOURCE_MODEL.objects.all())
-            if date != 'today':
-                # convert the date string to a datetime object.
-                dateObj = datetime.datetime.strptime(date, "%Y-%m-%d")
-            else:  # date == 'today':
-                dateObj = datetime.datetime.now()
-    index = 0
-    for source in sources:
-        # clean up the source shortName
-        cleanName = source.shortName.rstrip()
-        if cleanName != source.shortName:
-            source.shortName = cleanName
-            source.save()
-        if episode:
-            if episode.endTime:
-                segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime)
-            else:
-                segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime)
-        else:  # only date is available
-            segments = SEGMENT_MODEL.objects.filter(startTime__range=(str(dateObj.date()), str(dateObj.date())))
-        if segments:
-            util.setSegmentEndTimes(segments, episode, source) #TODO: what if episode is None?
-            segmentsJson[source.shortName] = [seg.getDict() for seg in segments]
-            # create noteforms for each source
-            form = NoteForm()
-            form.index = index
-            form.fields["index"] = index
-            form.source = source
-            form.fields["source"] = source
-            form.fields["extras"] = callGetNoteExtras([episode], form.source, request)
-            source.form = form
-            index = index + 1
-        else:
-            messages.add_message(request, messages.ERROR, 'No video segments for available!')
-    # Stringify (json.dumps) the videoSegDict only if there are segments:
-    if segmentsJson != {}:
-        segmentsJson = json.dumps(segmentsJson, sort_keys=True, indent=4)
-        episodeJson = json.dumps(episode.getDict())
-
-    ctx = {
-        'videoDate': str(dateObj.date()),
-        'segmentsJson': segmentsJson,
-        'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
-        'episode': episode,
-        'episodeJson': episodeJson,
-        "date": date,
-        'noteTimeStamp': "",  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
-        'sources': sources
-    }
-    return render_to_response("xgds_video/video_recorded_playbacks.html",
-                              ctx,
-                              context_instance=RequestContext(request))
-
-
-def searchImageStreams(request):
-    # get all the dates of the segments and remove duplicates
-    dates = list(set([str(segment.startTime.date()) for segment in SEGMENT_MODEL.objects.all()]))
-    episodeJson = [json.dumps(episode.getDict()) for episode in EPISODE_MODEL.objects.all()]
-    return render_to_response("xgds_video/SearchImageStreams.html",
-                              {'dates': dates, 
-                               'episodeJson': episodeJson},
                               context_instance=RequestContext(request))
 
 
@@ -254,6 +156,14 @@ def getActiveEpisode(flightName):
     return None
 
 
+def getSourcesFromVehicle(vehicleName):
+    """
+    Point to site settings to see real implementation of this function
+    GET_SOURCES_FROM_VEHICLE
+    """
+    pass
+
+
 def displayRecordedVideo(request, flightName=None, time=None):
     """
     Returns first segment of all sources that are part of a given episode.
@@ -262,7 +172,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
     """
     noteTime = ""
     episode = {}
-    sourceName = None
+    vehicleName = None
     if time is not None:
         # time is passed as string (yy-mm-dd hh:mm:ss)
         noteTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
@@ -271,7 +181,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
     if flightName:
         GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
         episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
-        sourceName = flightName.split("_")[1]
+        vehicleName = flightName.split("_")[1]
 
     sources = []
     if not episode:
@@ -290,11 +200,11 @@ def displayRecordedVideo(request, flightName=None, time=None):
                                       ctx,
                                       context_instance=RequestContext(request))
 
-    if not sources:
-        if sourceName:
-            sources = [SOURCE_MODEL.objects.get(shortName=sourceName)]
+    if vehicleName:
+        GET_SOURCES_FROM_VEHICLE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_SOURCES_FROM_VEHICLE)
+        sources = GET_SOURCES_FROM_VEHICLE_METHOD(vehicleName)
 
-    if episode:
+    if sources and (len(sources) !=0):
         segmentsDict = {}  # dictionary of segments (in JSON) within given episode
         index = 0
         for source in sources:
@@ -303,7 +213,6 @@ def displayRecordedVideo(request, flightName=None, time=None):
             if cleanName != source.shortName:
                 source.shortName = cleanName
                 source.save()
-
             if episode.endTime:
                 segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime)
             else:
@@ -319,7 +228,6 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
                 source.form = form
                 index = index + 1
-
         segmentsJson = {}
         episodeJson = {}
         if segmentsDict:
@@ -339,10 +247,11 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 'episode': episode,
                 'episodeJson': episodeJson
             }
-    else:
-        messages.add_message(request, messages.ERROR, 'No Valid Episodes Exist')
-        ctx = {'episode': None}
-#                'searchCriteria': searchCriteria}
+    else: 
+        messages.add_message(request, messages.ERROR, 'No Valid Video Sources Exist')
+        ctx = {'episode': None,
+               'sources': None}
+
     return render_to_response('xgds_video/video_recorded_playbacks.html',
                               ctx,
                               context_instance=RequestContext(request))
@@ -439,12 +348,10 @@ def stopRecording(source, endTime):
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
 
 
-'''
 def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
     """
     modifies index file of recorded video to the correct host.
     """
-    pydevd.settrace('10.10.80.151')
     # Look up path to index file
     suffix = util.getIndexFileSuffix(flightAndSource, segmentNumber)
     # use regex substitution to replace hostname, etc.
@@ -453,4 +360,3 @@ def videoIndexFile(request, flightAndSource=None, segmentNumber=None):
     response = HttpResponse(newIndex, content_type="application/x-mpegurl")
     response['Content-Disposition'] = 'filename = "prog_index.m3u8"'
     return response
-'''
