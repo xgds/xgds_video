@@ -123,7 +123,7 @@ class AbstractVideoSegment(models.Model):
                 "endTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime)),
                 "timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'],
                 "settings": self.settings.getDict(),
-                "episode": self.episode}
+                "episode": self.episode.getDict()}
 
     class Meta:
         abstract = True

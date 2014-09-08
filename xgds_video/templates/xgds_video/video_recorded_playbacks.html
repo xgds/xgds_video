@@ -159,8 +159,7 @@ var indexFileUrl = null;
                        movingSlider: false, //if slider is moving, turn off onTime call
                        seekOffsetList: {}, //needed for seeking vid in flash mode,
                        indexFileUrl: indexFileUrl,
-	                   noteTimeStamp: toJsDateTime({{ noteTimeStamp|safe }}),
-	                   date: {{ videoDate }}
+	                   noteTimeStamp: toJsDateTime({{ noteTimeStamp|safe }})
                      };
 
     // displaySegments are in json format like this:

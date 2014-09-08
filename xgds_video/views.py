@@ -23,6 +23,7 @@ from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
 from xgds_video.models import *  # pylint: disable=W0401
+# import pydevd
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -170,28 +171,31 @@ def displayRecordedVideo(request, flightName=None, time=None):
     Used for both playing back videos from active episode and also
     for playing videos associated with each note.
     """
+#     pydevd.settrace('10.10.80.151')
     noteTime = ""
     episode = {}
+    sources = []
     vehicleName = None
     if time is not None:
         # time is passed as string (yy-mm-dd hh:mm:ss)
         noteTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
         noteTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(noteTime))
-
+    # this happens when user clicks on a flight name to view video
     if flightName:
         GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
         episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
         vehicleName = flightName.split("_")[1]
-
-    sources = []
+        if vehicleName: 
+            GET_SOURCES_FROM_VEHICLE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_SOURCES_FROM_VEHICLE)
+            sources = GET_SOURCES_FROM_VEHICLE_METHOD(vehicleName)
+    #this happens when user looks for live recorded 
     if not episode:
-        # we are looking for live recorded so see what is active
         GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
         episode = GET_ACTIVE_EPISODE_METHOD()
         if episode and episode.sourceGroup:
             entries = episode.sourceGroup.sources
             for entry in entries.all():
-                sources.append(entry)
+                sources.append(entry.source)
         else:
             # you are doomed.
             messages.add_message(request, messages.ERROR, 'No active recorded flights to watch')
@@ -199,14 +203,10 @@ def displayRecordedVideo(request, flightName=None, time=None):
             return render_to_response('xgds_video/video_recorded_playbacks.html',
                                       ctx,
                                       context_instance=RequestContext(request))
-
-    if vehicleName:
-        GET_SOURCES_FROM_VEHICLE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_SOURCES_FROM_VEHICLE)
-        sources = GET_SOURCES_FROM_VEHICLE_METHOD(vehicleName)
-
     if sources and (len(sources) !=0):
         segmentsDict = {}  # dictionary of segments (in JSON) within given episode
         index = 0
+        sourcesWithNoSegments = []
         for source in sources:
             # trim the white spaces in source shortName
             cleanName = source.shortName.rstrip()
@@ -225,9 +225,14 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 form.fields["index"] = index
                 form.source = source
                 form.fields["source"] = source
-                form.fields["extras"].initial = callGetNoteExtras([episode], form.source)
+                form.fields["extras"].initial = callGetNoteExtras([episode], form.source, request)
                 source.form = form
                 index = index + 1
+            else:  # if there are no segments, delete the source from 'sources' list.
+                sourcesWithNoSegments.append(source)
+        # remove from sources list.
+        for source in sourcesWithNoSegments:
+            sources = sources.exclude(name = source.name)
         segmentsJson = {}
         episodeJson = {}
         if segmentsDict:
