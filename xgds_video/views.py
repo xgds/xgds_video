@@ -77,7 +77,7 @@ def stopPyraptordServiceIfRunning(pyraptord, svcName):
 # can find the groupflight that points to that episode
 # and then find the flight in the group flight that has the same source.
 def getNoteExtras(episodes=None, source=None, request=None):
-#     print "RETURNING NONE FROM BASE GET NOTE EXTRAS CLASS"
+    # print "RETURNING NONE FROM BASE GET NOTE EXTRAS CLASS"
     return None
 
 
@@ -185,10 +185,10 @@ def displayRecordedVideo(request, flightName=None, time=None):
         GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
         episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
         vehicleName = flightName.split("_")[1]
-        if vehicleName: 
+        if vehicleName:
             GET_SOURCES_FROM_VEHICLE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_SOURCES_FROM_VEHICLE)
             sources = GET_SOURCES_FROM_VEHICLE_METHOD(vehicleName)
-    #this happens when user looks for live recorded 
+    # this happens when user looks for live recorded
     if not episode:
         GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
         episode = GET_ACTIVE_EPISODE_METHOD()
@@ -203,7 +203,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
             return render_to_response('xgds_video/video_recorded_playbacks.html',
                                       ctx,
                                       context_instance=RequestContext(request))
-    if sources and (len(sources) !=0):
+    if sources and (len(sources) != 0):
         segmentsDict = {}  # dictionary of segments (in JSON) within given episode
         index = 0
         sourcesWithNoSegments = []
@@ -232,7 +232,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 sourcesWithNoSegments.append(source)
         # remove from sources list.
         for source in sourcesWithNoSegments:
-            sources = sources.exclude(name = source.name)
+            sources = sources.exclude(name=source.name)
         segmentsJson = {}
         episodeJson = {}
         if segmentsDict:
@@ -252,7 +252,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 'episode': episode,
                 'episodeJson': episodeJson
             }
-    else: 
+    else:
         messages.add_message(request, messages.ERROR, 'No Valid Video Sources Exist')
         ctx = {'episode': None,
                'sources': None}
