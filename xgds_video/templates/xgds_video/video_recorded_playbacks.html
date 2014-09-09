@@ -97,15 +97,7 @@
 			<div class="item" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
 	            <div class="buttons">
 	                 <div class="toprow-left">Camera Name: <b>{{ source.name }}</b></div>
-	                 {% if episode %}
-					 	<a class="mybutton toprow-right"
-					 	 href="{% url 'xgds_video_recorded' %}?source={{ source.shortName }}&episode={{ episode.shortName }}"
-					 	 target="new"> New Window </a>
-					 {% else %}
-					 	<a class="mybutton toprow-right"
-					 	href=# target="new">New Window</a>
-					 {% endif %}
-
+		 	                     <a class="mybutton toprow-right" href="{% url 'xgds_video_recorded' %}?source={{ source.shortName }}&episode={{ episode.shortName }}" target="new">New Window</a>
 	                 {% with feed=source.feed_set.all.0.shortName %}
 	                 {% if feed %}
 	                     <a class="mybutton" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>
@@ -124,7 +116,7 @@
              	</section>
              	<section>
              		<div class="float-left">
-                 	Test Site Time: <span id="testSiteTime{{ source.shortName }}">0</span>
+                 	Local Time: <span id="testSiteTime{{ source.shortName }}">0</span>
              		</div>
              	</section>
             </div><!--  item -->

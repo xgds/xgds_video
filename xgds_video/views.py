@@ -23,7 +23,7 @@ from geocamUtil.loader import getModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
 from xgds_video.models import *  # pylint: disable=W0401
-# import pydevd
+from django.http import HttpResponse
 
 SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -171,7 +171,6 @@ def displayRecordedVideo(request, flightName=None, time=None):
     Used for both playing back videos from active episode and also
     for playing videos associated with each note.
     """
-#     pydevd.settrace('10.10.80.151')
     noteTime = ""
     episode = {}
     sources = []
@@ -266,9 +265,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
     if not source.videofeed_set.all():
         logging.info("video feeds set is empty")
         return
-
     videoFeed = source.videofeed_set.all()[0]
-
     recordedVideoDir = None
     segmentNumber = None
     for i in xrange(1000):
@@ -278,15 +275,12 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
             segmentNumber = i
             break
     assert segmentNumber is not None
-
     makedirsIfNeeded(recordedVideoDir)
-
     videoSettingsModel = SETTINGS_MODEL(width=videoFeed.settings.width,
                                         height=videoFeed.settings.height,
                                         compressionRate=None,
                                         playbackDataRate=None)
     videoSettingsModel.save()
-
     videoSegment = SEGMENT_MODEL(directoryName="Segment",
                                  segNumber=segmentNumber,
                                  indexFileName="prog_index.m3u8",
@@ -294,22 +288,16 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
                                  endTime=None,
                                  settings=videoSettingsModel,
                                  source=source)
-
     videoSegment.save()
-
     if settings.PYRAPTORD_SERVICE is True:
         pyraptord = getZerorpcClient('pyraptord')
-
     assetName = source.shortName  # flight.assetRole.name
-
     vlcSvc = '%s_vlc' % assetName
     vlcCmd = ('%s %s %s'
               % (settings.XGDS_VIDEO_VLC_PATH,
                  videoFeed.url,
                  settings.XGDS_VIDEO_VLC_PARAMETERS))
-
     segmenterSvc = '%s_segmenter' % assetName
-
     segmenterCmdTemplate = '%s %s' % (settings.XGDS_VIDEO_SEGMENTER_PATH,
                                       settings.XGDS_VIDEO_SEGMENTER_ARGS)
 
@@ -320,9 +308,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
         'maxFlightDuration': maxFlightDuration,
     }
     segmenterCmd = segmenterCmdTemplate % segmenterCmdCtx
-
     print vlcCmd + "|" + segmenterCmd
-
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)

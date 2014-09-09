@@ -111,8 +111,7 @@ def padNum(num, size):
 
 
 def getIndexFileSuffix(flightAndSource, segmentNumber):
-    path = "DW_Data/" + \
-        flightAndSource + "/Video/Recordings/Segment" + \
+    path = flightAndSource + "/Video/Recordings/Segment" + \
         padNum(segmentNumber, 3) + '/prog_index.m3u8'
     return path
 
@@ -133,8 +132,6 @@ def updateIndexFilePrefix(indexFileSuffix, subst):
         videoDelayInSecs = 0
     videoDelayInSegments = int(round(videoDelayInSecs / settings.XGDS_VIDEO_SEGMENT_SEC))
     videoDelayInLines = 2 * videoDelayInSegments + 1
-#    print "Video delay in seconds:", videoDelayInSecs
-#    print "Video delay in segments:", videoDelayInSegments
 
     #  edit the index file
     clips = baseFile.read().split('#EXTINF:')
@@ -147,11 +144,7 @@ def updateIndexFilePrefix(indexFileSuffix, subst):
     for idx, line in enumerate(lineList):
         if idx < maxLineNum:
             processedIndex.append(processLine(segmentDirectoryUrl, line))
-
-#    processedIndex = [processLine(segmentDirectoryUrl, line)
-#                      for line in processedClips.split("\n")]
     baseFile.close()
-
     if videoDelayInSecs == 0:
         if not any([findEndMarker(item) for item in processedIndex]):
             processedIndex.append("#EXT-X-ENDLIST")

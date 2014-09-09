@@ -19,6 +19,7 @@ $.extend(xgds_video, {
 //      there is a topic per camera source. I'm assuming that we'll know these sources beforehand.
         var topic1 = 'RapidImagesensorSampleHazCamLeft';
         var topic2 = 'RapidImagesensorSampleGroundCam';
+        var topic3 = 'RapidImagesensorSampleNirvss';
         var handler = function() {
             return function(zmq, topic, obj) {
 //              upon receiving the image, display it.
@@ -30,6 +31,8 @@ $.extend(xgds_video, {
                     $('#cameraImage1').attr('src', 'data:image/jpeg;base64,' + imgContent);
                 } else if (topic == topic2) {
                     $('#cameraImage2').attr('src', 'data:image/jpeg;base64,' + imgContent);
+                } else if (topic == topic3) {
+                    $('#cameraImage3').attr('src', 'data:image/jpeg;base64,' + imgContent);
                 }
             };
         }();
@@ -44,8 +47,6 @@ $.extend(xgds_video, {
     zmqInit: function() {
         var zmqUrl = zmqURL.replace('{{host}}', window.location.hostname);
         var zmq = new ZmqManager(zmqUrl, {onopen: xgds_video.onopen, onclose: xgds_video.onclose, autoReconnect: true});
-
-//      how do we know how many sources of images we will have from zmq messages?
         zmq.start();
     }
 });

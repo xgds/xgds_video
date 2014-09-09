@@ -206,13 +206,11 @@ class VideoSourceGroup(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True, help_text="human-readable title")
     # shortName: a short mnemonic code suitable to embed in a URL
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True, help_text="a short mnemonic code suitable to embed in a URL")
-
-#     sources = models.ManyToManyField(settings.XGDS_VIDEO_SOURCE_MODEL, through='VideoSourceGroupEntry')
     uuid = UuidField(db_index=True)
 
     def __unicode__(self):
-        return (u"VideoSourceGroup(%s, name='%s', shortName='%s', %s sources)"
-                % (self.id, self.name, self.shortName, self.sources.count()))
+        return (u"VideoSourceGroup(%s, name='%s', shortName='%s')"
+                % (self.id, self.name, self.shortName))
 
 
 class VideoSourceGroupEntry(models.Model):
