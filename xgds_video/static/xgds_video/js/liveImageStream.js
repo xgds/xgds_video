@@ -20,6 +20,7 @@ $.extend(xgds_video, {
         var topic1 = 'RapidImagesensorSampleHazCamLeft';
         var topic2 = 'RapidImagesensorSampleGroundCam';
         var topic3 = 'RapidImagesensorSampleNirvss';
+        var topic4 = 'RapidImagesensorSampleHazCamRight';
         var handler = function() {
             return function(zmq, topic, obj) {
 //              upon receiving the image, display it.
@@ -28,11 +29,13 @@ $.extend(xgds_video, {
                 var imgContent = data[1];
                 haveNewData = true;
                 if (topic == topic1) {
-                    $('#cameraImage1').attr('src', 'data:image/jpeg;base64,' + imgContent);
+                    $('#cameraImageHZL').attr('src', 'data:image/jpeg;base64,' + imgContent);
                 } else if (topic == topic2) {
-                    $('#cameraImage2').attr('src', 'data:image/jpeg;base64,' + imgContent);
+                    $('#cameraImageGND').attr('src', 'data:image/jpeg;base64,' + imgContent);
                 } else if (topic == topic3) {
-                    $('#cameraImage3').attr('src', 'data:image/jpeg;base64,' + imgContent);
+                    $('#cameraImageTEX').attr('src', 'data:image/jpeg;base64,' + imgContent);
+                } else if (topic == topic4) {
+                    $('#cameraImageHZR').attr('src', 'data:image/jpeg;base64,' + imgContent);
                 }
 		$container.masonry();
             };
@@ -40,6 +43,7 @@ $.extend(xgds_video, {
         zmq.subscribeJson(topic1, handler);
         zmq.subscribeJson(topic2, handler);
         zmq.subscribeJson(topic3, handler);
+        zmq.subscribeJson(topic4, handler);
     },
 
     onclose: function(zmq) {
