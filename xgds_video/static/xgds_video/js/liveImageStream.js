@@ -13,6 +13,13 @@ xgds_video = {}; //namespace
 
 $.extend(xgds_video, {
     haveNewData: false,
+
+    spinnerLookup: '|/-\\',
+
+    getFrameCounter: function(counter) {
+        return '' + counter + ' ' + spinnerLookup[counter % 4];
+    },
+
 //  client side websocket event handlers
     onopen: function(zmq) {
         $('#socketStatus').html('connected');
@@ -21,6 +28,10 @@ $.extend(xgds_video, {
         var topic2 = 'RapidImagesensorSampleGroundCam';
         var topic3 = 'RapidImagesensorSamplenirvss';
         var topic4 = 'RapidImagesensorSampleHazCamRight';
+        var counter1 = 0;
+        var counter2 = 0;
+        var counter3 = 0;
+        var counter4 = 0;
         var handler = function() {
             return function(zmq, topic, obj) {
 //              upon receiving the image, display it.
@@ -30,12 +41,20 @@ $.extend(xgds_video, {
                 haveNewData = true;
                 if (topic == topic1) {
                     $('#cameraImageHZL').attr('src', 'data:image/jpeg;base64,' + imgContent);
+                    $('#frame_HZL').html(xgds_video.getFrameCounter(counter1));
+                    counter1++;
                 } else if (topic == topic2) {
                     $('#cameraImageGND').attr('src', 'data:image/jpeg;base64,' + imgContent);
+                    $('#frame_GND').html(xgds_video.getFrameCounter(counter2));
+                    counter2++;
                 } else if (topic == topic3) {
                     $('#cameraImageNVS').attr('src', 'data:image/jpeg;base64,' + imgContent);
+                    $('#frame_NVS').html(xgds_video.getFrameCounter(counter3));
+                    counter3++;
                 } else if (topic == topic4) {
                     $('#cameraImageHZR').attr('src', 'data:image/jpeg;base64,' + imgContent);
+                    $('#frame_HZR').html(xgds_video.getFrameCounter(counter4));
+                    counter4++;
                 }
 		//$container.masonry();
             };
