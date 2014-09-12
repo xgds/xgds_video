@@ -34,10 +34,12 @@ $.extend(xgds_video, {
                 } else if (topic == topic3) {
                     $('#cameraImage3').attr('src', 'data:image/jpeg;base64,' + imgContent);
                 }
+		$container.masonry();
             };
         }();
         zmq.subscribeJson(topic1, handler);
         zmq.subscribeJson(topic2, handler);
+        zmq.subscribeJson(topic3, handler);
     },
 
     onclose: function(zmq) {
