@@ -17,7 +17,7 @@ $.extend(xgds_video, {
     spinnerLookup: '|/-\\',
 
     getFrameCounter: function(counter) {
-        return '' + counter + ' ' + spinnerLookup[counter % 4];
+        return '' + counter + ' ' + xgds_video.spinnerLookup[counter % 4];
     },
 
 //  client side websocket event handlers
