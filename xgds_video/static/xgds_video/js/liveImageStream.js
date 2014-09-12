@@ -19,7 +19,7 @@ $.extend(xgds_video, {
 //      there is a topic per camera source. I'm assuming that we'll know these sources beforehand.
         var topic1 = 'RapidImagesensorSampleHazCamLeft';
         var topic2 = 'RapidImagesensorSampleGroundCam';
-        var topic3 = 'RapidImagesensorSampleNirvss';
+        var topic3 = 'RapidImagesensorSamplenirvss';
         var topic4 = 'RapidImagesensorSampleHazCamRight';
         var handler = function() {
             return function(zmq, topic, obj) {
