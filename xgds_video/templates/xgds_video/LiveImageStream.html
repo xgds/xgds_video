@@ -38,7 +38,7 @@
 {% endblock %}
 
 {% block contents %}
-	Socket Status: <div id="socketStatus"></div>
+	Socket Status: <span id="socketStatus"></span>
 	<div id="container" class="js-masonry" data-masonry-options='{"itemSelector": ".item", "gutter":5, "isInitLayout":false}'>
 		{% for source in sources %}
 			<div class="item" id="item{{ forloop.counter }}" style="background-color:#e5e5e5;">
