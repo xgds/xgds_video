@@ -33,7 +33,7 @@ $.extend(xgds_video, {
                 } else if (topic == topic2) {
                     $('#cameraImageGND').attr('src', 'data:image/jpeg;base64,' + imgContent);
                 } else if (topic == topic3) {
-                    $('#cameraImageTEX').attr('src', 'data:image/jpeg;base64,' + imgContent);
+                    $('#cameraImageNVS').attr('src', 'data:image/jpeg;base64,' + imgContent);
                 } else if (topic == topic4) {
                     $('#cameraImageHZR').attr('src', 'data:image/jpeg;base64,' + imgContent);
                 }
