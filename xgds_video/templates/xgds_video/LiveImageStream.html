@@ -50,8 +50,11 @@
 	 		</div>
  		{% endfor %}
 	</div>
- {% endblock %}
 
+    <script type="text/javascript">
+    var $container = $('#container').masonry();
+    </script>
+ {% endblock %}
 {% block jsInit %}
   {{ block.super }}
 	$(function() {

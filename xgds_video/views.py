@@ -186,7 +186,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
         vehicleName = flightName.split("_")[1]
         if vehicleName:
             GET_SOURCES_FROM_VEHICLE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_SOURCES_FROM_VEHICLE)
-            sources = GET_SOURCES_FROM_VEHICLE_METHOD(vehicleName)
+            sources = list(GET_SOURCES_FROM_VEHICLE_METHOD(vehicleName))
     # this happens when user looks for live recorded
     if not episode:
         GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
@@ -231,7 +231,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 sourcesWithNoSegments.append(source)
         # remove from sources list.
         for source in sourcesWithNoSegments:
-            sources = sources.exclude(name=source.name)
+            sources.remove(source)
         segmentsJson = {}
         episodeJson = {}
         if segmentsDict:
