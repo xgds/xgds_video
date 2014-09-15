@@ -37,7 +37,6 @@ $.extend(xgds_video, {
                 } else if (topic == topic4) {
                     $('#cameraImageHZR').attr('src', 'data:image/jpeg;base64,' + imgContent);
                 }
-		//$container.masonry();
             };
         }();
         zmq.subscribeJson(topic1, handler);
