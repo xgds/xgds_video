@@ -42,8 +42,9 @@
 	<div id="container" class="js-masonry" data-masonry-options='{"itemSelector": ".item", "gutter":5, "isInitLayout":false}'>
 		{% for source in sources %}
 			<div class="item" id="item{{ forloop.counter }}" style="background-color:#e5e5e5;">
-	            <div> Camera Name: <b>{{ source.name }}</b> </div>
-	            Local Time: <span id="image{{ source.shortName }}"></span>
+	            <div> Camera Name: <b>{{ source.name }}</b>
+                          Frame: <span id="frame_{{ source.shortName }}"></span>
+                </div>
 				<section>
 	            {% include "xgds_video/video_notes.html" with data=source.form source=source STATIC_URL=STATIC_URL %}
 	            </section>
