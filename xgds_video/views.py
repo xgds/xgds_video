@@ -183,10 +183,14 @@ def displayRecordedVideo(request, flightName=None, time=None):
     if flightName:
         GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
         episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
-        vehicleName = flightName.split("_")[1]
-        if vehicleName:
-            GET_SOURCES_FROM_VEHICLE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_SOURCES_FROM_VEHICLE)
-            sources = list(GET_SOURCES_FROM_VEHICLE_METHOD(vehicleName))
+        if episode and episode.sourceGroup:
+            entries = episode.sourceGroup.sources
+            for entry in entries.all():
+                sources.append(entry.source)
+#         vehicleName = flightName.split("_")[1]
+#         if vehicleName:
+#             GET_SOURCES_FROM_VEHICLE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_SOURCES_FROM_VEHICLE)
+#             sources = list(GET_SOURCES_FROM_VEHICLE_METHOD(vehicleName))
     # this happens when user looks for live recorded
     if not episode:
         GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
