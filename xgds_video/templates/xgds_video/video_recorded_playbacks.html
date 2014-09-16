@@ -134,16 +134,17 @@
 var indexFileUrl = null;
 
 {% if episode %}
-    indexFileUrl = "{% url 'xgds_video_index_file' 'flightAndSource' 'segmentIndex' %}";
+    indexFileUrl = "{% url 'xgds_video_index_file' 'flightName' 'sourceShortName' 'segmentIndex' %}";
 {% endif %}
 
  {% if segmentsJson %}
+ 
     //globals
     var xgds_video = { masterSlider: '',
                        playFlag: true,
                        initialState: false,
                        seekOffsetList: {},
-                       baseUrl: "{{ baseUrl}}",
+                       baseUrl: "{{ baseUrl }}",
                        episode: {{ episodeJson|safe }},
                        displaySegments: {{ segmentsJson|safe }},
                        firstSegment: null,
@@ -153,7 +154,9 @@ var indexFileUrl = null;
                        movingSlider: false, //if slider is moving, turn off onTime call
                        seekOffsetList: {}, //needed for seeking vid in flash mode,
                        indexFileUrl: indexFileUrl,
-	                   noteTimeStamp: toJsDateTime({{ noteTimeStamp|safe }})
+	                   noteTimeStamp: toJsDateTime({{ noteTimeStamp|safe }}),
+	                   flightName: {% if flightName %} "{{ flightName }}" {% else %} null {% endif %},
+	                   sourceVehicle: {{ sourceVehicle|safe }}
                      };
 
     // displaySegments are in json format like this:

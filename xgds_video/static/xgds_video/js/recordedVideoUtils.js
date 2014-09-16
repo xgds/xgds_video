@@ -94,29 +94,18 @@ function padNum(num, size) {
 
 /**
  * Helper that returns file paths of video segments with same source
- * @returns {Array}
  */
-function getFilePaths(episode, segments) {
+//'flightName' 'sourceShortName' 'segmentIndex'
+
+function getFilePaths(flightName, sourceShortName, segments) {
     var filePaths = [];
-    var sourceName = null;
-    var segment = null;
-    if (isEmpty(episode)) {
-        //when episodes are not used. (mvp)
-        $.each(segments, function(id) {
-            segment = segments[id];
-            sourceName = segment.source.shortName;
-            //TODO
-        });
-    } else { // episode exists
-        $.each(segments, function(id) {
-            segment = segments[id];
-            sourceName = segment.source.shortName;
-            var indexFileUrl = xgds_video.indexFileUrl.replace('flightAndSource',
-                    episode.shortName + '_' + sourceName);
-            indexFileUrl = indexFileUrl.replace('segmentIndex', padNum(segment.segNumber, 3));
-            filePaths.push(indexFileUrl);
-        });
-    }
+    $.each(segments, function(id) {
+        var segment = segments[id];
+        var indexFileUrl = xgds_video.indexFileUrl.replace('flightName', flightName);
+        indexFileUrl = indexFileUrl.replace('sourceShortName', sourceShortName);
+        indexFileUrl = indexFileUrl.replace('segmentIndex', padNum(segment.segNumber, 3));
+        filePaths.push(indexFileUrl);
+    });
     return filePaths;
 }
 

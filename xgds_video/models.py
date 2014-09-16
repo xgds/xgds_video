@@ -26,6 +26,10 @@ class AbstractVideoSource(models.Model):
     displayColor = models.CharField(max_length=56, blank=True, null=True,
                                     help_text='in html format. i.e. #7B3221')
 
+    @property
+    def vehicleName(self):
+        return None
+
     class Meta:
         abstract = True
 
@@ -34,7 +38,8 @@ class AbstractVideoSource(models.Model):
 
     def getDict(self):
         return {"name": self.name, "shortName": self.shortName,
-                "displayColor": self.displayColor, "uuid": self.uuid}
+                "displayColor": self.displayColor, "uuid": self.uuid,
+                "vehicleName": self.vehicleName }
 
 
 class VideoSource(AbstractVideoSource):
@@ -117,8 +122,10 @@ class AbstractVideoSegment(models.Model):
     uuid = UuidField()
 
     def getDict(self):
-        return {"directoryName": self.directoryName, "segNumber": self.segNumber,
-                "indexFileName": self.indexFileName, "source": self.source.getDict(),
+        return {"directoryName": self.directoryName, 
+                "segNumber": self.segNumber,
+                "indexFileName": self.indexFileName, 
+                "source": self.source.getDict(),
                 "startTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime)),
                 "endTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime)),
                 "timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'],

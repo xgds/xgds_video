@@ -34,7 +34,7 @@ def processLine(videoDirUrl, line):
     # line = 'prog_index0.ts\n'
     # videoDirUrl = '/data/20140327A_OUT/Video/Recordings/Segment000'
     line = line.rstrip("\n")
-    if line.startswith("prog_index"):
+    if line.startswith("fileSequence"):
         return videoDirUrl + "/" + line
     else:
         return line
@@ -110,8 +110,10 @@ def padNum(num, size):
     return s
 
 
-def getIndexFileSuffix(flightAndSource, segmentNumber):
-    path = flightAndSource + "/Video/Recordings/Segment" + \
+def getIndexFileSuffix(flightName, sourceShortName, segmentNumber):
+#     path = flightName + '/' + sourceShortName + "/Video/Recordings/Segment" + \
+#         padNum(segmentNumber, 3) + '/prog_index.m3u8'
+    path = "images/" + flightName + '/' + sourceShortName + "/Segment" + \
         padNum(segmentNumber, 3) + '/prog_index.m3u8'
     return path
 
@@ -125,7 +127,9 @@ def updateIndexFilePrefix(indexFileSuffix, subst):
     # foundEndMarker = False
     # open the file
     indexFilePath = settings.DATA_ROOT + indexFileSuffix
+    print "indexFilePath: %s" % indexFilePath
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
+    print "segmentDirectoryUrl: %s" % segmentDirectoryUrl
     baseFile = open(indexFilePath)
     videoDelayInSecs = VIDEO_DELAY_SECONDS  # getVideoDelay() - settings.XGDS_VIDEO_DELAY_MINIMUM_SEC
     if videoDelayInSecs < 0:

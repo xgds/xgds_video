@@ -111,31 +111,20 @@ function soundController() {
 function setupJWplayer() {
     var numSources = Object.keys(xgds_video.displaySegments).length;
     var maxWidth = getMaxWidth(numSources);
-    for (var source in xgds_video.displaySegments) {
+    for (var sourceShortName in xgds_video.displaySegments) {
         // list of video segments with same source & episode (if given)
-        var segments = xgds_video.displaySegments[source];
+        var segments = xgds_video.displaySegments[sourceShortName];
         //if there are no segments to show, dont build a player.
         if (typeof segments == 'undefined' || segments.length == 0) {
             continue;
         }
         // paths of the video segments
-        var videoPaths = [];
-        if (isEmpty(xgds_video.episode)) { //if episode does not exist
-//            videoPaths = getFilePaths(null, segments);
-            //XXX for testing only
-            if (source == 'HAZ') {
-//                videoPaths = ["http://www.longtailvideo.com/jw/upload/bunny.mp4", "http://www.longtailvideo.com/jw/upload/bunny.mp4"]
-                videoPaths = ['/data/20140619_HAZ/Video/Recordings/Segment000/prog_index.m3u8',
-                              '/data/20140619_HAZ/Video/Recordings/Segment001/prog_index.m3u8'];
-            } else if (source == 'STL') {
-//                videoPaths = ["http://www.longtailvideo.com/jw/upload/bunny.mp4", "http://www.longtailvideo.com/jw/upload/bunny.mp4"]
-                videoPaths = ['/data/20140619_STL/Video/Recordings/Segment000/prog_index.m3u8',
-                              '/data/20140619_STL/Video/Recordings/Segment001/prog_index.m3u8'];
-            }
-        } else {
-            videoPaths = getFilePaths(xgds_video.episode, segments);
+        var flightName = xgds_video.flightName;
+        if (flightName == null) {
+            flightName = xgds_video.episode + '_' + xgds_video.sourceVehicle[sourceshortName]; //TODO: TEST THIS!
         }
-        jwplayer(source).setup({
+        var videoPaths = getFilePaths(flightName, sourceShortName, segments);
+        jwplayer(sourceShortName).setup({
             file: videoPaths[0],
             autostart: false,
             width: maxWidth,
@@ -239,7 +228,7 @@ function setupJWplayer() {
             };
             playlist.push(newItem);
         }
-        jwplayer(source).load(playlist);
+        jwplayer(sourceShortName).load(playlist);
     }
 }
 
