@@ -28,10 +28,12 @@ $.extend(xgds_video, {
         var topic2 = 'RapidImagesensorSampleGroundCam';
         var topic3 = 'RapidImagesensorSamplenirvss';
         var topic4 = 'RapidImagesensorSampleHazCamRight';
+        var topic5 = 'RapidImagesensorSampleTextureCam';
         var counter1 = 0;
         var counter2 = 0;
         var counter3 = 0;
         var counter4 = 0;
+        var counter5 = 0;
         var handler = function() {
             return function(zmq, topic, obj) {
 //              upon receiving the image, display it.
@@ -55,6 +57,10 @@ $.extend(xgds_video, {
                     $('#cameraImageHZR').attr('src', 'data:image/jpeg;base64,' + imgContent);
                     $('#frame_HZR').html(xgds_video.getFrameCounter(counter4));
                     counter4++;
+                } else if (topic == topic5) {
+                    $('#cameraImageTXC').attr('src', 'data:image/jpeg;base64,' + imgContent);
+                    $('#frame_TXC').html(xgds_video.getFrameCounter(counter5));
+                    counter5++;
                 }
             };
         }();
@@ -62,6 +68,7 @@ $.extend(xgds_video, {
         zmq.subscribeJson(topic2, handler);
         zmq.subscribeJson(topic3, handler);
         zmq.subscribeJson(topic4, handler);
+        zmq.subscribeJson(topic5, handler);
     },
 
     onclose: function(zmq) {
