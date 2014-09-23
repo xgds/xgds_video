@@ -19,17 +19,17 @@ from geocamUtil import anyjson as json
 
 from xgds_notes.forms import NoteForm
 
-from geocamUtil.loader import getModelByName, getClassByName
+from geocamUtil.loader import LazyGetModelByName, getClassByName
 from xgds_video import settings
 from xgds_video import util
 from xgds_video.models import *  # pylint: disable=W0401
 from django.http import HttpResponse
 
-SOURCE_MODEL = getModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
-SETTINGS_MODEL = getModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
-FEED_MODEL = getModelByName(settings.XGDS_VIDEO_FEED_MODEL)
-SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
-EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
+SOURCE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
+SETTINGS_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
+FEED_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_FEED_MODEL)
+SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
+EPISODE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
 
 def test(request):
@@ -40,8 +40,8 @@ def test(request):
 
 def liveImageStream(request):
     # note forms
-    currentEpisodes = EPISODE_MODEL.objects.filter(endTime=None)
-    sources = SOURCE_MODEL.objects.all()
+    currentEpisodes = EPISODE_MODEL.get().objects.filter(endTime=None)
+    sources = SOURCE_MODEL.get().objects.all()
     for source in sources:
         form = NoteForm()
         form.index = 0
@@ -79,7 +79,7 @@ def stopPyraptordServiceIfRunning(pyraptord, svcName):
 # put a setting for the name of the function to call to generate extra text to insert in the form
 # and then add the name of the plrpExplorer.views.getFlightFromFeed (context function)  extraNoteFormDataFunction
 # feed has a source, look up active episode, (find episode with endtime of none) -- or use a known episode
-# activeEpisode = EPISODE_MODEL.objects.filter(endTime=none)
+# activeEpisode = EPISODE_MODEL.get().objects.filter(endTime=none)
 # can find the groupflight that points to that episode
 # and then find the flight in the group flight that has the same source.
 def getNoteExtras(episodes=None, source=None, request=None):
@@ -98,9 +98,9 @@ def callGetNoteExtras(episodes, source, request):
 def liveVideoFeed(request, feedName):
     feedData = []
     # get the active episodes
-    currentEpisodes = EPISODE_MODEL.objects.filter(endTime=None)
+    currentEpisodes = EPISODE_MODEL.get().objects.filter(endTime=None)
     if feedName.lower() != 'all':
-        videofeeds = FEED_MODEL.objects.filter(shortName=feedName).select_related('source')
+        videofeeds = FEED_MODEL.get().objects.filter(shortName=feedName).select_related('source')
         if videofeeds:
             form = NoteForm()
             form.index = 0
@@ -111,7 +111,7 @@ def liveVideoFeed(request, feedName):
                 form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source, request)
         feedData.append((videofeeds[0], form))
     else:
-        videofeeds = FEED_MODEL.objects.filter(active=True)
+        videofeeds = FEED_MODEL.get().objects.filter(active=True)
         index = 0
         for feed in videofeeds:
             form = NoteForm()
@@ -218,9 +218,9 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 source.shortName = cleanName
                 source.save()
             if episode.endTime:
-                segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime).order_by("startTime")
+                segments = SEGMENT_MODEL.get().objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime).order_by("startTime")
             else:
-                segments = SEGMENT_MODEL.objects.filter(source=source, startTime__gte=episode.startTime).order_by("startTime")
+                segments = SEGMENT_MODEL.get().objects.filter(source=source, startTime__gte=episode.startTime).order_by("startTime")
             if segments:
                 util.setSegmentEndTimes(segments, episode, source)  # this passes back segments for this source.
                 segmentsDict[source.shortName] = [seg.getDict() for seg in segments]
@@ -286,18 +286,18 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
             break
     assert segmentNumber is not None
     makedirsIfNeeded(recordedVideoDir)
-    videoSettingsModel = SETTINGS_MODEL(width=videoFeed.settings.width,
-                                        height=videoFeed.settings.height,
-                                        compressionRate=None,
-                                        playbackDataRate=None)
+    videoSettingsModel = SETTINGS_MODEL.get()(width=videoFeed.settings.width,
+                                              height=videoFeed.settings.height,
+                                              compressionRate=None,
+                                              playbackDataRate=None)
     videoSettingsModel.save()
-    videoSegment = SEGMENT_MODEL(directoryName="Segment",
-                                 segNumber=segmentNumber,
-                                 indexFileName="prog_index.m3u8",
-                                 startTime=startTime,
-                                 endTime=None,
-                                 settings=videoSettingsModel,
-                                 source=source)
+    videoSegment = SEGMENT_MODEL.get()(directoryName="Segment",
+                                       segNumber=segmentNumber,
+                                       indexFileName="prog_index.m3u8",
+                                       startTime=startTime,
+                                       endTime=None,
+                                       settings=videoSettingsModel,
+                                       source=source)
     videoSegment.save()
     if settings.PYRAPTORD_SERVICE is True:
         pyraptord = getZerorpcClient('pyraptord')
