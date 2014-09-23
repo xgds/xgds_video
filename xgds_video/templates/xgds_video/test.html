@@ -31,9 +31,11 @@
 
             for (var i=0; i<3; i++) {
                 jwplayer("container"+i).setup({
-	                file: "http://www.longtailvideo.com/jw/upload/bunny.mp4",
+	                file: "http://10.0.3.17/data/images/20140912A_KRex2_segmented/HZL/Segment000/prog_index.m3u8",
+	                //file: "http://10.0.3.17/data/20140715_STL1/Video/Recordings/Segment000/prog_index.m3u8",
 	                height: 270,
 	                width: 480,
+	                primary: "html5",
 	                autostart: true,
 	                controlbar: "bottom",
 	                stretching: "exactfit",
@@ -43,15 +45,17 @@
 	                },
 	                events: {}
                 });
-
-                 var playlist = [];
+                
+                /*
+                var playlist = [];
                 for (var p=0; p<2; p++) {
-                    var newItem = { file: "/data/20140715_HAZ1/Video/Recordings/Segment000/prog_index.m3u8",
+                    var newItem = { file: "http://10.0.3.17/data/images/20140912A_KRex2_segmented/HZL/Segment00"+p+"/prog_index.m3u8",
                                     title:  "item"
                                   };
                     playlist.push(newItem);
                 }
                 jwplayer("container"+i).load(playlist); 
+                */
             }
 
             </script>

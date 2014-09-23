@@ -12,4 +12,5 @@ urlpatterns = patterns(
     (r'recorded/$', views.displayRecordedVideo, {}, 'xgds_video_recorded'),  # active live recorded video
     (r'^recorded/(?P<flightName>\w+)/$', views.displayRecordedVideo, {}, 'flight_video_recorded'),  # recorded video for one flight
     (r'^liveImageStream/$', views.liveImageStream, {}, 'live_image_stream'),  # shows image stream from rover.
+    (r'^test/$', views.test, {}, 'test'),  # debug only
 )
