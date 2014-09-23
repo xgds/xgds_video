@@ -32,6 +32,12 @@ SEGMENT_MODEL = getModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = getModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
 
+def test(request):
+    return render_to_response("xgds_video/test.html",
+                              {},
+                              context_instance=RequestContext(request))
+
+
 def liveImageStream(request):
     # note forms
     currentEpisodes = EPISODE_MODEL.objects.filter(endTime=None)
