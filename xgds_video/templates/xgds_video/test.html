@@ -6,8 +6,6 @@
          <script type="text/javascript">
                 jwplayer.key="Wu88H+wZ8jZd7qICLr7IEKSmml1/EOMXWYcblA/CJVk=";
 		       var STATIC_URL='{{ STATIC_URL }}';
-		       var submitNoteUrl = '{% url record_simple %}';
-		       var isLive = false;
         </script>
           <script type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.js"></script>
           <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery/jquery.tagsinput.css"></link>
@@ -31,21 +29,10 @@
 
             for (var i=0; i<3; i++) {
                 jwplayer("container"+i).setup({
-	                file: "http://10.0.3.17/data/images/20140912A_KRex2_segmented/HZL/Segment000/prog_index.m3u8",
-	                //file: "http://10.0.3.17/data/20140715_STL1/Video/Recordings/Segment000/prog_index.m3u8",
+	                file: "http://10.0.3.17/data/30fps-video-segments/prog_index.m3u8",
 	                height: 270,
 	                width: 480,
-	                primary: "html5",
-	                autostart: true,
-	                controlbar: "bottom",
-	                stretching: "exactfit",
-	                listbar: {
-	                    position: 'right',
-	                    size: 110
-	                },
-	                events: {}
                 });
-                
                 /*
                 var playlist = [];
                 for (var p=0; p<2; p++) {

@@ -202,7 +202,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
             sources.append(entry.source)
     else:
         # you are doomed.
-        messages.add_message(request, messages.ERROR, 'No active recorded flights to watch')
+        messages.add_message(request, messages.ERROR, 'Either Episode is not set for Group Flight of flight or episode source group has no sources.')
         ctx = {'episode': None}
         return render_to_response('xgds_video/video_recorded_playbacks.html',
                                   ctx,
