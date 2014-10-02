@@ -8,6 +8,14 @@ jQuery(function($) {
     });
 });
 
+/***
+ * Helper that converts javascript datetime to UNIX POSIX time.
+ * http://unixtime.info/javascript.html
+ */
+function toUnixPosixTime(jsTime) {
+    return jsTime.getTime() / 1000;
+}
+
 
 /**
  * Helper for converting json datetime object to javascript date time
@@ -59,7 +67,6 @@ function convertJSONtoJavascriptDateTime(episode) {
 
 /**
  * Checks if json dict is empty
- * @returns {Boolean}
  */
 function isEmpty(ob) {
     for (var i in ob) {
@@ -267,7 +274,6 @@ function onSegmentComplete(thisObj) {
 
 /**
  * Returns true if all players are paused or idle.
- * @returns {Boolean}
  */
 function allPaused() {
     var allPaused = true;
@@ -286,7 +292,6 @@ function allPaused() {
 
 /**
  * Helper for returning current test site time from the jwplayer.
- * @returns {Date}
  */
 function getPlayerVideoTime(source) {
     var segments = xgds_video.displaySegments[source];

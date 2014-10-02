@@ -57,8 +57,7 @@ def setSegmentEndTimes(segments, episode, source):
     # if last segment has no endTime OR if flight is active
     if (segments[-1].endTime is None) or (episode.endTime is None):
         segment = segments[-1]  # last segment
-        suffix = getIndexFileSuffix(flightName,
-                                    segment.segNumber)
+        suffix = getIndexFileSuffix(flightName, segment.segNumber)
         path = settings.DATA_ROOT + suffix
         segmentDuration = getTotalDuration(path)
         segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
@@ -111,8 +110,8 @@ def padNum(num, size):
 
 
 def getIndexFileSuffix(flightName, sourceShortName, segmentNumber):
-#     path = flightName + '/' + sourceShortName + "/Video/Recordings/Segment" + \
-#         padNum(segmentNumber, 3) + '/prog_index.m3u8'
+    # path = flightName + '/' + sourceShortName + "/Video/Recordings/Segment" + \
+    # padNum(segmentNumber, 3) + '/prog_index.m3u8'
     path = "images/" + flightName + '/' + sourceShortName + "/Segment" + \
         padNum(segmentNumber, 3) + '/prog_index.m3u8'
     return path

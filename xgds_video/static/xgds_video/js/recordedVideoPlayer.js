@@ -275,3 +275,31 @@ function playPauseButtonCallBack() {
     }
     setSliderTime(currTime);
 }
+
+
+/**
+ * Event for 'Image Info" button click
+ */
+function imageInfoButtonEvent(sourceShortName) {
+    var jsTime = getPlayerVideoTime(sourceShortName);
+    var unixTime = toUnixPosixTime(jsTime);
+    // yes this is hacky but the image info page's url is using a
+    // dataproduct id and there's no straightforward way of getting these names
+    // others than hard coding it here.
+    var imageName = "";
+    if (sourceShortName == 'HZR') {
+        imageName = 'HazCamRight-' + unixTime;
+    } else if (sourceShortName == 'HZL') {
+        imageName = 'HazCamLeft-' + unixTime;
+    } else if (sourceShortName == 'NVS') {
+        imageName = 'NIRVSS-' + unixTime;
+    } else if (sourceShortName == 'GND') {
+        imageName = 'GroundCam-' + unixTime;
+    } else if (sourceShortName == 'TXC') {
+        imageName = 'TextureCam-' + unixTime;
+    } else {
+        console.log("ERROR: cannot define image name in 'imageInfoButtonEvent'. Invalid camera name given.");
+    }
+    var filePath = mvpAppUrl.replace('dummy',imageName);
+    window.open(filePath);
+}

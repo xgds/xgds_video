@@ -36,9 +36,9 @@ $.extend(xgds_video, {
         var counter5 = 0;
         var handler = function() {
             return function(zmq, topic, obj) {
-		// rearrange things
-		$container.masonry();
-//              upon receiving the image, display it.
+                // rearrange things
+                $container.masonry();
+                // upon receiving the image, display it.
                 var data = obj.data.split(':');
                 var imgType = data[0];
                 var imgContent = data[1];

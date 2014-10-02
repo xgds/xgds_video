@@ -39,7 +39,7 @@ class AbstractVideoSource(models.Model):
     def getDict(self):
         return {"name": self.name, "shortName": self.shortName,
                 "displayColor": self.displayColor, "uuid": self.uuid,
-                "vehicleName": self.vehicleName }
+                "vehicleName": self.vehicleName}
 
 
 class VideoSource(AbstractVideoSource):
@@ -122,9 +122,9 @@ class AbstractVideoSegment(models.Model):
     uuid = UuidField()
 
     def getDict(self):
-        return {"directoryName": self.directoryName, 
+        return {"directoryName": self.directoryName,
                 "segNumber": self.segNumber,
-                "indexFileName": self.indexFileName, 
+                "indexFileName": self.indexFileName,
                 "source": self.source.getDict(),
                 "startTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime)),
                 "endTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime)),

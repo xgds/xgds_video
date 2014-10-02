@@ -24,6 +24,7 @@ from xgds_video import settings
 from xgds_video import util
 from xgds_video.models import *  # pylint: disable=W0401
 from django.http import HttpResponse
+from django.core.urlresolvers import reverse
 
 SOURCE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -171,7 +172,7 @@ def getSourcesFromVehicle(vehicleName):
     pass
 
 
-def displayRecordedVideo(request, flightName=None, time=None):
+def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=None):
     """
     Returns first segment of all sources that are part of a given episode.
     Used for both playing back videos from active episode and also
@@ -181,7 +182,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
     episode = {}
     sources = []
     if time is not None:
-        #TODO: this is a duplicate path for playing back video at a certain time, it is legacy from PLRP 
+        # TODO: this is a duplicate path for playing back video at a certain time, it is legacy from PLRP
         # and was not fully working there; merge these 2 ways of playing back from a time.
         # probably not calling it noteTime is clearer
         # time is passed as string (yy-mm-dd hh:mm:ss)
@@ -197,9 +198,13 @@ def displayRecordedVideo(request, flightName=None, time=None):
         episode = GET_ACTIVE_EPISODE_METHOD()
     # get the sources associated with the episode
     if episode and episode.sourceGroup:
-        entries = episode.sourceGroup.sources
-        for entry in entries.all():
-            sources.append(entry.source)
+        if sourceShortName:
+            source = SOURCE_MODEL.get().objects.filter(shortName=sourceShortName)[0]
+            sources.append(source)
+        else:
+            entries = episode.sourceGroup.sources
+            for entry in entries.all():
+                sources.append(entry.source)
     else:
         # you are doomed.
         messages.add_message(request, messages.ERROR, 'Either Episode is not set for Group Flight of flight or episode source group has no sources.')
@@ -251,7 +256,7 @@ def displayRecordedVideo(request, flightName=None, time=None):
                 'episode': episode,
                 'episodeJson': episodeJson,
                 'noteTimeStamp': noteTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
-                'sources': sources, 
+                'sources': sources,
                 'flightName': flightName,
                 'sourceVehicle': json.dumps(sourceVehicle)
             }
@@ -266,6 +271,8 @@ def displayRecordedVideo(request, flightName=None, time=None):
         ctx = {'episode': None,
                'sources': None}
 
+    mvpAppUrl = reverse('mvpApp_images_show_image', kwargs={'imageId': 'dummy'})
+    ctx['mvpAppUrl'] = mvpAppUrl
     return render_to_response('xgds_video/video_recorded_playbacks.html',
                               ctx,
                               context_instance=RequestContext(request))
