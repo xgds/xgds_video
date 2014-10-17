@@ -42,7 +42,7 @@ $.extend(xgds_video, {
                 var data = obj.data.split(':');
                 var imgType = data[0];
                 var imgContent = data[1];
-                var timestamp = obj.timestamp;
+                var timestamp = obj.timestamp.replace('T', ' ').split('.')[0] + ' UTC';
                 haveNewData = true;
                 if (topic == topic1) {
                     $('#cameraImageHZL').attr('src', 'data:image/jpeg;base64,' + imgContent);
