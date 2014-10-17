@@ -54,10 +54,10 @@ def setSegmentEndTimes(segments, episode, source):
     flightName = episode.shortName + '_' + source.shortName
 #     segments = sourceSegmentsDict[source.shortName]
     segments = sorted(segments, key=lambda segment: segment.segNumber)
-    # if last segment has no endTime OR if flight is active
-    if (segments[-1].endTime is None) or (episode.endTime is None):
+    # if last segment has no endTime 
+    if (segments[-1].endTime is None) and (episode.endTime is None):
         segment = segments[-1]  # last segment
-        suffix = getIndexFileSuffix(flightName, segment.segNumber)
+        suffix = getIndexFileSuffix(flightName, source.shortName, segment.segNumber)
         path = settings.DATA_ROOT + suffix
         segmentDuration = getTotalDuration(path)
         segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
