@@ -42,7 +42,10 @@ $.extend(xgds_video, {
                 var data = obj.data.split(':');
                 var imgType = data[0];
                 var imgContent = data[1];
-                var timestamp = obj.timestamp.replace('T', ' ').split('.')[0] + ' UTC';
+                var datetime = new Date(obj.timestamp / 1000.0).toUTCString().split(" ");
+                var time = datetime[4];
+                var timezone = datetime[5];
+                var timestamp = time + ' ' + timezone;
                 haveNewData = true;
                 if (topic == topic1) {
                     $('#cameraImageHZL').attr('src', 'data:image/jpeg;base64,' + imgContent);
