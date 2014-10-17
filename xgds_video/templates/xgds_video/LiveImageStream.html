@@ -44,6 +44,7 @@
 			<div class="item" id="item{{ forloop.counter }}" style="background-color:#e5e5e5;">
 	            <div> Camera Name: <b>{{ source.name }}</b>
                           Frame: <span id="frame_{{ source.shortName }}"></span>
+                          Timestamp: <span id="timestamp_{{source.shortName }}"></span>
                 </div>
 				<section>
 	            {% include "xgds_video/video_notes.html" with data=source.form source=source STATIC_URL=STATIC_URL %}

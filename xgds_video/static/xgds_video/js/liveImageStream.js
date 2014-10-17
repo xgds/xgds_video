@@ -42,26 +42,32 @@ $.extend(xgds_video, {
                 var data = obj.data.split(':');
                 var imgType = data[0];
                 var imgContent = data[1];
+                var timestamp = obj.timestamp;
                 haveNewData = true;
                 if (topic == topic1) {
                     $('#cameraImageHZL').attr('src', 'data:image/jpeg;base64,' + imgContent);
                     $('#frame_HZL').html(xgds_video.getFrameCounter(counter1));
+                    $('#timestamp_HZL').html(timestamp);
                     counter1++;
                 } else if (topic == topic2) {
                     $('#cameraImageGND').attr('src', 'data:image/jpeg;base64,' + imgContent);
                     $('#frame_GND').html(xgds_video.getFrameCounter(counter2));
+                    $('#timestamp_GND').html(timestamp);
                     counter2++;
                 } else if (topic == topic3) {
                     $('#cameraImageNVS').attr('src', 'data:image/jpeg;base64,' + imgContent);
                     $('#frame_NVS').html(xgds_video.getFrameCounter(counter3));
+                    $('#timestamp_NVS').html(timestamp);
                     counter3++;
                 } else if (topic == topic4) {
                     $('#cameraImageHZR').attr('src', 'data:image/jpeg;base64,' + imgContent);
                     $('#frame_HZR').html(xgds_video.getFrameCounter(counter4));
+                    $('#timestamp_HZR').html(timestamp);
                     counter4++;
                 } else if (topic == topic5) {
                     $('#cameraImageTXC').attr('src', 'data:image/jpeg;base64,' + imgContent);
                     $('#frame_TXC').html(xgds_video.getFrameCounter(counter5));
+                    $('#timestamp_TXC').html(timestamp);
                     counter5++;
                 }
             };
