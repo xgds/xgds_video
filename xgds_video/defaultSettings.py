@@ -32,6 +32,10 @@ XGDS_VIDEO_TIME_ZONE = {'name': 'Pacific', 'code': 'America/Los_Angeles'}
 # set this in siteSettings.py. example: 'plrpExplorer.views.getNoteExtras'
 XGDS_VIDEO_NOTE_EXTRAS_FUNCTION = None
 
+# set this in siteSettings.py. example: 'mvpApp.views.extraVideoContext'
+XGDS_VIDEO_EXTRA_VIDEO_CONTEXT = 'xgds_video.views.extraVideoContext'
+
+
 # Delayed video information
 XGDS_VIDEO_DELAY_MINIMUM_SEC = 20.0
 XGDS_VIDEO_SEGMENT_SEC = 5.0

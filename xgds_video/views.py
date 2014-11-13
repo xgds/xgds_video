@@ -271,11 +271,23 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         ctx = {'episode': None,
                'sources': None}
 
-    mvpAppUrl = reverse('mvpApp_images_show_image', kwargs={'imageId': 'dummy'})
-    ctx['mvpAppUrl'] = mvpAppUrl
+    if settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT:
+        extraVideoContextFn = getClassByName(settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT)
+        extraVideoContextFn(ctx)
+
     return render_to_response('xgds_video/video_recorded_playbacks.html',
                               ctx,
                               context_instance=RequestContext(request))
+
+
+def extraVideoContext(ctx):
+    '''
+    Add extra things to your context outside of xgds_video, like this:
+#     mvpAppUrl = reverse('mvpApp_images_show_image', kwargs={'imageId': 'dummy'})
+#     ctx['mvpAppUrl'] = mvpAppUrl
+    and then make sure to update your settings.py to define where to find this method
+    '''
+    pass
 
 
 def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDuration):
