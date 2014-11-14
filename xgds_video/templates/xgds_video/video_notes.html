@@ -1,6 +1,5 @@
 {% with form=data %}
 {% if user.is_authenticated %}
-<!--
 <div style="clear:left;padding-top:2px; padding-bottom:2px;" >
 	<form id="create_note{{ form.index }}" class="create_note_form" action="" method="POST">
 		<input type="hidden" id="id_index" value="{{ form.index }}" >
@@ -23,6 +22,5 @@
         </div>
   </form>
 </div>
--->
 {% endif %}
 {% endwith %}

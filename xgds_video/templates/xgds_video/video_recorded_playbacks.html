@@ -18,7 +18,9 @@
     <script src="{{STATIC_URL}}external/js/jquery/jquery.tagsinput.js" type="text/javascript" ></script>
  	<script src="{{STATIC_URL}}external/js/jquery/jquery.form.min.js" type="text/javascript" ></script>
  	<script type="text/javascript" src="{{ STATIC_URL }}external/js/date.js"></script>
+ 	{% if INCLUDE_NOTE_INPUT %}
  	<script src="{{STATIC_URL}}xgds_video/js/video_notes_form.js" type="text/javascript" ></script>
+ 	{% endif %}
 {% endblock headExtras %}
 
  {% block cssExtras %}
@@ -29,11 +31,6 @@
     <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/font-awesome/css/font-awesome.css"></link>
 {% endblock cssExtras %}
 
-{% block jsSetVars %}
-  {{ block.super }}
-  mvpAppUrl = '{{ mvpAppUrl }}';
-{% endblock %}
-
 {% block scripts %}
 {% endblock %}
 
@@ -41,14 +38,14 @@
 {% load nav %}
 {% block siteSection %}Video{% endblock %}
     {% block nav %}
-    {% nav "video.view" %}
+    {% nav "xgds_video_flights" %}
     {{ block.super }}
     {% endblock %}
 
     {% block sitemenu-content-secondary %}
-   		{% include "xgds_video/image_stream_subnav.html" %}
+   		{% include "xgds_video/video_subnav.html" %}
     {% endblock %}
-
+ 
 {% block contents %}
 	{% if messages %}
 	    <ul class="messages" id="errorMessage" style="color:red;">
@@ -108,11 +105,12 @@
 	                     <a class="mybutton" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>
 	                 {% endif %}
 	                 {% endwith %}
-	                 <a class="mybutton toprow-right" id="image_info"  onclick="imageInfoButtonEvent('{{ source.shortName }}')"> Image Info </a>
 	            </div>
+	            {% if INCLUDE_NOTE_INPUT %}
 				<section>
              		{% include "xgds_video/video_notes.html" with data=source.form source=source.shortName STATIC_URL=STATIC_URL %}
              	</section>
+             	{% endif %}
              	<!--embed the video-->
              	<section>
               		<div id="player_container" class="float-left">
@@ -133,7 +131,9 @@
 {% endblock contents %}
 
 {% block jsInit %}
+{% if INCLUDE_NOTE_INPUT %}
 {% include "xgds_video/init_notes.js" %}
+{% endif %}
 
 var indexFileUrl = null;
 

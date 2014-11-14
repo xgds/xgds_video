@@ -14,7 +14,9 @@
  	var maxWidth = getMaxWidth({{videoFeedData|length}});
  	var isLive = true;
 </script>
+{% if INCLUDE_NOTE_INPUT %}
  <script src="{{STATIC_URL}}xgds_video/js/video_notes_form.js" type="text/javascript" ></script>
+ {% endif %}
  {% endblock headExtras %}
  
  {% block cssExtras %}
@@ -60,9 +62,11 @@ If plugin is missing, download <a href="https://support.google.com/chrome/answer
 	     	<a class="mybutton" href="{% url xgds_video_recorded %}?source={{ feed.source.shortName }}">Recorded</a>
 	     	</span>
 	     </div>
+	     {% if INCLUDE_NOTE_INPUT %}
 	     <section>
 	     {% include "xgds_video/video_notes.html" with data=form source=feed.source.shortName STATIC_URL=STATIC_URL %}
 	     </section>
+	     {% endif %}
 	     <script language="javascript" type="text/javascript">
 		  $("#item{{ forloop.counter }}").css({"width":size[0],"height":size[1]+100}); 
 		  QT_WriteOBJECT('http://spongebob.snrf.nasa.gov/static/{{ feed.name }}Stream.mov',  '100%', /* feedHeight */'100%', '', 'AUTOPLAY',

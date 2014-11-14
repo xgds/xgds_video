@@ -59,7 +59,8 @@ def liveImageStream(request):
 
     return render_to_response("xgds_video/LiveImageStream.html",
                               {'zmqURL': json.dumps(socketUrl),
-                               'sources': sources},
+                               'sources': sources,
+                               'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT},
                               context_instance=RequestContext(request))
 
 
@@ -127,7 +128,8 @@ def liveVideoFeed(request, feedName):
 
     return render_to_response("xgds_video/video_feeds.html",
                               {'videoFeedData': feedData,
-                               'currentEpisodes': currentEpisodes},
+                               'currentEpisodes': currentEpisodes,
+                               'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT},
                               context_instance=RequestContext(request))
 
 
@@ -258,13 +260,15 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
                 'noteTimeStamp': noteTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
                 'sources': sources,
                 'flightName': flightName,
-                'sourceVehicle': json.dumps(sourceVehicle)
+                'sourceVehicle': json.dumps(sourceVehicle),
+                'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT
             }
         else:
             messages.add_message(request, messages.ERROR, 'No Video Segments Exist')
             ctx = {
                 'episode': episode,
-                'episodeJson': episodeJson
+                'episodeJson': episodeJson,
+                'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT
             }
     else:
         messages.add_message(request, messages.ERROR, 'No Valid Video Sources Exist')
