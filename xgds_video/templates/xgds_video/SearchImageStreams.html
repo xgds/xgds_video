@@ -52,22 +52,14 @@
   {{ block.super }}
   	<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
 	<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.dataTables.js"></script>
+	<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
+	
  	<script src="{{STATIC_URL}}external/js/jquery/jquery.form.min.js" type="text/javascript" ></script>
   	<script type="text/javascript">
   	 var image_streams_table;
 
   	 $(document).ready( function () {
-  		image_streams_table = $('#image_streams_table').dataTable( {
-	        bAutoWidth: true,
-	        stateSave: true,
-			bPaginate: true,
-	        iDisplayLength: 20,
-	        bLengthChange: false,
-			bSort: true,
-	        bJQueryUI: false,
-	        sScrollY: '28em'
-		} );
-
+  		var image_streams_table = $('#image_streams_table').dataTable(defaultOptions);
 	    $(window).resize(function(){ image_streams_table.fnAdjustColumnSizing(); });
 	 }); 
 	</script>
