@@ -53,4 +53,4 @@ XGDS_VIDEO_GET_SOURCES_FROM_VEHICLE = 'xgds_video.views.getSourcesFromVehicle'
 RECORDED_VIDEO_URL_BASE = None
 
 # Path in data where you will find your video files
-XGDS_VIDEO_DATA_PATH = "images/"
+XGDS_VIDEO_INDEX_FILE_METHOD = 'xgds_video.util.getIndexFileSuffix'

@@ -377,7 +377,8 @@ def videoIndexFile(request, flightName=None, sourceShortName=None, segmentNumber
     modifies index file of recorded video to the correct host.
     """
     # Look up path to index file
-    suffix = util.getIndexFileSuffix(flightName, sourceShortName, segmentNumber)
+    GET_INDEX_FILE_METHOD = getClassByName(settings.XGDS_VIDEO_INDEX_FILE_METHOD)
+    suffix = GET_INDEX_FILE_METHOD(flightName, sourceShortName, segmentNumber)
     # use regex substitution to replace hostname, etc.
     newIndex = util.updateIndexFilePrefix(suffix, settings.SCRIPT_NAME)
     # return modified file in next line

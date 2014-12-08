@@ -4,6 +4,7 @@ import datetime
 import os
 
 from xgds_video import settings
+from geocamUtil.loader import getClassByName
 # from plrpExplorer.views import getVideoDelay # FIX-ME: should be abstracted better from video
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
@@ -57,7 +58,8 @@ def setSegmentEndTimes(segments, episode, source):
     # if last segment has no endTime 
     if (segments[-1].endTime is None) and (episode.endTime is None):
         segment = segments[-1]  # last segment
-        suffix = getIndexFileSuffix(flightName, source.shortName, segment.segNumber)
+        GET_INDEX_FILE_METHOD = getClassByName(settings.XGDS_VIDEO_INDEX_FILE_METHOD)
+        suffix = GET_INDEX_FILE_METHOD(flightName, source.shortName, segment.segNumber)
         path = settings.DATA_ROOT + suffix
         segmentDuration = getTotalDuration(path)
         segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
@@ -102,19 +104,8 @@ def findEndMarker(item):
         return True
 
 
-def padNum(num, size):
-    s = str(num)
-    while len(s) < size:
-        s = '0' + s
-    return s
-
-
 def getIndexFileSuffix(flightName, sourceShortName, segmentNumber):
-    # path = flightName + '/' + sourceShortName + "/Video/Recordings/Segment" + \
-    # padNum(segmentNumber, 3) + '/prog_index.m3u8'
-    path = settings.XGDS_VIDEO_DATA_PATH + flightName + '/' + sourceShortName + "/Segment" + \
-        padNum(segmentNumber, 3) + '/prog_index.m3u8'
-    return path
+    return 'images/%s/%s/Segment%03d/prog_index.m3u8' % (flightName, sourceShortName, int(segmentNumber))
 
 
 def updateIndexFilePrefix(indexFileSuffix, subst):
