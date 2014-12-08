@@ -4,7 +4,7 @@
         "model": "xgds_video.videosource",
         "fields": {
             "shortName": "RD1",
-            "displayColor": null,
+            "displayColor": "#648f73",
             "name": "RD1",
             "uuid": "6303a5b6-a86e-404b-ba82-62edab541b6a"
         }
@@ -44,7 +44,7 @@
         "model": "xgds_video.videosource",
         "fields": {
             "shortName": "OUT",
-            "displayColor": "#7B3221",
+            "displayColor": "#8f646a",
             "name": "Outland",
             "uuid": "a965b2b3-c5fc-4ac5-a0c3-48dc503e4edb"
         }
@@ -54,7 +54,7 @@
         "model": "xgds_video.videosource",
         "fields": {
             "shortName": "SEA",
-            "displayColor": null,
+            "displayColor": "#ffcdb2",
             "name": "Seamor",
             "uuid": "896b26a1-7c14-49d5-aa69-767bb9feb4ad"
         }

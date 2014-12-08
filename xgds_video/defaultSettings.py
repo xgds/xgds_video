@@ -51,3 +51,6 @@ XGDS_VIDEO_GET_SOURCES_FROM_VEHICLE = 'xgds_video.views.getSourcesFromVehicle'
 
 # set this in siteSettings.py example: DATA_URL
 RECORDED_VIDEO_URL_BASE = None
+
+# Path in data where you will find your video files
+XGDS_VIDEO_DATA_PATH = "images/"
