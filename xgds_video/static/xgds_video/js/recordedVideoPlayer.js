@@ -126,18 +126,19 @@ function setupJWplayer() {
             flightName = xgds_video.episode + '_' + xgds_video.sourceVehicle[sourceshortName]; //TODO: TEST THIS!
         }
         var videoPaths = getFilePaths(flightName, sourceShortName, segments);
+	var videoHeight = Math.round(maxWidth * (9/16));
         jwplayer(sourceShortName).setup({
             file: videoPaths[0],
             autostart: false,
             width: maxWidth,
-            height: maxWidth * (9 / 16),
-            skin: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml',
+            height: videoHeight,
+            //skin: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml',
             mute: true,
             analytics: {
                 enabled: false,
                 cookies: false
             },
-            controls: true, //for debugging
+            //controls: true, //for debugging
             events: {
                 onReady: function() {
                     //if there is a seektime in the url, start videos at that time.
