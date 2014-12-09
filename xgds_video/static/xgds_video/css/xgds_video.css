@@ -203,3 +203,11 @@ div.ui-slider-range.ui-widget-header {
     float: right;
     background-color: rgba(184,184,184,0.5);
 }
+
+#page-footer {
+	position: relative;
+}
+
+#page-content {
+	height: 1100px;
+}
