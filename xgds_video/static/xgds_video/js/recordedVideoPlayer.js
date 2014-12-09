@@ -210,7 +210,6 @@ function setupJWplayer() {
                             var updateTime = getPlayerVideoTime(this.id);
                             awakenIdlePlayers(updateTime, this.id);
                             setSliderTime(updateTime);
-                            updateToolTip(false, updateTime);
                         }
                     }
                     //if at the end of the segment, pause.

@@ -56,43 +56,37 @@
 	{% endif %}
 
     {% if segmentsJson %}
-    	<table>
-   			<tr>
-   				<td> <b> <label for="sliderTimeLabel">Local Time: </label></b> </td>
-   				<td> <input type="text" id="sliderTimeLabel" readonly> </td>
-   			</tr>
-
-		   	{% if episode %}
+    	<div id="topStuff">
+	    	<div id="infoTable">
+	    	<table>
+	    		{% if episode %}
+		   			<tr>
+		   				<td> <b> Episode (Flight) Name: </b> </td>
+		   				<td> {{ episode.shortName }} </td>
+		   			</tr>
+	   			{% endif %}
 	   			<tr>
-	   				<td> <b> Episode (Flight) Name: </b> </td>
-	   				<td> {{ episode.shortName }} </td>
+	   				<td>Current Time: </td>
+	   				<td> <label id="sliderTimeLabel"></label></td>
 	   			</tr>
-   			{% endif %}
-   		</table>
+	   		</table>
+	   		</div>
+	   		<div id="seekTimeBox">
+				<label for="seekTime">Jump to:</label>
+	   			<input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
+	   			<button type="submit" class="mybutton" id="seekButton" onclick=seekCallBack()> Go </button>
+	   		</div>
+   		</div>
 
  		<fieldset id="videoFieldset">
-	 	  <div id="masterSlider" class="masterSlider"></div>
-          <div> 
-          	<a class="btn btn-small btn-info" href="#" onclick=playPauseButtonCallBack()>
-              <i id="playbutton" class="fa fa-pause fa-2x"></i>
-              </a>
-          </div>
-  		<div id="legend"></div>
+		 	  <div id="masterSlider" class="masterSlider"></div>
+	          <div > 
+	          	<a class="btn btn-small btn-info" href="#" onclick=playPauseButtonCallBack()>
+	              <i id="playbutton" class="fa fa-pause fa-2x"></i>
+	              </a>
+	          </div>
+  		  <div id="legend"></div>
  		</fieldset>
-
-   		<table>
-   			<tr id="seekTimeBox">
-   				<td>
-   					<label for="seekTime">Jump to:</label>
-   					<input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
-   				</td>
-   				<td>
-   					<button type="submit" class="mybutton" id="seekButton" onclick=seekCallBack()> Go </button>
-   				</td>
-   			</tr>
-   		</table>
-
-    	<br>
 
         <div id="container" class="js-masonry" data-masonry-options='{"itemSelector": ".item", "gutter":5, "isInitLayout":false}'>
         {% for source in sources %}

@@ -32,7 +32,7 @@ function createSliderLegend() {
         //handle empty space in front of first segment
         var segStartTimeInSeconds = Math.round(segments[0].startTime / 1000);
         var emptySegmentDuration = segStartTimeInSeconds - startTime;
-        var fullWidth = $("#videoFieldset").width(); //xgds_video.masterSlider.width()
+        var fullWidth = $("#masterSlider").width(); //xgds_video.masterSlider.width()
 //        var emptySegmentWidth = xgds_video.masterSlider.width() * (emptySegmentDuration / totalDuration);
         var emptySegmentWidth = fullWidth * (emptySegmentDuration / totalDuration);
         var sliderHTML = '<img class="legend-segment ' + source.shortName + '-legend' +
@@ -60,7 +60,7 @@ function createSliderLegend() {
                     '" height="4px" ' +
                     'style="background-color:' +
                     color + ';">');
-            if (segments[id + 1]) { //if there is a next segment
+            if ((id + 1) < segments.length) { //if there is a next segment
                 var nextSegment = segments[id + 1];
                 var gapTime = nextSegment.startTime - segment.endTime;
                 emptySegmentDuration = Math.round(gapTime / 1000);
@@ -91,7 +91,6 @@ function uponSliderMoveCallBack(event, ui) {
     xgds_video.movingSlider = true;
     var sliderTime = new Date(ui.value * 1000);
     setSliderTimeLabel(sliderTime);
-    updateToolTip(ui, sliderTime);
 }
 
 
@@ -146,7 +145,6 @@ function setupSlider() {
         });
         var sliderTime = new Date($('#masterSlider').slider('value') * 1000);
         setSliderTimeLabel(sliderTime);
-        updateToolTip(false, sliderTime);
         createSliderLegend();
     } else {
         alert('The end time of video segment not available.' +

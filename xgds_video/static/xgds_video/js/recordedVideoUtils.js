@@ -122,19 +122,9 @@ function getSliderTime() {
 }
 
 
-/**
- * Slider knob shows the time (at which slider knob is located) as a tool tip.
- */
-function updateToolTip(ui, sliderTime) {
-    var target = ui.handle || $('.ui-slider-handle');
-    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + sliderTime.toTimeString().replace('GMT-0700', '') + '</div><div class="tooltip-arrow"></div></div>';
-    $(target).html(tooltip);
-}
-
-
 function setSliderTimeLabel(datetime) {
     var time = datetime.toTimeString().replace('GMT-0700', '');
-    $('#sliderTimeLabel').val(time);
+    $('#sliderTimeLabel').text(time);
 }
 
 
@@ -318,9 +308,6 @@ function seekAllPlayersToTime(datetime) {
     if (datetime != null) {
         setSliderTime(datetime);
     }
-    var target = $('.ui-slider-handle') || ui.handle;
-    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + datetime.toTimeString().replace('GMT-0700', '') + '</div><div class="tooltip-arrow"></div></div>';
-    $(target).html(tooltip);
 }
 
 

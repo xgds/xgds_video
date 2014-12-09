@@ -4,6 +4,17 @@ body {
 	color: black;
 }
 
+table td {
+	font-size: 1rem;
+	background: white;
+	text-align: left;
+}
+
+table tr td:first-child {
+	font-weight: 600;
+	font-size: 1rem;
+}
+
 .tags ul{
     list-style: none;
     padding: 0px;
@@ -59,19 +70,22 @@ div.tagsinput[style]{
 }
 
 #sliderTimeLabel {
-    padding:5px;
-    margin-top:5px;
-    margin-left:10px;
     color:#f6931f; 
     font-weight:bold;
 }
 
+#vcrControls {
+	display: table-cell;
+}
+
 #masterSlider {
-    width:70%;
+//	display: table-cell;
+	float: left;
+    width: 95%;
+    height: 8px;
     margin-top:12px;
     margin-bottom:5px;
     margin-right:15px;
-    float:left;
 }
 
 .masterSlider .ui-slider {
@@ -102,8 +116,26 @@ div.ui-slider-range.ui-widget-header {
 	height: 4px;
 }
 
+#topStuff {
+	display: table;
+	width: 100%;
+}
+
+#infoTable {
+	display: table-cell;
+}
+
 #seekTimeBox {
-    clear:both;
+	float: right;
+	padding-right: 20px;
+	display: table-cell;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+#seekTime {
+	margin-left: 5px;
+	margin-right: 5px;
 }
 
 .float-left {
