@@ -3,6 +3,7 @@
 body {
 	color: black;
 }
+
 .tags ul{
     list-style: none;
     padding: 0px;
@@ -94,6 +95,11 @@ div.ui-slider-range.ui-widget-header {
     position: absolute;
     clear:both;
     font-size:10px;
+}
+
+.legend-segment {
+	max-height: 4px;
+	height: 4px;
 }
 
 #seekTimeBox {

@@ -174,6 +174,15 @@ def getSourcesFromVehicle(vehicleName):
     pass
 
 
+def recordedVideoError(request, message):
+    # you are doomed.
+    messages.add_message(request, messages.ERROR, message)
+    ctx = {'episode': None}
+    return render_to_response('xgds_video/video_recorded_playbacks.html',
+                              ctx,
+                              context_instance=RequestContext(request))
+
+
 def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=None):
     """
     Returns first segment of all sources that are part of a given episode.
@@ -182,7 +191,6 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     """
     noteTime = ""
     episode = {}
-    sources = []
     if time is not None:
         # TODO: this is a duplicate path for playing back video at a certain time, it is legacy from PLRP
         # and was not fully working there; merge these 2 ways of playing back from a time.
@@ -198,82 +206,51 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     if not episode:
         GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
         episode = GET_ACTIVE_EPISODE_METHOD()
-    # get the sources associated with the episode
-    if episode and episode.sourceGroup:
-        if sourceShortName:
-            source = SOURCE_MODEL.get().objects.filter(shortName=sourceShortName)[0]
-            sources.append(source)
-        else:
-            entries = episode.sourceGroup.sources
-            for entry in entries.all():
-                sources.append(entry.source)
-    else:
-        # you are doomed.
-        messages.add_message(request, messages.ERROR, 'Either Episode is not set for Group Flight of flight or episode source group has no sources.')
-        ctx = {'episode': None}
-        return render_to_response('xgds_video/video_recorded_playbacks.html',
-                                  ctx,
-                                  context_instance=RequestContext(request))
-    if sources and (len(sources) != 0):
-        segmentsDict = {}  # dictionary of segments (in JSON) within given episode
-        index = 0
-        sourcesWithNoSegments = []
-        for source in sources:
-            # trim the white spaces in source shortName
-            cleanName = source.shortName.rstrip()
-            if cleanName != source.shortName:
-                source.shortName = cleanName
-                source.save()
-            if episode.endTime:
-                segments = SEGMENT_MODEL.get().objects.filter(source=source, startTime__gte=episode.startTime, endTime__lte=episode.endTime).order_by("startTime")
-            else:
-                segments = SEGMENT_MODEL.get().objects.filter(source=source, startTime__gte=episode.startTime).order_by("startTime")
-            if segments:
-                util.setSegmentEndTimes(segments, episode, source)  # this passes back segments for this source.
-                segmentsDict[source.shortName] = [seg.getDict() for seg in segments]
-                form = NoteForm()
-                form.index = index
-                form.fields["index"] = index
-                form.source = source
-                form.fields["source"] = source
-                form.fields["extras"].initial = callGetNoteExtras([episode], form.source, request)
-                source.form = form
-                index = index + 1
-            else:  # if there are no segments, delete the source from 'sources' list.
-                sourcesWithNoSegments.append(source)
-        # remove from sources list.
-        for source in sourcesWithNoSegments:
-            sources.remove(source)
-        segmentsJson = {}
-        episodeJson = {}
-        if segmentsDict:
-            segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4)
-            episodeJson = json.dumps(episode.getDict())
-            sourceVehicle = {}
-            for source in sources:
-                sourceVehicle[source.shortName] = source.vehicleName
-            ctx = {
-                'segmentsJson': segmentsJson,
-                'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
-                'episode': episode,
-                'episodeJson': episodeJson,
-                'noteTimeStamp': noteTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
-                'sources': sources,
-                'flightName': flightName,
-                'sourceVehicle': json.dumps(sourceVehicle),
-                'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT
-            }
-        else:
-            messages.add_message(request, messages.ERROR, 'No Video Segments Exist')
-            ctx = {
-                'episode': episode,
-                'episodeJson': episodeJson,
-                'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT
-            }
-    else:
-        messages.add_message(request, messages.ERROR, 'No Valid Video Sources Exist')
-        ctx = {'episode': None,
-               'sources': None}
+    if not episode:
+        return recordedVideoError(request, 'Episode not found ' + flightName)
+
+    # get the segments
+    segments = episode.videosegment_set.all()
+    if not segments:
+        return recordedVideoError(request, 'Video segments not found for episode ' + flightName)
+    distinctSources = segments.values('source').distinct()
+
+    sources = []
+    segmentsDict = {}  # dictionary of segments (in JSON) within given episode
+    sourceVehicle = {}
+    index = 0
+    for sourceDict in distinctSources:
+        source = SOURCE_MODEL.get().objects.get(id=sourceDict['source'])
+        sources.append(source)
+        sourceVehicle[source.shortName] = source.vehicleName
+        sourceSegments = segments.filter(source=source)
+        util.setSegmentEndTimes(segments.all(), episode, source)  # this passes back segments for this source.
+        segmentsDict[source.shortName] = [seg.getDict() for seg in sourceSegments]
+        form = NoteForm()
+        form.index = index
+        form.fields["index"] = index
+        form.source = source
+        form.fields["source"] = source
+        form.fields["extras"].initial = callGetNoteExtras([episode], form.source, request)
+        source.form = form
+        index = index + 1
+
+    if not segmentsDict:
+        return recordedVideoError(request, "No video segments found " + flightName)
+    segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4)
+    episodeJson = json.dumps(episode.getDict())
+
+    ctx = {
+        'segmentsJson': segmentsJson,
+        'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
+        'episode': episode,
+        'episodeJson': episodeJson,
+        'noteTimeStamp': noteTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
+        'sources': sources,
+        'flightName': flightName,
+        'sourceVehicle': json.dumps(sourceVehicle),
+        'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT
+    }
 
     if settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT:
         extraVideoContextFn = getClassByName(settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT)

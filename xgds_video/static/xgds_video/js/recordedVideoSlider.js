@@ -32,11 +32,14 @@ function createSliderLegend() {
         //handle empty space in front of first segment
         var segStartTimeInSeconds = Math.round(segments[0].startTime / 1000);
         var emptySegmentDuration = segStartTimeInSeconds - startTime;
-        var emptySegmentWidth = xgds_video.masterSlider.width() * (emptySegmentDuration / totalDuration);
-        xgds_video.masterSlider.before('<img class="' + source.shortName + '-legend' +
-                '" alt="emptySegment"' +
-                '" width="' + emptySegmentWidth +
-        '" height="5px" style="opacity:0.0;">');
+        var fullWidth = $("#videoFieldset").width(); //xgds_video.masterSlider.width()
+//        var emptySegmentWidth = xgds_video.masterSlider.width() * (emptySegmentDuration / totalDuration);
+        var emptySegmentWidth = fullWidth * (emptySegmentDuration / totalDuration);
+        var sliderHTML = '<img class="legend-segment ' + source.shortName + '-legend' +
+                         '" alt="emptySegment"' +
+                         '" width="' + emptySegmentWidth +
+                         '" height="4px" style="opacity:0;">';
+//        xgds_video.masterSlider.before(sliderHTML);
         //for each video segment
         $.each(segments, function(id) {
             var segment = segments[id];
@@ -44,20 +47,24 @@ function createSliderLegend() {
             var segDuration = 0;
             var width = 0;
             //get the duration of the video segment
-            segDuration = Math.round((segment.endTime - segment.startTime) / 1000); //in seconds
-            width = xgds_video.masterSlider.width() * (segDuration / totalDuration);
+            segDuration = segment.endTime - segment.startTime;
+            segDuration = Math.round(segDuration / 1000); //in seconds
+            width = fullWidth * (segDuration / totalDuration);
+            width = Math.round(width);
             //draw the visualization
-            xgds_video.masterSlider.before('<img class="' +
+            xgds_video.masterSlider.before('<img class="legend-segment ' +
                     source.shortName + '-legend' + '" id=' +
                     'Segment' + id + ' width="' + width +
+                    'px" src="../images/ipx.gif"' +
                     '"alt="Segment' + id + '"' +
-                    '" height="5px" ' +
+                    '" height="4px" ' +
                     'style="background-color:' +
                     color + ';">');
             if (segments[id + 1]) { //if there is a next segment
                 var nextSegment = segments[id + 1];
-                emptySegmentDuration = Math.round((nextSegment.startTime - segment.endTime) / 1000);
-                emptySegmentWidth = xgds_video.masterSlider.width() * (emptySegmentDuration / totalDuration);
+                var gapTime = nextSegment.startTime - segment.endTime;
+                emptySegmentDuration = Math.round(gapTime / 1000);
+                emptySegmentWidth = Math.round(fullWidth * (emptySegmentDuration / totalDuration));
                 xgds_video.masterSlider.before('<img class="' + source.shortName + '-legend' +
                         '" alt="emptySegment"' +
                         '" width="' + emptySegmentWidth +
@@ -65,7 +72,7 @@ function createSliderLegend() {
             }
         });
         //wrap segments of each source in a div
-        $('.' + source.shortName + '-legend').wrapAll('<div class="divider";"></div>');
+        $('.' + source.shortName + '-legend').wrapAll('<div class="divider"></div>');
     }
 }
 
