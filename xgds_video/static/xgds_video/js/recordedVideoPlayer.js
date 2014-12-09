@@ -111,7 +111,9 @@ function soundController() {
 function setupJWplayer() {
     var numSources = Object.keys(xgds_video.displaySegments).length;
     var maxWidth = getMaxWidth(numSources);
-    for (var sourceShortName in xgds_video.displaySegments) {
+    var sourceShortName;
+    for (var i = 0; i < numSources; i = i + 1) {
+	sourceShortName = Object.keys(xgds_video.displaySegments)[i];
         // list of video segments with same source & episode (if given)
         var segments = xgds_video.displaySegments[sourceShortName];
         //if there are no segments to show, dont build a player.

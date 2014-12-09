@@ -32,10 +32,8 @@ def pythonDatetimeToJSON(pyDateTime):
 
 
 def processLine(videoDirUrl, line):
-    # line = 'prog_index0.ts\n'
-    # videoDirUrl = '/data/20140327A_OUT/Video/Recordings/Segment000'
     line = line.rstrip("\n")
-    if line.startswith("fileSequence"):
+    if line.endswith(".ts"):
         return videoDirUrl + "/" + line
     else:
         return line
@@ -117,9 +115,7 @@ def updateIndexFilePrefix(indexFileSuffix, subst):
     # foundEndMarker = False
     # open the file
     indexFilePath = settings.DATA_ROOT + indexFileSuffix
-#     print "indexFilePath: %s" % indexFilePath
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
-#     print "segmentDirectoryUrl: %s" % segmentDirectoryUrl
     try:
         baseFile = open(indexFilePath)
         videoDelayInSecs = VIDEO_DELAY_SECONDS  # getVideoDelay() - settings.XGDS_VIDEO_DELAY_MINIMUM_SEC
