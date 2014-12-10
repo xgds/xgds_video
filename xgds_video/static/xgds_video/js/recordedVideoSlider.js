@@ -37,6 +37,7 @@ function createSliderLegend() {
         var emptySegmentWidth = fullWidth * (emptySegmentDuration / totalDuration);
         var sliderHTML = '<img class="legend-segment ' + source.shortName + '-legend' +
                          '" alt="emptySegment"' +
+                         ' src="' + STATIC_URL + 'xgds_video/images/ipx.gif"' +
                          '" width="' + emptySegmentWidth +
                          '" height="4px" style="opacity:0;">';
 //        xgds_video.masterSlider.before(sliderHTML);
@@ -54,8 +55,8 @@ function createSliderLegend() {
             //draw the visualization
             xgds_video.masterSlider.before('<img class="legend-segment ' +
                     source.shortName + '-legend' + '" id=' +
-                    'Segment' + id + ' width="' + width +
-                    'px" src="../images/ipx.gif"' +
+                    'Segment' + id + ' width="' + width + 'px"' +
+                    ' src="' + STATIC_URL + 'xgds_video/images/ipx.gif"' +
                     '"alt="Segment' + id + '"' +
                     '" height="4px" ' +
                     'style="background-color:' +
@@ -65,14 +66,15 @@ function createSliderLegend() {
                 var gapTime = nextSegment.startTime - segment.endTime;
                 emptySegmentDuration = Math.round(gapTime / 1000);
                 emptySegmentWidth = Math.round(fullWidth * (emptySegmentDuration / totalDuration));
-                xgds_video.masterSlider.before('<img class="' + source.shortName + '-legend' +
+                xgds_video.masterSlider.before('<img class="legend-segment ' + source.shortName + '-legend' +
                         '" alt="emptySegment"' +
+                        ' src="' + STATIC_URL + 'xgds_video/images/ipx.gif"' +
                         '" width="' + emptySegmentWidth +
                 '" height="5px" style="opacity:0.0;">');
             }
         });
         //wrap segments of each source in a div
-        $('.' + source.shortName + '-legend').wrapAll('<div class="divider"></div>');
+        $('.' + source.shortName + '-legend').wrapAll('<div class="divider">' + source.shortName + '&nbsp;&nbsp;</div>');
     }
 }
 

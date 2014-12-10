@@ -83,7 +83,7 @@ div.tagsinput[style]{
 }
 
 #masterSlider {
-//	display: table-cell;
+	margin-left: 35px;
 	float: left;
     width: 95%;
     height: 8px;
@@ -182,6 +182,7 @@ div.ui-slider-range.ui-widget-header {
 .divider {
     clear: both;
     padding: 0px;
+    margin-bottom: -10px;
 }
 
 .divider hr {
