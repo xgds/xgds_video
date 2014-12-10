@@ -213,12 +213,16 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     segments = episode.videosegment_set.all()
     if not segments:
         return recordedVideoError(request, 'Video segments not found for episode ' + flightName)
-    distinctSources = segments.values('source').distinct()
+
+    if sourceShortName:
+        source = SOURCE_MODEL.get().objects.get(name=sourceShortName)
+        segments = segments.filter(source=source)
 
     sources = []
     segmentsDict = {}  # dictionary of segments (in JSON) within given episode
     sourceVehicle = {}
     index = 0
+    distinctSources = segments.values('source').distinct()
     for sourceDict in distinctSources:
         source = SOURCE_MODEL.get().objects.get(id=sourceDict['source'])
         sources.append(source)
@@ -356,6 +360,7 @@ def videoIndexFile(request, flightName=None, sourceShortName=None, segmentNumber
     # Look up path to index file
     GET_INDEX_FILE_METHOD = getClassByName(settings.XGDS_VIDEO_INDEX_FILE_METHOD)
     suffix = GET_INDEX_FILE_METHOD(flightName, sourceShortName, segmentNumber)
+
     # use regex substitution to replace hostname, etc.
     newIndex = util.updateIndexFilePrefix(suffix, settings.SCRIPT_NAME)
     # return modified file in next line

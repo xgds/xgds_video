@@ -113,7 +113,7 @@ function setupJWplayer() {
     var maxWidth = getMaxWidth(numSources);
     var sourceShortName;
     for (var i = 0; i < numSources; i = i + 1) {
-	sourceShortName = Object.keys(xgds_video.displaySegments)[i];
+        sourceShortName = Object.keys(xgds_video.displaySegments)[i];
         // list of video segments with same source & episode (if given)
         var segments = xgds_video.displaySegments[sourceShortName];
         //if there are no segments to show, dont build a player.
@@ -126,7 +126,7 @@ function setupJWplayer() {
             flightName = xgds_video.episode + '_' + xgds_video.sourceVehicle[sourceshortName]; //TODO: TEST THIS!
         }
         var videoPaths = getFilePaths(flightName, sourceShortName, segments);
-	var videoHeight = Math.round(maxWidth * (9/16));
+        var videoHeight = Math.round(maxWidth * (9/16));
         jwplayer(sourceShortName).setup({
             file: videoPaths[0],
             autostart: false,
