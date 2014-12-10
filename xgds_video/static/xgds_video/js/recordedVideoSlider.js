@@ -32,15 +32,14 @@ function createSliderLegend() {
         //handle empty space in front of first segment
         var segStartTimeInSeconds = Math.round(segments[0].startTime / 1000);
         var emptySegmentDuration = segStartTimeInSeconds - startTime;
-        var fullWidth = $("#masterSlider").width(); //xgds_video.masterSlider.width()
-//        var emptySegmentWidth = xgds_video.masterSlider.width() * (emptySegmentDuration / totalDuration);
+        var fullWidth = $("#masterSlider").width(); 
         var emptySegmentWidth = fullWidth * (emptySegmentDuration / totalDuration);
         var sliderHTML = '<img class="legend-segment ' + source.shortName + '-legend' +
                          '" alt="emptySegment"' +
                          ' src="' + STATIC_URL + 'xgds_video/images/ipx.gif"' +
                          '" width="' + emptySegmentWidth +
                          '" height="4px" style="opacity:0;">';
-//        xgds_video.masterSlider.before(sliderHTML);
+        xgds_video.masterSlider.before(sliderHTML);
         //for each video segment
         $.each(segments, function(id) {
             var segment = segments[id];
