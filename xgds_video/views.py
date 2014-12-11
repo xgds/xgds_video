@@ -214,9 +214,13 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     if not segments:
         return recordedVideoError(request, 'Video segments not found for episode ' + flightName)
 
+    sourceShortName = str(sourceShortName)
     if sourceShortName:
-        source = SOURCE_MODEL.get().objects.get(name=sourceShortName)
-        segments = segments.filter(source=source)
+        try:
+            source = SOURCE_MODEL.get().objects.get(shortName=sourceShortName)
+            segments = segments.filter(source=source)
+        except:
+            pass
 
     sources = []
     segmentsDict = {}  # dictionary of segments (in JSON) within given episode
