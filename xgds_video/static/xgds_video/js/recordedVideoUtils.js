@@ -179,19 +179,31 @@ function getPlaylistIdxAndOffset(currTime, sourceName) {
  * html 5 and flash.
  * Example: setPlaylistAndSeek('ROV', 1, 120)
  */
-function setPlaylistAndSeek(playerName, playlist, offset) {
+function setPlaylistAndSeek(playerName, index, offset) {
     var p = jwplayer(playerName);
-    var actionObj = new Object();
-    actionObj.action = p.seek;
-    actionObj.arg = offset;
+    var myplaylist = p.getPlaylist();
     // Calling immediately seems to work better for HTML5,
     // Queuing in list for handling in onPlay(), below, works better for Flash. Yuck!
     if (p.getRenderingMode() == 'html5') {
-        p.playlistItem(playlist).seek(offset);
+        p.playlistItem(index).seek(offset);
+    console.log("SET SEEK playlist index " + p.getPlaylistIndex());
     }
     else {
+        var actionObj = new Object();
+        actionObj.action = p.seek;
+    	actionObj.arg = offset;
         pendingPlayerActions[playerName] = [actionObj];
-        p.playlistItem(playlist);
+/*
+        if (xgds_video.playFlag) {
+if ((p.getState() == 'PLAYING') ||
+                (p.getState() == 'IDLE')) {
+	    console.log("pausing from setplaylist and seek");
+	    p.pause(true);
+}
+        }
+*/
+        p.playlistItem(index);
+    console.log("SET SEEK " + playerName + " playlist index " + p.getPlaylistIndex());
     }
 }
 
@@ -208,6 +220,7 @@ function jumpToPosition(currTime, sourceName) {
         setPlaylistAndSeek(sourceName, seekValues.index, seekValues.offset);
         if (xgds_video.playFlag) {
             player.play(true);
+    console.log("jump to position " + sourceName + " playlist index " + player.getPlaylistIndex());
         } else {
             player.pause(true);
         }
@@ -312,23 +325,19 @@ function seekAllPlayersToTime(datetime) {
 
 
 function awakenIdlePlayers(datetime, exceptThisPlayer) {
-    for (var key in xgds_video.displaySegments) {
-        var segments = xgds_video.displaySegments[key];
-        var sourceName = segments[0].source.shortName;
-        var player = jwplayer(sourceName);
-        var state = player.getState();
+    if (_.isUndefined(datetime)) {
+        return;
+    }
+    for (var sourceName in xgds_video.displaySegments) {
         if (sourceName != exceptThisPlayer) {
+	    var state = jwplayer(sourceName).getState();
             if ((state == 'IDLE') || (state == 'PAUSED')) {
-                var canJump = true;
+                var segments = xgds_video.displaySegments[sourceName];
                 for (var s in segments) {
                     var segment = segments[s];
-                    if (datetime.getTime() == segment.endTime.getTime()) {
-                        canJump = false;
-                        break;
+                    if ((datetime >= segment.startTime) && (datetime <= segment.endTime)) {
+			jumpToPosition(dateTime, sourceName);
                     }
-                }
-                if (canJump) {
-                    jumpToPosition(datetime, sourceName);
                 }
             }
         }

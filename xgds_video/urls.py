@@ -6,12 +6,12 @@ from xgds_video import views
 
 urlpatterns = patterns(
     'xgds_video.views',
-    (r'liveVideoFeed/(?P<feedName>\w+)$', views.liveVideoFeed, {}, 'xgds_video_live'),
-    (r'videoIndexFile/(?P<flightName>[^/]+)/(?P<sourceShortName>[^/]+)/(?P<segmentNumber>[^/]+)/prog_index.m3u8', views.videoIndexFile, {}, 'xgds_video_index_file'),
+    (r'liveVideoFeed/(?P<feedName>\w+)$', views.liveVideoFeed, {'loginRequired': False}, 'xgds_video_live'),
+    (r'videoIndexFile/(?P<flightName>[^/]+)/(?P<sourceShortName>[^/]+)/(?P<segmentNumber>[^/]+)/prog_index.m3u8', views.videoIndexFile, {'loginRequired': False}, 'xgds_video_index_file'),
     (r'^noteVideo2013/(?P<flightName>\w+)/(?P<time>[^/]+)/$', views.displayRecordedVideo, {}, 'noteVideo2013'),  # recorded video for one note
-    (r'^recorded/$', views.displayRecordedVideo, {}, 'xgds_video_recorded'),  # active live recorded video
-    (r'^recorded/(?P<flightName>\w+)/$', views.displayRecordedVideo, {}, 'xgds_video_recorded'),  # active live recorded video
-    (r'^recorded/(?P<flightName>\w+)/(?P<sourceShortName>\w+)/$', views.displayRecordedVideo, {}, 'xgds_video_recorded'),  # active live recorded video
-    (r'^liveImageStream/$', views.liveImageStream, {}, 'live_image_stream'),  # shows image stream from rover.
+    (r'^recorded/$', views.displayRecordedVideo, {'loginRequired': False}, 'xgds_video_recorded'),  # active live recorded video
+    (r'^recorded/(?P<flightName>\w+)/$', views.displayRecordedVideo, {'loginRequired': False}, 'xgds_video_recorded'),  # active live recorded video
+    (r'^recorded/(?P<flightName>\w+)/(?P<sourceShortName>\w+)/$', views.displayRecordedVideo, {'loginRequired': False}, 'xgds_video_recorded'),  # active live recorded video
+    (r'^liveImageStream/$', views.liveImageStream, {'loginRequired': False}, 'live_image_stream'),  # shows image stream from rover.
     (r'^test/$', views.test, {}, 'test'),  # debug only
 )

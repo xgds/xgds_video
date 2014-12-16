@@ -1,10 +1,14 @@
 var pendingPlayerActions = {};
+var playlistsLoaded = false;
 
 /**
  * ensures that only one onTime event is enabled
  */
 function onTimeController(thisObj) {
     if (!xgds_video.playFlag) {
+        return;
+    }
+    if (xgds_video.seekFlag || xgds_video.movingSlider) {
         return;
     }
 
@@ -20,7 +24,12 @@ function onTimeController(thisObj) {
         }
     }
     if (switchPlayer) {
-        var foundPlayingPlayer = false;
+	updateSliderFromPlayer();
+    }
+}
+
+function updateSliderFromPlayer() {
+	var foundPlayingPlayer = false;
         for (var key in xgds_video.displaySegments) {
             var source = xgds_video.displaySegments[key][0].source.shortName;
             if (jwplayer(source).getState() == 'PLAYING') {
@@ -37,9 +46,8 @@ function onTimeController(thisObj) {
             if (sourceName != '') { //there is only one segment for each source and
                 //none of the players are in 'PLAYING' state.
                 xgds_video.onTimePlayer = sourceName;
-            } //else leave the onTimPlayer as it is.
+            } //else leave the onTimePlayer as it is.
         }
-    }
 }
 
 
@@ -59,13 +67,17 @@ function startPlayers() {
         }
     }
     //find the first segment and play it.
+    var startTime = xgds_video.firstSegment.startTime;
     for (var key in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[key];
         var sourceName = segments[0].source.shortName;
 
-        if (xgds_video.firstSegment.startTime == segments[0].startTime) {
+        if (startTime >= segments[0].startTime) {
+	    console.log('starting ' + sourceName);
             jwplayer(sourceName).play(true);
-        }
+        } else {
+	    console.log('delaying ' + sourceName);
+	}
     }
 }
 
@@ -127,8 +139,9 @@ function setupJWplayer() {
         }
         var videoPaths = getFilePaths(flightName, sourceShortName, segments);
         var videoHeight = Math.round(maxWidth * (9/16));
+
         jwplayer(sourceShortName).setup({
-            file: videoPaths[0],
+            file: videoPaths[0], // note jwplayer bug prevents initial load of playlist until onReady
             autostart: false,
             width: maxWidth,
             height: videoHeight,
@@ -138,9 +151,14 @@ function setupJWplayer() {
                 enabled: false,
                 cookies: false
             },
-            //controls: true, //for debugging
+	    listbar: {
+		position: "right",
+		size: 240
+	    },
+            controls: true, //for debugging
             events: {
                 onReady: function() {
+                    setupPlaylists();
                     //if there is a seektime in the url, start videos at that time.
                     if (window.location.hash) {
                         seekFromUrlOffset();
@@ -159,11 +177,12 @@ function setupJWplayer() {
                     onSegmentComplete(this);
                 },
                 onPlay: function(e) { //gets called per source
-                    onTimeController(this);
+		    console.log("playlist " + this.id + " index " + this.getPlaylistIndex());
                     var pendingActions = pendingPlayerActions[this.id];
-                    if (pendingActions.length != 0) {
+                    if (!(_.isUndefined(pendingActions)) && !(_.isEmpty(pendingActions))) {
                         for (var i = 0; i < pendingActions.length; i++) {
                             pendingActions[i].action(pendingActions[i].arg);
+	                    console.log(this.id + ": pending: " + pendingActions[i].arg);
                         }
                         pendingPlayerActions[this.id] = [];
                         if (xgds_video.initialState == true) {
@@ -174,6 +193,11 @@ function setupJWplayer() {
                             xgds_video.initialState = false;
                         }
                     }
+                    if (xgds_video.seekFlag) {
+                        xgds_video.seekFlag = false;
+                        updateSliderFromPlayer();
+                    }
+                    onTimeController(this);
                 },
                 onPause: function(e) {
                     //just make sure the item does get paused.
@@ -189,6 +213,11 @@ function setupJWplayer() {
                     }
                     onTimeController(this);
                 },
+		/*onSeek: function(e) {
+		    console.log("seek playlist index " + this.getPlaylistIndex());
+		    console.log('seek ');
+		    onTimeController(this);
+                },*/
                 onTime: function(object) {
                     // need this. otherwise slider jumps around while moving.
                     if (xgds_video.movingSlider == true) {
@@ -201,6 +230,7 @@ function setupJWplayer() {
                     }
 
                     // update test site time (all sources that are 'PLAYING')
+                    if (!xgds_video.seekFlag && !xgds_video.movingSlider) {
                     var testSiteTime = getPlayerVideoTime(this.id);
                     setPlayerTimeLabel(testSiteTime, this.id);
 
@@ -209,9 +239,12 @@ function setupJWplayer() {
                         if (xgds_video.onTimePlayer == this.id) {
                             // update the slider here.
                             var updateTime = getPlayerVideoTime(this.id);
-                            awakenIdlePlayers(updateTime, this.id);
-                            setSliderTime(updateTime);
+			    if (!(_.isUndefined(updateTime))) {
+	                            awakenIdlePlayers(updateTime, this.id);
+        	                    setSliderTime(updateTime);
+			    }
                         }
+                    }
                     }
                     //if at the end of the segment, pause.
                     if (object.position > Math.floor(object.duration)) {
@@ -221,17 +254,52 @@ function setupJWplayer() {
                 }
             }
         });
-        // load the segments as playlist.
-        var playlist = [];
-        for (var k = 0; k < videoPaths.length; k++) {
-            var newItem = {
-                    file: videoPaths[k],
-                    title: videoPaths[k]
-            };
-            playlist.push(newItem);
-        }
-        jwplayer(sourceShortName).load(playlist);
+	console.log('post setup');
     }
+}
+
+function setupPlaylists() {
+	if (playlistsLoaded) {
+	   return;
+	}
+        var numSources = Object.keys(xgds_video.displaySegments).length;
+        for (var i = 0; i < numSources; i = i + 1) {
+            var sourceShortName = Object.keys(xgds_video.displaySegments)[i];
+            // list of video segments with same source & episode (if given)
+            var segments = xgds_video.displaySegments[sourceShortName];
+            //if there are no segments to show, dont build a player.
+            if (typeof segments == 'undefined' || segments.length == 0) {
+                continue;
+            }
+            // paths of the video segments
+            var flightName = xgds_video.flightName;
+            if (flightName == null) {
+                flightName = xgds_video.episode + '_' + xgds_video.sourceVehicle[sourceshortName]; //TODO: TEST THIS!
+            }
+            var videoPaths = getFilePaths(flightName, sourceShortName, segments);
+            
+         // load the segments as playlist.
+            var myplaylist = [];
+            for (var k = 0; k < videoPaths.length; k++) {
+                var mysources = [];
+                var newItem = {
+                    file: videoPaths[k],
+                    label: videoPaths[k]
+                };
+                mysources.push(newItem);
+                myplaylist.push({title: sourceShortName + " " + k, sources:mysources});
+            };
+            console.log('preload ' + JSON.stringify(myplaylist));
+            jwplayer(sourceShortName).load(myplaylist);
+/*            
+console.log('after playlist load');
+            var loadedPlaylist = jwplayer(sourceShortName).getPlaylist();
+            console.log(JSON.stringify(loadedPlaylist));
+    var current =         jwplayer(sourceShortName).getPlaylistItem();
+            console.log('LOAD PLAYLIST: current' + current);
+*/
+        }
+        playlistsLoaded = true;
 }
 
 
@@ -269,10 +337,18 @@ function playPauseButtonCallBack() {
         var segments = xgds_video.displaySegments[key];
         var sourceName = segments[0].source.shortName;
 
-        if (xgds_video.playFlag) {
-            jwplayer(sourceName).play(true);
-        } else {
+        if (!xgds_video.playFlag) {
             jwplayer(sourceName).pause(true);
+        } else {
+	    // make sure that you have stuff to play for each source
+	    var segments = xgds_video.displaySegments[sourceName];
+            var currentIndex = jwplayer(sourceName).getPlaylistIndex();
+	    if (!(_.isUndefined(currentIndex))) {
+	            var segment = segments[currentIndex];
+                    if ((segment.startTime <= currTime) && (segment.endTime >= currTime)) {
+                        jwplayer(sourceName).play(true);
+                    }
+            }
         }
     }
     setSliderTime(currTime);

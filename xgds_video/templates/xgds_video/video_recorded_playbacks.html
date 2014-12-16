@@ -14,7 +14,13 @@
 {% block scripts %}
 {{block.super}}
 <script type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}external/js/underscore-min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}external/js/masonry.pkgd.min.js" ></script>
+   <!--
+    <script type="text/javascript" src="{{ STATIC_URL }}external/js/jwplayer/jwplayer.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}external/js/jwplayer/jwplayer-new.js"></script>
+    <script type="text/javascript" src="https://p.jwpcdn.com/6/10/jwplayer.js"></script>
+   -->
     <script type="text/javascript" src="{{ STATIC_URL }}external/js/jwplayer/jwplayer.js"></script>
     <script type="text/javascript">
         jwplayer.key="Wu88H+wZ8jZd7qICLr7IEKSmml1/EOMXWYcblA/CJVk=";
@@ -139,6 +145,7 @@ var indexFileUrl = null;
     //globals
     var xgds_video = { masterSlider: '',
                        playFlag: true,
+                       seekFlag: false,
                        initialState: false,
                        seekOffsetList: {},
                        baseUrl: "{{ baseUrl }}",

@@ -104,15 +104,17 @@ function uponSliderMoveCallBack(event, ui) {
  *    update the test site times to equal slider position.
  */
 function uponSliderStopCallBack(event, ui) {
-    xgds_video.movingSlider = false;
+    xgds_video.seekFlag = true;
     var currTime = xgds_video.masterSlider.slider('value'); //in seconds
     currTime = new Date(currTime * 1000); //convert to javascript date
     for (var key in xgds_video.displaySegments) {
-        var sourceName = xgds_video.displaySegments[key][0].source.shortName;
-        jumpToPosition(currTime, sourceName);
+        //var sourceName = xgds_video.displaySegments[key][0].source.shortName;
+        jumpToPosition(currTime, key); //sourceName);
         //XXX take care of the case where seek time is not within playable range.
         //then go to the nearest available segment and play from there.
     }
+    xgds_video.movingSlider = false;
+    //updateSliderFromPlayer();
 }
 
 
