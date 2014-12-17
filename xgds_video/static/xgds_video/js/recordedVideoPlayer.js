@@ -20,7 +20,7 @@ function onTimeController(thisObj) {
         }
     } else {
         if (jwplayer(xgds_video.onTimePlayer).getState() != 'PLAYING') {
-            switchPlayer = true;
+                   switchPlayer = true;
         }
     }
     if (switchPlayer) {
@@ -31,10 +31,10 @@ function onTimeController(thisObj) {
 function updateSliderFromPlayer() {
 	var foundPlayingPlayer = false;
         for (var key in xgds_video.displaySegments) {
-            var source = xgds_video.displaySegments[key][0].source.shortName;
-            if (jwplayer(source).getState() == 'PLAYING') {
-                xgds_video.onTimePlayer = source;
+            if (jwplayer(key).getState() == 'PLAYING') {
+                xgds_video.onTimePlayer = key;
                 foundPlayingPlayer = true;
+		console.log("TIME DRIVING PLAYER " + key);
                 break;
             }
         }
@@ -43,9 +43,11 @@ function updateSliderFromPlayer() {
             //to current slider time
             var time = getSliderTime();
             var sourceName = getNextAvailableSegment(time)['source'];
-            if (sourceName != '') { //there is only one segment for each source and
+            if (!(_.isUndefined(sourceName)) && !(_.isEmpty(sourceName))) { //there is only one segment for each source and
                 //none of the players are in 'PLAYING' state.
                 xgds_video.onTimePlayer = sourceName;
+
+		console.log("TIME DRIVING PLAYER SOURCENAME" + sourceName);
             } //else leave the onTimePlayer as it is.
         }
 }
@@ -151,11 +153,12 @@ function setupJWplayer() {
                 enabled: false,
                 cookies: false
             },
-	    listbar: {
+	    /*listbar: {
 		position: "right",
 		size: 240
 	    },
             controls: true, //for debugging
+            */
             events: {
                 onReady: function() {
                     setupPlaylists();
@@ -177,12 +180,17 @@ function setupJWplayer() {
                     onSegmentComplete(this);
                 },
                 onPlay: function(e) { //gets called per source
-		    console.log("playlist " + this.id + " index " + this.getPlaylistIndex());
+		    console.log("onPlay: playlist " + this.id + " index " + this.getPlaylistIndex());
+        	   var segments = xgds_video.displaySegments[this.id];
+                    var segment = segments[this.getPlaylistIndex()];
+                    console.log("seg start " + segment.startTime + " seg end " + segment.endTime);
                     var pendingActions = pendingPlayerActions[this.id];
                     if (!(_.isUndefined(pendingActions)) && !(_.isEmpty(pendingActions))) {
                         for (var i = 0; i < pendingActions.length; i++) {
+                            console.log(this.id + " ABOUT TO SEEK ");
                             pendingActions[i].action(pendingActions[i].arg);
 	                    console.log(this.id + ": pending: " + pendingActions[i].arg);
+		            console.log("onPlay1: playlist " + this.id + " index " + this.getPlaylistIndex());
                         }
                         pendingPlayerActions[this.id] = [];
                         if (xgds_video.initialState == true) {
@@ -195,9 +203,12 @@ function setupJWplayer() {
                     }
                     if (xgds_video.seekFlag) {
                         xgds_video.seekFlag = false;
+		    console.log("onPlay2: playlist " + this.id + " index " + this.getPlaylistIndex());
                         updateSliderFromPlayer();
+		    console.log("onPlay3: playlist " + this.id + " index " + this.getPlaylistIndex());
                     }
                     onTimeController(this);
+		    console.log("onPlay4: playlist " + this.id + " index " + this.getPlaylistIndex());
                 },
                 onPause: function(e) {
                     //just make sure the item does get paused.
@@ -254,7 +265,6 @@ function setupJWplayer() {
                 }
             }
         });
-	console.log('post setup');
     }
 }
 
@@ -289,15 +299,7 @@ function setupPlaylists() {
                 mysources.push(newItem);
                 myplaylist.push({title: sourceShortName + " " + k, sources:mysources});
             };
-            console.log('preload ' + JSON.stringify(myplaylist));
             jwplayer(sourceShortName).load(myplaylist);
-/*            
-console.log('after playlist load');
-            var loadedPlaylist = jwplayer(sourceShortName).getPlaylist();
-            console.log(JSON.stringify(loadedPlaylist));
-    var current =         jwplayer(sourceShortName).getPlaylistItem();
-            console.log('LOAD PLAYLIST: current' + current);
-*/
         }
         playlistsLoaded = true;
 }

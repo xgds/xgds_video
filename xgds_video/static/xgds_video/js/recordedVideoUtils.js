@@ -133,6 +133,7 @@ function setSliderTime(datetime) {
     var seconds = Math.round(datetime.getTime() / 1000);
     xgds_video.masterSlider.slider('value', seconds);
     setSliderTimeLabel(datetime);
+//    console.log("SLIDER TIME " + datetime);
 }
 
 
@@ -204,6 +205,7 @@ if ((p.getState() == 'PLAYING') ||
 */
         p.playlistItem(index);
     console.log("SET SEEK " + playerName + " playlist index " + p.getPlaylistIndex());
+    console.log("SET SEEK " + playerName + " SEEK " + offset);
     }
 }
 
@@ -269,7 +271,7 @@ function onSegmentComplete(thisObj) {
     if (allPaused()) {
         var time = getPlayerVideoTime(thisObj.id);
         var seekTime = getNextAvailableSegment(time);
-        console.log('seekTime: ', seekTime.toString());
+        console.log('on segment complete next available: ', JSON.stringify(seekTime));
         seekAllPlayersToTime(seekTime['time']);
     }
 }
@@ -336,6 +338,7 @@ function awakenIdlePlayers(datetime, exceptThisPlayer) {
                 for (var s in segments) {
                     var segment = segments[s];
                     if ((datetime >= segment.startTime) && (datetime <= segment.endTime)) {
+			console.log("AWAKENING " + sourceName + " TO SEGMENT " + s);
 			jumpToPosition(dateTime, sourceName);
                     }
                 }
