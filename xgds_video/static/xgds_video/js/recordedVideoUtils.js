@@ -2,6 +2,7 @@ jQuery(function($) {
     var windowWidth = $(window).width();
     $(window).resize(function()  {
         if (windowWidth != $(window).width()) {
+            alert("resize window and reload? holy crap");
             location.reload();
             return;
         }
@@ -27,9 +28,8 @@ function toJsDateTime(jsonDateTime) {
         jsonDateTime.month = jsonDateTime.month - 1;
         return new Date(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day,
                 jsonDateTime.hour, jsonDateTime.min, jsonDateTime.seconds, 0);
-    } else {
-        return null;
     }
+    return null;
 }
 
 
@@ -53,7 +53,7 @@ function seekHelper(seekTimeStr) {
  * convert episode start/end time to javascript dateTime
  */
 function convertJSONtoJavascriptDateTime(episode) {
-    if (isEmpty(episode)) {
+    if (_.isEmpty(episode)) {
         return;
     }
     if (episode.startTime) {
@@ -62,22 +62,6 @@ function convertJSONtoJavascriptDateTime(episode) {
     if (episode.endTime) {
         episode.endTime = toJsDateTime(episode.endTime);
     }
-}
-
-
-/**
- * Checks if json dict is empty
- */
-function isEmpty(ob) {
-    for (var i in ob) {
-        return false;
-    }
-    return true;
-}
-
-
-function setText(id, messageText) {
-    document.getElementById(id).innerHTML = messageText;
 }
 
 
@@ -133,7 +117,6 @@ function setSliderTime(datetime) {
     var seconds = Math.round(datetime.getTime() / 1000);
     xgds_video.masterSlider.slider('value', seconds);
     setSliderTimeLabel(datetime);
-//    console.log("SLIDER TIME " + datetime);
 }
 
 
@@ -141,7 +124,7 @@ function setSliderTime(datetime) {
  * Set test site time of the player
  */
 function setPlayerTimeLabel(datetime, sourceName) {
-    setText('testSiteTime' + sourceName, datetime.toString());
+    $('#testSiteTime' + sourceName).html(datetime.toString());
 }
 
 
@@ -154,24 +137,26 @@ function withinRange(position, offset) {
  * Find the playlist item index and offset the current time
  * falls under for this player.
  */
-function getPlaylistIdxAndOffset(currTime, sourceName) {
+function getPlaylistIdxAndOffset(currentTime, source) {
     var playlistIdx = null;
     var offset = null;
-    var segments = xgds_video.displaySegments[sourceName];
-    for (var i = 0; i < segments.length; i++) {
-        if ((currTime >= segments[i].startTime) &&
-                (currTime <= segments[i].endTime)) {
-            playlistIdx = i;
-            //in seconds
-            offset = Math.round((currTime - segments[i].startTime) / 1000);
-            break;
+    var segments = xgds_video.displaySegments[source];
+    
+    if (currentTime >= xgds_video.displaySegments[source].startTime && currentTime <= xgds_video.displaySegments[source].endTime) {
+        for (var i = 0; i < segments.length; i++) {
+            if ((currentTime >= segments[i].startTime) &&
+                    (currentTime <= segments[i].endTime)) {
+                playlistIdx = i;
+                //in seconds
+                offset = Math.round((currentTime - segments[i].startTime) / 1000);
+                break;
+            }
         }
+        if ((playlistIdx != null) && (offset != null)) {
+            return {index: playlistIdx, offset: offset};
+        } 
     }
-    if ((playlistIdx != null) && (offset != null)) {
-        return {index: playlistIdx, offset: offset};
-    } else {
-        return false;
-    }
+    return false;
 }
 
 
@@ -180,32 +165,31 @@ function getPlaylistIdxAndOffset(currTime, sourceName) {
  * html 5 and flash.
  * Example: setPlaylistAndSeek('ROV', 1, 120)
  */
-function setPlaylistAndSeek(playerName, index, offset) {
-    var p = jwplayer(playerName);
-    var myplaylist = p.getPlaylist();
+function setPlaylistAndSeek(source, index, offset) {
+    var player = jwplayer(source);
     // Calling immediately seems to work better for HTML5,
     // Queuing in list for handling in onPlay(), below, works better for Flash. Yuck!
-    if (p.getRenderingMode() == 'html5') {
-        p.playlistItem(index).seek(offset);
-    console.log("SET SEEK playlist index " + p.getPlaylistIndex());
+    if (player.getRenderingMode() == 'html5') {
+        player.playlistItem(index).seek(offset);
+        console.log("SET SEEK playlist index " + player.getPlaylistIndex());
     }
     else {
         var actionObj = new Object();
-        actionObj.action = p.seek;
+        actionObj.action = player.seek;
     	actionObj.arg = offset;
-        pendingPlayerActions[playerName] = [actionObj];
+        pendingPlayerActions[source] = [actionObj];
 /*
         if (xgds_video.playFlag) {
-if ((p.getState() == 'PLAYING') ||
-                (p.getState() == 'IDLE')) {
+if ((player.getState() == 'PLAYING') ||
+                (player.getState() == 'IDLE')) {
 	    console.log("pausing from setplaylist and seek");
-	    p.pause(true);
+	    player.pause(true);
 }
         }
 */
-        p.playlistItem(index);
-    console.log("SET SEEK " + playerName + " playlist index " + p.getPlaylistIndex());
-    console.log("SET SEEK " + playerName + " SEEK " + offset);
+        player.playlistItem(index);
+        console.log("SET SEEK " + source + " playlist index " + player.getPlaylistIndex());
+        console.log("SET SEEK " + source + " SEEK " + offset);
     }
 }
 
@@ -214,15 +198,15 @@ if ((p.getState() == 'PLAYING') ||
  * Given current time in javascript datetime,
  * find the playlist item and the offset (seconds) and seek to there.
  */
-function jumpToPosition(currTime, sourceName) {
-    var seekValues = getPlaylistIdxAndOffset(currTime, sourceName);
-    var player = jwplayer(sourceName);
-    //currTime falls in one of the segments.
+function jumpToPosition(currentTime, source) {
+    var seekValues = getPlaylistIdxAndOffset(currentTime, source);
+    var player = jwplayer(source);
+    //currentTime falls in one of the segments.
     if (seekValues != false) {
-        setPlaylistAndSeek(sourceName, seekValues.index, seekValues.offset);
+        setPlaylistAndSeek(source, seekValues.index, seekValues.offset);
         if (xgds_video.playFlag) {
             player.play(true);
-    console.log("jump to position " + sourceName + " playlist index " + player.getPlaylistIndex());
+            console.log("jump to position " + source + " playlist index " + player.getPlaylistIndex());
         } else {
             player.pause(true);
         }
@@ -239,15 +223,17 @@ function jumpToPosition(currTime, sourceName) {
 function getNextAvailableSegment(currentTime) {
     var nearestSeg = null;
     var minDelta = Number.MAX_VALUE;
-    for (var key in xgds_video.displaySegments) {
-        var segments = xgds_video.displaySegments[key];
-        for (var id in segments) {
-            var segment = segments[id];
-            var delta = segment.startTime - currentTime;
-
-            if ((delta < minDelta) && (delta >= 0)) {
-                minDelta = delta;
-                nearestSeg = segment;
+    for (var source in xgds_video.displaySegments) {
+        if (currentTime >= xgds_video.displaySegments[source].startTime && currentTime <= xgds_video.displaySegments[source].endTime) {
+            var segments = xgds_video.displaySegments[source];
+            for (var id in segments) {
+                var segment = segments[id];
+                var delta = segment.startTime - currentTime;
+    
+                if ((delta < minDelta) && (delta >= 0)) {
+                    minDelta = delta;
+                    nearestSeg = segment;
+                }
             }
         }
     }
@@ -262,14 +248,14 @@ function getNextAvailableSegment(currentTime) {
 /**
  * When the segment is complete, go to the next available segment.
  */
-function onSegmentComplete(thisObj) {
+function onSegmentComplete(player) {
     //awaken idle players.
     var time = getSliderTime();
-    awakenIdlePlayers(time, thisObj.id);
-    onTimeController(thisObj);
+    awakenIdlePlayers(time, player.id);
+    onTimeController(player);
     // if all other players are paused, go the the next available segment and play.
     if (allPaused()) {
-        var time = getPlayerVideoTime(thisObj.id);
+        var time = getPlayerVideoTime(player.id);
         var seekTime = getNextAvailableSegment(time);
         console.log('on segment complete next available: ', JSON.stringify(seekTime));
         seekAllPlayersToTime(seekTime['time']);
@@ -282,10 +268,9 @@ function onSegmentComplete(thisObj) {
  */
 function allPaused() {
     var allPaused = true;
-    for (var key in xgds_video.displaySegments) {
+    for (var source in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[key];
-        var sourceName = segments[0].source.shortName;
-        var state = jwplayer(sourceName).getState();
+        var state = jwplayer(source).getState();
         if ((state != 'PAUSED') && (state != 'IDLE')) {
             allPaused = false;
             break;
@@ -311,13 +296,12 @@ function getPlayerVideoTime(source) {
 
 
 function seekAllPlayersToTime(datetime) {
-    for (var key in xgds_video.displaySegments) {
-        var segments = xgds_video.displaySegments[key];
-        var sourceName = segments[0].source.shortName;
+    for (var source in xgds_video.displaySegments) {
+        var segments = xgds_video.displaySegments[source];
 
-        var player = jwplayer(sourceName);
+        var player = jwplayer(source);
         if (player != undefined) {
-            jumpToPosition(datetime, sourceName);
+            jumpToPosition(datetime, source);
         }
     }
     if (datetime != null) {
@@ -330,16 +314,16 @@ function awakenIdlePlayers(datetime, exceptThisPlayer) {
     if (_.isUndefined(datetime)) {
         return;
     }
-    for (var sourceName in xgds_video.displaySegments) {
-        if (sourceName != exceptThisPlayer) {
-	    var state = jwplayer(sourceName).getState();
+    for (var source in xgds_video.displaySegments) {
+        if (source != exceptThisPlayer) {
+            var state = jwplayer(source).getState();
             if ((state == 'IDLE') || (state == 'PAUSED')) {
-                var segments = xgds_video.displaySegments[sourceName];
+                var segments = xgds_video.displaySegments[source];
                 for (var s in segments) {
                     var segment = segments[s];
                     if ((datetime >= segment.startTime) && (datetime <= segment.endTime)) {
-			console.log("AWAKENING " + sourceName + " TO SEGMENT " + s);
-			jumpToPosition(dateTime, sourceName);
+                        console.log("AWAKENING " + source + " TO SEGMENT " + s);
+                        jumpToPosition(dateTime, source);
                     }
                 }
             }
