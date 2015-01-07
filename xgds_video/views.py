@@ -16,6 +16,7 @@ from django.template import RequestContext
 from django.contrib import messages
 
 from geocamUtil import anyjson as json
+from geocamUtil import dateparse
 
 from xgds_notes.forms import NoteForm
 
@@ -189,15 +190,20 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     Used for both playing back videos from active episode and also
     for playing videos associated with each note.
     """
-    noteTime = ""
+    requestedTime = ""
     episode = {}
     if time is not None:
         # TODO: this is a duplicate path for playing back video at a certain time, it is legacy from PLRP
         # and was not fully working there; merge these 2 ways of playing back from a time.
-        # probably not calling it noteTime is clearer
         # time is passed as string (yy-mm-dd hh:mm:ss)
-        noteTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
-        noteTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(noteTime))
+        try:
+            requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
+        except:
+            requestedTime = dateparse.parse_datetime(time)
+        print requestedTime
+        requestedTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(requestedTime))
+        print requestedTime
+
     # this happens when user clicks on a flight name to view video
     if flightName:
         GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
@@ -253,7 +259,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
         'episode': episode,
         'episodeJson': episodeJson,
-        'noteTimeStamp': noteTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
+        'noteTimeStamp': requestedTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
         'sources': sources,
         'flightName': flightName,
         'sourceVehicle': json.dumps(sourceVehicle),
