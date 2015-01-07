@@ -54,7 +54,7 @@
 	            {% include "xgds_video/video_notes.html" with data=source.form source=source STATIC_URL=STATIC_URL %}
 	            </section>
 	            {% endif %}
-	 			<img class='imageStream' style='display:block;' id="cameraImage{{ source.shortName }}" src=""></img>
+	 			<img class='imageStream' style='display:block;' id="cameraImage{{ source.shortName }}" src="" alt="camera image {{source.shortName}}"></img>
 	 		</div>
  		{% endfor %}
 	</div>
