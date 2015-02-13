@@ -53,10 +53,10 @@ function createSliderLegend() {
             width = Math.round(width);
             //draw the visualization
             xgds_video.masterSlider.before('<img class="legend-segment ' +
-                    source.shortName + '-legend' + '" id=' +
-                    'Segment' + id + ' width="' + width + 'px"' +
+                    source.shortName + '-legend' + '" id="' +
+                    'Segment' + id + '" width="' + width + 'px"' +
                     ' src="' + STATIC_URL + 'xgds_video/images/ipx.gif"' +
-                    '"alt="Segment' + id + '"' +
+                    'alt="Segment' + id + 
                     '" height="4px" ' +
                     'style="background-color:' +
                     color + ';">');
