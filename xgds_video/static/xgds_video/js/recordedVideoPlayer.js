@@ -314,11 +314,11 @@ function seekCallBack() {
 function playPauseButtonCallBack() {
     xgds_video.playFlag = !xgds_video.playFlag;
     if (xgds_video.playFlag) {
-        $('#playbutton').addClass("fa-pause");
-        $('#playbutton').removeClass("fa-play");
+        $('#playbutton').addClass("icon-pause");
+        $('#playbutton').removeClass("icon-play");
     } else {
-        $('#playbutton').removeClass("fa-pause");
-        $('#playbutton').addClass("fa-play");
+        $('#playbutton').removeClass("icon-pause");
+        $('#playbutton').addClass("icon-play");
     }
 
     var currTime = getSliderTime();

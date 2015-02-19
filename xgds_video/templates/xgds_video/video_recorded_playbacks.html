@@ -5,23 +5,17 @@
 
  {% block cssExtras %}
  {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery/jquery.tagsinput.css"></link>
-    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/jquery/jquery-ui.css"></link>
-    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}xgds_video/css/xgds_video.css"></link>
-    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}external/css/font-awesome/css/font-awesome.css"></link>
-{% endblock cssExtras %}
+    <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery-tagsinput/jquery.tagsinput.css"></link>
+    <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.min.css" ></link>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_video/css/xgds_video.css"></link>
+ {% endblock cssExtras %}
 
 {% block scripts %}
 {{block.super}}
-	<script type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.min.js"></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}external/js/underscore-min.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}external/js/masonry.pkgd.min.js" ></script>
-   <!--
-    <script type="text/javascript" src="{{ STATIC_URL }}external/js/jwplayer/jwplayer.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}external/js/jwplayer/jwplayer-new.js"></script>
-    <script type="text/javascript" src="https://p.jwpcdn.com/6/10/jwplayer.js"></script>
-   -->
-    <script type="text/javascript" src="{{ STATIC_URL }}external/js/jwplayer/jwplayer.js"></script>
+	<script type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="{{ EXTERNAL_URL }}underscore/underscore-min.js"></script>
+    <script type="text/javascript" src="{{ EXTERNAL_URL }}masonry/dist/masonry.pkgd.min.js" ></script>
+    <script type="text/javascript" src="{{ EXTERNAL_URL }}jwplayer/jwplayer.js"></script>
     <script type="text/javascript">
         jwplayer.key="Wu88H+wZ8jZd7qICLr7IEKSmml1/EOMXWYcblA/CJVk=";
         STATIC_URL='{{ STATIC_URL }}';
@@ -32,9 +26,9 @@
  	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoSlider.js"></script>
  	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoUtils.js"></script>
  	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoPlayer.js"></script>
-    <script src="{{STATIC_URL}}external/js/jquery/jquery.tagsinput.js" type="text/javascript" ></script>
- 	<script src="{{STATIC_URL}}external/js/jquery/jquery.form.min.js" type="text/javascript" ></script>
- 	<script type="text/javascript" src="{{ STATIC_URL }}external/js/date.js"></script>
+    <script src="{{ EXTERNAL_URL }}jquery.tagsinput/jquery.tagsinput.js" type="text/javascript" ></script>
+ 	<script src="{{ EXTERNAL_URL }}jquery-form/jquery.form.js" type="text/javascript" ></script>
+ 	<script type="text/javascript" src="{{ EXTERNAL_URL }}date.js/index.js"></script>
  	{% if INCLUDE_NOTE_INPUT %}
  	<script src="{{STATIC_URL}}xgds_video/js/video_notes_form.js" type="text/javascript" ></script>
  	{% endif %}
@@ -88,7 +82,7 @@
 		 	  <div id="masterSlider" class="masterSlider"></div>
 	          <div > 
 	          	<a class="btn btn-small btn-info" href="#" onclick=playPauseButtonCallBack()>
-	              <i id="playbutton" class="fa fa-pause fa-2x"></i>
+	              <i id="playbutton" class="icon-pause"></i>
 	              </a>
 	          </div>
   		  <div id="legend"></div>
@@ -153,7 +147,6 @@ var indexFileUrl = null;
                        displaySegments: {{ segmentsJson|safe }},
                        firstSegment: null,
                        lastSegment: null,
-                       //skinURL: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml',
                        onTimePlayer: "{{ sources.0.shortName }}",
                        movingSlider: false, //if slider is moving, turn off onTime call
                        seekOffsetList: {}, //needed for seeking vid in flash mode,
