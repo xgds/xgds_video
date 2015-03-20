@@ -17,7 +17,7 @@
     <script type="text/javascript" src="{{ EXTERNAL_URL }}masonry/dist/masonry.pkgd.min.js" ></script>
     <script type="text/javascript" src="{{ EXTERNAL_URL }}jwplayer/jwplayer.js"></script>
     <script type="text/javascript">
-        jwplayer.key="Wu88H+wZ8jZd7qICLr7IEKSmml1/EOMXWYcblA/CJVk=";
+        jwplayer.key="{{ JWPLAYER_KEY }}";
         STATIC_URL='{{ STATIC_URL }}';
         var submitNoteUrl = "{% url 'record_simple' %}";
         var isLive = false;
