@@ -55,10 +55,22 @@ RECORDED_VIDEO_URL_BASE = None
 # Path in data where you will find your video files
 XGDS_VIDEO_INDEX_FILE_METHOD = 'xgds_video.util.getIndexFileSuffix'
 
+# Override this in your siteSettings to include a key for enterprise JWPLAYER
+"""
+
+ IMPORTANT YOU MUST INCLUDE THIS IN siteSettings
+ TEMPLATE_CONTEXT_PROCESSORS = (global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
+     ...
+     'xgds_video.context_processors.SettingsContextProcessor.SettingsContextProcessor'
+ """
+JWPLAYER_KEY = None
+
 # include this in your siteSettings.py BOWER_INSTALLED_APPS
 XGDS_VIDEO_BOWER_INSTALLED_APPS = (
-    'jwplayer',
+    'jwplayer=https://account.jwplayer.com/static/download/jwplayer-6.12.zip',
     'https://datejs.googlecode.com/files/date.js',
     'masonry',
     'AC_QuickTime=https://java.net/projects/swinglabs/sources/svn/content/trunk/website/web/scripts/AC_QuickTime.js?raw=true',
+    'http://p.jwpcdn.com/6/jwpsrv_frq.js',
+    'http://p.jwpcdn.com/6/8/jwpsrv.js',
 )
