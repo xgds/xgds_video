@@ -231,10 +231,20 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     if not episode:
         return recordedVideoError(request, 'Episode not found ' + flightName)
 
+    if episode:
+	print 'FOUND EPISODE %s' % episode.shortName
+        if not flightName:
+            flightName = episode.shortName
+
     # get the segments
     segments = episode.videosegment_set.all()
     if not segments:
-        return recordedVideoError(request, 'Video segments not found for episode ' + flightName)
+	print 'NO SEGMENTS, flightname'
+	print flightName
+	msg = 'Video segments not found '
+	if flightName:
+	   msg = msg + flightName
+        return recordedVideoError(request, msg)
 
     sourceShortName = str(sourceShortName)
     if sourceShortName:
@@ -301,7 +311,7 @@ def extraVideoContext(ctx):
     pass
 
 
-def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDuration):
+def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDuration, episode):
     if not source.videofeed_set.all():
         logging.info("video feeds set is empty")
         return
@@ -327,7 +337,8 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
                                        startTime=startTime,
                                        endTime=None,
                                        settings=videoSettingsModel,
-                                       source=source)
+                                       source=source,
+                                       episode=episode)
     videoSegment.save()
     if settings.PYRAPTORD_SERVICE is True:
         pyraptord = getZerorpcClient('pyraptord')
