@@ -42,6 +42,7 @@ from xgds_video import util
 from xgds_video.models import *  # pylint: disable=W0401
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
+from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfRunning
 
 SOURCE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -79,20 +80,6 @@ def liveImageStream(request):
                                'sources': sources,
                                'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT},
                               context_instance=RequestContext(request))
-
-
-def getZerorpcClient(clientName):
-    ports = json.loads(file(settings.ZEROMQ_PORTS, 'r').read())
-    rpcPort = ports[clientName]['rpc']
-    client = zerorpc.Client(rpcPort)
-    return client
-
-
-def stopPyraptordServiceIfRunning(pyraptord, svcName):
-    try:
-        pyraptord.stop(svcName)
-    except zerorpc.RemoteError:
-        pass
 
 
 # put a setting for the name of the function to call to generate extra text to insert in the form
@@ -341,7 +328,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
                                        episode=episode)
     videoSegment.save()
     if settings.PYRAPTORD_SERVICE is True:
-        pyraptord = getZerorpcClient('pyraptord')
+        pyraptord = getPyraptordClient()
     assetName = source.shortName  # flight.assetRole.name
     vlcSvc = '%s_vlc' % assetName
     vlcCmd = ('%s %s %s'
@@ -374,7 +361,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
 
 def stopRecording(source, endTime):
     if settings.PYRAPTORD_SERVICE is True:
-        pyraptord = getZerorpcClient('pyraptord')
+        pyraptord = getPyraptordClient('pyraptord')
     assetName = source.shortName  # flight.assetRole.name
     vlcSvc = '%s_vlc' % assetName
     segmenterSvc = '%s_segmenter' % assetName
