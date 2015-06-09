@@ -18,8 +18,8 @@ jQuery(function($) {
     var windowWidth = $(window).width();
     $(window).resize(function()  {
         if (windowWidth != $(window).width()) {
-            alert("resize window and reload? holy crap");
-            location.reload();
+//            alert("resize window and reload? holy crap");
+//            location.reload();
             return;
         }
     });

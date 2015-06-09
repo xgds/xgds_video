@@ -27,6 +27,7 @@ except ImportError:
     pass  # zerorpc not needed for most views
 
 from django.shortcuts import render_to_response
+from django.shortcuts import redirect
 from django.template import RequestContext
 # from django.views.generic.list_detail import object_list
 from django.contrib import messages
@@ -187,6 +188,25 @@ def recordedVideoError(request, message):
                               context_instance=RequestContext(request))
 
 
+def displayVideoStillThumb(request, flightName=None, time=None):
+    return displayVideoStill(request, flightName, time, thumbnail=True)
+
+def displayVideoStill(request, flightName=None, time=None, thumbnail=False):
+    """
+    Returns a video still for a given flight at the requested time.  If the still already exists for that time, it is just displayed,
+    otherwise a new one is created.
+    """
+    requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d_%H-%M-%S")
+    print requestedTime
+    if thumbnail:
+        f = open("/home/irg/xgds_plrp/data/test/sampleImages/frameGrabSample.thumb.jpg", "r")
+    else:
+        f = open("/home/irg/xgds_plrp/data/test/sampleImages/frameGrabSample.jpg", "r")
+    imageBits = f.read()
+    f.close()
+    
+    return HttpResponse(imageBits, content_type="image/jpeg")
+
 def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=None):
     """
     Returns first segment of all sources that are part of a given episode.
@@ -216,7 +236,8 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
         episode = GET_ACTIVE_EPISODE_METHOD()
     if not episode:
-        return recordedVideoError(request, 'Episode not found ' + flightName)
+#        return recordedVideoError(request, 'Episode not found ' + flightName)
+        return redirect("xgds_video_flights")
 
     if episode:
 	print 'FOUND EPISODE %s' % episode.shortName

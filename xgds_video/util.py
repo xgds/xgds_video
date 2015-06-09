@@ -24,7 +24,7 @@ from geocamUtil.loader import getClassByName
 # from plrpExplorer.views import getVideoDelay # FIX-ME: should be abstracted better from video
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
-VIDEO_DELAY_SECONDS = 0
+VIDEO_DELAY_SECONDS = 1
 
 
 def getShortTimeString(dateTime):
@@ -143,7 +143,7 @@ def updateIndexFilePrefix(indexFileSuffix, subst):
         #  edit the index file
         clips = baseFile.read().split('#EXTINF:')
         header = clips.pop(0)
-        clips.pop(0)  # badFirstClip
+#        clips.pop(0)  # badFirstClip
         processedClips = '#EXTINF:'.join([header] + clips)
         lineList = processedClips.split("\n")
         maxLineNum = len(lineList) - videoDelayInLines
