@@ -61,7 +61,7 @@ $(function() {
         // get the index
         var index = parent.find('input#id_index').val();
         // validate and process form here
-        var content_text = parent.find('input#id_content');
+        var content_text = parent.find('input#id_content' + index);
         var content = content_text.val();
 
         hideError(index);
@@ -99,8 +99,8 @@ $(function() {
             data: dataString,
             success: function(response) {
                 showSuccess('Saved ' + content + ' ' + iso_string, index);
-                parent.find('input#id_content').val('');
-                parent.find(tagsId).importTags('');
+                content_text.val('');
+                tagInput.importTags('');
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 if (errorThrown == '' && textStatus == 'error') {
