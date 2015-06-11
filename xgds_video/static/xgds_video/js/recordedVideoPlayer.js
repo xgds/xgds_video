@@ -80,6 +80,15 @@ function startPlayers() {
             return;
         }
     }
+    else {
+	console.log("INITIAL SEEK!!");
+	// force an initial seek to buffer data
+        xgds_video.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
+	for (var source in xgds_video.displaySegments) {
+	    console.log("Seeking: " + source);
+//	    jwplayer(source).playlistItem(0).seek(0);
+	}
+    }
     
     //find the first segment and play it.
     var startTime = xgds_video.firstSegment.startTime;
@@ -87,13 +96,43 @@ function startPlayers() {
         var segments = xgds_video.displaySegments[source];
         if (startTime >= segments[0].startTime) {
             console.log('starting ' + source);
-            jwplayer(source).play(true);
+            jwplayer(source).pause(true);
         } else {
             console.log('delaying ' + source);
         }
     }
 }
 
+function startPlayer(player) {
+    if (xgds_video.noteTimeStamp != null) { // noteTimeStamp is in local time (i.e. PDT)
+        var datetime = xgds_video.noteTimeStamp;
+        //check if datetime is valid
+        if ((datetime != 'Invalid Date') && ((datetime >= xgds_video.firstSegment.startTime) &&
+            (datetime < xgds_video.lastSegment.endTime))) {
+            xgds_video.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
+            seekAllPlayersToTime(datetime);
+            return;
+        }
+    }
+    else {
+	console.log("INITIAL SEEK!!");
+	// force and initial seek to buffer data
+        xgds_video.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
+	console.log("Seeking: " + player.id);
+	player.playlistItem(0);
+    }
+    
+    //find the first segment and play it.
+    var startTime = xgds_video.firstSegment.startTime;
+    var segments = xgds_video.displaySegments[player.id];
+    if (startTime >= segments[0].startTime) {
+        console.log('starting ' + player.id);
+//            player.pause(true);
+    } else {
+        console.log('delaying ' + player.id);
+	player.pause(true);
+    }
+}
 
 /**
  * Only called once onReady. Reads offset from URL hash
@@ -182,7 +221,8 @@ function setupJWplayer() {
                     if (window.location.hash) {
                         seekFromUrlOffset();
                     } else {
-                        startPlayers();
+//                        startPlayers();
+			startPlayer(this);
                     }
                     soundController();
                 },
@@ -220,6 +260,7 @@ function setupJWplayer() {
                 },
                 onPause: function(e) {
                     //just make sure the item does get paused.
+		    console.log("*** ON PAUSE ***");
                     onTimeController(this);
                 },
                 onBuffer: function(e) {
@@ -232,11 +273,11 @@ function setupJWplayer() {
                     }
                     onTimeController(this);
                 },
-		/*onSeek: function(e) {
-		    console.log("seek playlist index " + this.getPlaylistIndex());
-		    console.log('seek ');
-		    onTimeController(this);
-                },*/
+		onSeek: function(e) {
+		    // console.log("seek playlist index " + this.getPlaylistIndex());
+		    console.log('seek with player state: ' + this.getState());
+		    // onTimeController(this);
+                },
                 onTime: function(object) {
                     // need this. otherwise slider jumps around while moving.
                     if (xgds_video.movingSlider == true) {
