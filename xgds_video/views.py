@@ -204,7 +204,7 @@ def displayVideoStill(request, flightName=None, time=None, thumbnail=False):
         f = open("/home/irg/xgds_plrp/data/test/sampleImages/frameGrabSample.jpg", "r")
     imageBits = f.read()
     f.close()
-    
+
     return HttpResponse(imageBits, content_type="image/jpeg")
 
 def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=None):
@@ -240,19 +240,19 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         return redirect("xgds_video_flights")
 
     if episode:
-	print 'FOUND EPISODE %s' % episode.shortName
+        # print 'FOUND EPISODE %s' % episode.shortName
         if not flightName:
             flightName = episode.shortName
 
     # get the segments
     segments = episode.videosegment_set.all()
     if not segments:
-	print 'NO SEGMENTS, flightname'
-	print flightName
-	msg = 'Video segments not found '
-	if flightName:
-	   msg = msg + flightName
-        return recordedVideoError(request, msg)
+        print 'NO SEGMENTS, flightname'
+        print flightName
+        msg = 'Video segments not found '
+        if flightName:
+            msg = msg + flightName
+            return recordedVideoError(request, msg)
 
     sourceShortName = str(sourceShortName)
     if sourceShortName:
