@@ -19,7 +19,10 @@ import stat
 import logging
 import os
 import datetime
+import calendar
 import re
+import m3u8
+import zmq
 
 try:
     import zerorpc
@@ -187,6 +190,42 @@ def recordedVideoError(request, message):
                               ctx,
                               context_instance=RequestContext(request))
 
+def captureStillImage(flightName, timestamp):
+    stillLocationFxn = getClassByName(settings.XGDS_VIDEO_GPS_LOCATION_METHOD)
+    locationInfo = stillLocationFxn(flightName, timestamp)
+    (chunkPath, offsetInChunk) = getChunkfilePathAndOffsetForTime(flightName,
+                                                                  timestamp)
+    captureParams = {'frameCaptureOffset': offsetInChunk,
+                     'imageSubject': flightName,
+                     'collectionTimeZoneName': settings.TIME_ZONE,
+                     'outputDir': os.path.join(settings.DATA_ROOT,
+                                               'user_image_capture',''),
+                     'chunkFilePath': chunkPath,
+                     'thumbnailSize': {'width': 100, 'height': 56.25},
+                     'contactInfo': 'http://www.pavilionlake.com',
+                     'wallClockTime': calendar.timegm(timestamp.utctimetuple()),
+                     'createThumbnail': True}
+    if locationInfo:
+        captureParams['locationInfo'] = {'latitude': locationInfo.latitude,
+                                         'longitude': locationInfo.longitude,
+                                         'altitude': locationInfo.depthMeters}
+    #
+    # Now, send request for still frame capture
+    #
+    context = zmq.Context()
+    socket = context.socket(zmq.REQ)
+    socket.connect(settings.XGDS_VIDEO_STILL_GRAB_SERVICE)
+    if chunkPath:  # did we really find a video chunk?  If so, grab frame
+        socket.send(json.dumps(captureParams))
+        resp = json.loads(socket.recv())
+    else:
+        resp = {'captureSuccess':False, 'imageUuid':None}
+
+    if resp['captureSuccess']:
+        logging.info("Image capture OK for %s at %s" % (flightName, timestamp))
+    else:
+        logging.info("Image capture failed for %s at %s" %
+                     (flightName, timestamp))
 
 def displayVideoStillThumb(request, flightName=None, time=None):
     return displayVideoStill(request, flightName, time, thumbnail=True)
@@ -197,15 +236,84 @@ def displayVideoStill(request, flightName=None, time=None, thumbnail=False):
     otherwise a new one is created.
     """
     requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d_%H-%M-%S")
-    print requestedTime
+    thumbnailPath = "%s/%s_%s.thumbnail.jpg" % (settings.IMAGE_CAPTURE_DIR, flightName, time)
+    fullSizePath = "%s/%s_%s.jpg" % (settings.IMAGE_CAPTURE_DIR, flightName, time)
+    noImagePath = "%s/xgds_video/images/NoImage.png" % settings.STATIC_ROOT
+    noImageThumbnailPath = "%s/xgds_video/images/NoImage.thumbnail.png" % \
+                           settings.STATIC_ROOT
+
+    # We generate full image and thumbnail together, so one check for 
+    # existence should be OK.  If we don't find it, we generate one and cache it
+    if  not os.path.isfile(fullSizePath):
+        captureStillImage(flightName, requestedTime)
+
+    # The image should now be there, but just in case, we catch exceptions
     if thumbnail:
-        f = open("/home/irg/xgds_plrp/data/test/sampleImages/frameGrabSample.thumb.jpg", "r")
+        try:
+            f = open(thumbnailPath, "r")
+            mimeType = "image/jpeg"
+        except IOError:
+            f = open(noImageThumbnailPath, "r")
+            mimeType = "image/jpeg"
     else:
-        f = open("/home/irg/xgds_plrp/data/test/sampleImages/frameGrabSample.jpg", "r")
+        try:
+            f = open(fullSizePath, "r")
+            mimeType = "image/jpeg"
+        except IOError:
+            f = open(noImagePath, "r")
+            mimeType = "image/png"
+
     imageBits = f.read()
     f.close()
+    return HttpResponse(imageBits, content_type=mimeType)
 
-    return HttpResponse(imageBits, content_type="image/jpeg")
+def getChunkfilePathAndOffsetForTime(flightName, time):
+    # First locate video segment
+    try:
+        s = getSegmentForTime(flightName, time)
+    except VideoSegment.DoesNotExist:
+        logging.warning("No segment found for %s at %s" % (flightName, time))
+        s = None
+    except VideoSegment.MultipleObjectsReturned:
+        logging.warning("More than one segment for %s at %s" %
+                        (flightName, time))
+        s = None
+    if s is None:
+        return (None, 0.0)  # Bail out if we didn't get exactly one segement
+
+    # Calculate time offset in segment
+    segmentOffset = (time - s.startTime).total_seconds()
+    # Build path to m3u8 file
+    # e.g. ~/xgds_plrp/data/20140623A_OUT/Video/Recordings
+    chunkIndexPath = "%s/%s/Video/Recordings/Segment%03d/%s" % (
+        settings.RECORDED_VIDEO_DIR_BASE,
+        flightName, s.segNumber, settings.INDEX_FILE_NAME)
+    try:
+        chunkList = m3u8.load(chunkIndexPath).segments
+    except IOError:
+        logging.warning("Could not open M3U8 index for %s at %s" %
+                        (flightName, time))
+        return (None, 0.0)
+    totalDuration = chunkList[0].duration
+    chunkCounter = 0
+    while (segmentOffset > totalDuration):
+        chunkCounter += 1
+        totalDuration += chunkList[chunkCounter].duration
+
+    chunkOffset = segmentOffset - (totalDuration - chunkList[chunkCounter].duration)
+    chunkFilePath = "%s/%s" % (chunkList[chunkCounter].base_uri, chunkList[chunkCounter].uri)
+    return (chunkFilePath, chunkOffset)
+    
+def getSegmentForTime(flightName, time):
+    flightGroup, videoSource = flightName.split("_")
+    GET_EPISODE_FROM_NAME_METHOD = \
+                    getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
+    episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
+    source = SOURCE_MODEL.get().objects.get(shortName=videoSource)
+    segment = VideoSegment.objects.get(episode=episode, startTime__lte=time,
+                                       endTime__gte=time, source=source)
+    return segment
+>>>>>>> Stashed changes
 
 def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=None):
     """
