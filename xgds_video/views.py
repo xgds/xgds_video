@@ -313,7 +313,6 @@ def getSegmentForTime(flightName, time):
     segment = VideoSegment.objects.get(episode=episode, startTime__lte=time,
                                        endTime__gte=time, source=source)
     return segment
->>>>>>> Stashed changes
 
 def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=None):
     """
