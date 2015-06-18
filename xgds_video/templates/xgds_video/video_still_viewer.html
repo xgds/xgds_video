@@ -27,7 +27,7 @@
 
 {% load url from future %}
 {% load nav %}
-{% block siteSection %}Video Still{% endblock %}
+{% block siteSection %}Still {{flightName}} {{formattedTime}}{% endblock %}
     {% block nav %}
     {% nav "xgds_video_flights" %}
     {{ block.super }}
@@ -41,7 +41,12 @@
 	    {% endfor %}
 	    </ul>
 	{% endif %}
-
+	{% if INCLUDE_NOTE_INPUT %}
+	  <section>
+            {% include "xgds_video/video_notes.html" with data=source.form source=source.shortName STATIC_URL=STATIC_URL %}
+          </section>
+        {% endif %}<br/>
+	<div><img src={%url 'videoStill' flightName timeKey %}></div>
 {% endblock contents %}
 
 {% block jsInit %}

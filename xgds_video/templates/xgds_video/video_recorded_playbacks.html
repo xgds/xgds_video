@@ -20,6 +20,7 @@
         jwplayer.key="{{ JWPLAYER_KEY }}";
         STATIC_URL='{{ STATIC_URL }}';
         var submitNoteUrl = "{% url 'record_simple' %}";
+	var videoStillViewerUrl = "{% url 'videoStillViewer' %}";
         var isLive = false;
     </script>
     <!-- for jwplayer to work offline, we pull down the js files that it needs via bower -->
@@ -100,7 +101,7 @@
 	            <div class="buttons">
 	                 <div class="toprow-left">Camera: <b>{{ source.name }}</b></div>
                      <a class="mybutton toprow-right" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="new" style="width:130px">New Window</a>
-                     <a class="mybutton toprow-right" target="new" href="/data/test/sampleImages/frameGrabSample.jpg" style="width:130px">Still</a>
+                     <a class="mybutton toprow-right" href="#" style="width:130px" onClick="showStillViewer('{{flightName}}', '{{source.shortName}}', getUrlFormatPlayerTime('{{source.shortName}}'));">Still</a>
 	                 {% with feed=source.feed_set.all.0.shortName %}
 	                 {% if feed %}
 	                     <a class="mybutton" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>

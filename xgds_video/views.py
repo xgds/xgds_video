@@ -198,8 +198,7 @@ def captureStillImage(flightName, timestamp):
     captureParams = {'frameCaptureOffset': offsetInChunk,
                      'imageSubject': flightName,
                      'collectionTimeZoneName': settings.TIME_ZONE,
-                     'outputDir': os.path.join(settings.DATA_ROOT,
-                                               'user_image_capture',''),
+                     'outputDir': settings.IMAGE_CAPTURE_DIR,
                      'chunkFilePath': chunkPath,
                      'thumbnailSize': {'width': 100, 'height': 56.25},
                      'contactInfo': 'http://www.pavilionlake.com',
@@ -266,6 +265,21 @@ def displayVideoStill(request, flightName=None, time=None, thumbnail=False):
     imageBits = f.read()
     f.close()
     return HttpResponse(imageBits, content_type=mimeType)
+
+def showStillViewerWindow(request, flightName=None, time=None):
+    if flightName == None:
+        return HttpResponse(json.dumps({'error': {'code': -32199,
+                                                  'message': 'You must provide params in URL, cheater.'}
+                                    }),
+                            content_type='application/json')
+
+    timestamp = datetime.datetime.strptime(time, "%Y-%m-%d_%H-%M-%S")
+    formattedTime = timestamp.strftime('%H:%M:%S')
+    return render_to_response('xgds_video/video_still_viewer.html', 
+                              {'flightName':flightName, 'formattedTime':formattedTime, 'timeKey':time,
+                               'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT},
+                              context_instance=RequestContext(request))
+
 
 def getChunkfilePathAndOffsetForTime(flightName, time):
     # First locate video segment

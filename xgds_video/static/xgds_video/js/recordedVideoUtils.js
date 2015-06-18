@@ -295,6 +295,24 @@ function allPaused() {
     return allPaused;
 }
 
+/**
+ * Show still viewer when user clicks the "Still" button
+ */
+function showStillViewer(groupName, source, timestring) {
+    window.open(videoStillViewerUrl + "/" + groupName + "_" + source + "/" + timestring, "_blank");
+}
+
+/**
+ * Returns Date/Time formatted for use in still frame URL
+ */
+function getUrlFormatPlayerTime(source) {
+    var timestamp = getPlayerVideoTime(source);
+    var urlFormatTimestamp = timestamp.getUTCFullYear() + "-" + padNum(timestamp.getUTCMonth()+1,2) + "-" +
+	padNum(timestamp.getUTCDate(), 2) + "_" + padNum(timestamp.getUTCHours(),2) + '-' + 
+	padNum(timestamp.getUTCMinutes(), 2) + '-' + padNum(timestamp.getUTCSeconds(), 2);
+
+    return urlFormatTimestamp
+}
 
 /**
  * Helper for returning current test site time from the jwplayer.
