@@ -48,6 +48,8 @@ XGDS_VIDEO_INCLUDE_NOTE_INPUT = False
 # set this in siteSettings.py. example: 'mvpApp.views.extraVideoContext'
 XGDS_VIDEO_EXTRA_VIDEO_CONTEXT = 'xgds_video.views.extraVideoContext'
 
+# support turning off for testing
+XGDS_VIDEO_ON = True
 
 # Delayed video information
 XGDS_VIDEO_DELAY_MINIMUM_SEC = 20.0
