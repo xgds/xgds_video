@@ -266,17 +266,22 @@ def displayVideoStill(request, flightName=None, time=None, thumbnail=False):
     f.close()
     return HttpResponse(imageBits, content_type=mimeType)
 
+
 def showStillViewerWindow(request, flightName=None, time=None):
-    if flightName == None:
+    if flightName is None:
         return HttpResponse(json.dumps({'error': {'code': -32199,
                                                   'message': 'You must provide params in URL, cheater.'}
-                                    }),
+                                        }),
                             content_type='application/json')
 
     timestamp = datetime.datetime.strptime(time, "%Y-%m-%d_%H-%M-%S")
+    event_timestring = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
     formattedTime = timestamp.strftime('%H:%M:%S')
-    return render_to_response('xgds_video/video_still_viewer.html', 
-                              {'flightName':flightName, 'formattedTime':formattedTime, 'timeKey':time,
+    return render_to_response('xgds_video/video_still_viewer.html',
+                              {'flightName': flightName,
+                               'formattedTime': formattedTime,
+                               'timeKey': time,
+                               'event_timestring': event_timestring,
                                'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT},
                               context_instance=RequestContext(request))
 
