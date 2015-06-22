@@ -86,15 +86,22 @@ $(function() {
         var dataString = 'content=' + content + '&tags=' + tags + '&extras=' + extras;
         // not live, pull the time out of the video
         var iso_string = '';
-        if (!_.isUndefined(event_timestring)){
-            dataString = dataString + '&event_time=' + event_timestring;
-        } else if (isLive == false) {
+        if (isLive == false) {
             var event_time = getPlayerVideoTime(parent.find('input#source').val());
             iso_string = event_time.toISOString();
             iso_string = iso_string.replace('T', ' ');
             iso_string = iso_string.substring(0, 19);
             dataString = dataString + '&event_time=' + iso_string;
-        }
+        } else {
+            try {
+                if (event_timestring !== undefined){
+                    dataString = dataString + '&event_time=' + event_timestring;
+                }
+            }
+            catch(err) {
+                document.getElementById("demo").innerHTML = err.message;
+            }
+        } 
         $.ajax({
             type: 'POST',
             url: submitNoteUrl,
