@@ -19,10 +19,13 @@
  * Initialize jw player
  */
 function setupJWplayer() {
+    jwplayer.key = xgds_video.key;
     
     jwplayer("player_div").setup({
-        file: videoUrl, // note jwplayer bug prevents initial load of playlist until onReady
+        file: xgds_video.videoUrl, // note jwplayer bug prevents initial load of playlist until onReady
         autostart: false,
+        width: "100%",
+        aspectratio: "16:9",
 //        width: maxWidth,
 //        height: videoHeight,
         mute: false,
@@ -30,7 +33,7 @@ function setupJWplayer() {
             enabled: false,
             cookies: false
         },
-        controls: true, //for debugging
+        controls: true,
     });
 }
 
