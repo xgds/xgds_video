@@ -54,6 +54,7 @@ FEED_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_FEED_MODEL)
 SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
+logging.basicConfig(level=logging.INFO)
 
 def test(request):
     return render_to_response("xgds_video/test.html",
