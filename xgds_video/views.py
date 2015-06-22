@@ -275,7 +275,7 @@ def showStillViewerWindow(request, flightName=None, time=None):
                             content_type='application/json')
 
     timestamp = datetime.datetime.strptime(time, "%Y-%m-%d_%H-%M-%S")
-    event_timestring = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
+    event_timestring = timestamp.strftime(time, "%Y-%m-%d %H:%M:%S")
     formattedTime = timestamp.strftime('%H:%M:%S')
     return render_to_response('xgds_video/video_still_viewer.html',
                               {'flightName': flightName,
