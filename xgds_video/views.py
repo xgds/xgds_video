@@ -243,7 +243,7 @@ def displayVideoStill(request, flightName=None, time=None, thumbnail=False):
 
     # We generate full image and thumbnail together, so one check for 
     # existence should be OK.  If we don't find it, we generate one and cache it
-    if  not os.path.isfile(fullSizePath):
+    if not os.path.isfile(fullSizePath):
         captureStillImage(flightName, requestedTime)
 
     # The image should now be there, but just in case, we catch exceptions
