@@ -99,7 +99,7 @@ $(function() {
                 }
             }
             catch(err) {
-                document.getElementById("demo").innerHTML = err.message;
+                console.log(err.message);
             }
         } 
         $.ajax({
