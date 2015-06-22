@@ -294,7 +294,7 @@ def showStillViewerWindow(request, flightName=None, time=None):
     form.fields["extras"].initial = callGetNoteExtras([episode], form.source, request)
 
     return render_to_response('xgds_video/video_still_viewer.html',
-                              {'noteForm': form,
+                              {'form': form,
                                'flightName': flightName,
                                'source': source,
                                'formattedTime': formattedTime,
