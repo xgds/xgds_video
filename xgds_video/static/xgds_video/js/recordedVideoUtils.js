@@ -299,7 +299,12 @@ function allPaused() {
  * Show still viewer when user clicks the "Still" button
  */
 function showStillViewer(groupName, source, timestring) {
-    window.open(videoStillViewerUrl + "/" + groupName + "_" + source + "/" + timestring, "_blank");
+    // if source name is already appended to groupName, don't add it again
+    if (groupName.substr(groupName.length-3, 3) == source) 
+	window.open(videoStillViewerUrl + "/" + groupName + "/" + timestring, "_blank");
+    else
+	window.open(videoStillViewerUrl + "/" + groupName + "_" + source + "/" + 
+		    timestring, "_blank");
 }
 
 /**
