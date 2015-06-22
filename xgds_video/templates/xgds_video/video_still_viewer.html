@@ -1,11 +1,15 @@
 {% extends "base.html" %}
-{% block headExtras %}
-{{block.super}}
-{% endblock headExtras %}
+{% load url from future %}
+{% load nav %}
+{% block siteSection %}Still {{flightName}} {{formattedTime}}{% endblock %}
+    {% block nav %}
+    {% nav "xgds_video_flights" %}
+    {{ block.super }}
+    {% endblock %}
 
  {% block cssExtras %}
  {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery.tagsinput/jquery.tagsinput.css"></link>
+    <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery.tagsinput/dist/jquery.tagsinput.min.css"></link>
     <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.min.css" ></link>
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_video/css/xgds_video.css"></link>
  {% endblock cssExtras %}
@@ -16,22 +20,15 @@
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}underscore/underscore-min.js"></script>
     <script type="text/javascript">
         var submitNoteUrl = "{% url 'record_simple' %}";
+        STATIC_URL='{{ STATIC_URL }}';
     </script>
-    <script src="{{ EXTERNAL_URL }}jquery.tagsinput/jquery.tagsinput.js" type="text/javascript" ></script>
+    <script src="{{ EXTERNAL_URL }}jquery.tagsinput/src/jquery.tagsinput.js" type="text/javascript" ></script>
  	<script src="{{ EXTERNAL_URL }}jquery-form/jquery.form.js" type="text/javascript" ></script>
  	<script type="text/javascript" src="{{ EXTERNAL_URL }}date/index.js"></script>
  	{% if INCLUDE_NOTE_INPUT %}
  	<script src="{{STATIC_URL}}xgds_video/js/video_notes_form.js" type="text/javascript" ></script>
  	{% endif %}
 {% endblock %}
-
-{% load url from future %}
-{% load nav %}
-{% block siteSection %}Still {{flightName}} {{formattedTime}}{% endblock %}
-    {% block nav %}
-    {% nav "xgds_video_flights" %}
-    {{ block.super }}
-    {% endblock %}
 
 {% block contents %}
 	{% if messages %}
