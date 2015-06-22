@@ -190,6 +190,7 @@ def recordedVideoError(request, message):
                               ctx,
                               context_instance=RequestContext(request))
 
+
 def captureStillImage(flightName, timestamp):
     stillLocationFxn = getClassByName(settings.XGDS_VIDEO_GPS_LOCATION_METHOD)
     locationInfo = stillLocationFxn(flightName, timestamp)
@@ -226,8 +227,10 @@ def captureStillImage(flightName, timestamp):
         logging.info("Image capture failed for %s at %s" %
                      (flightName, timestamp))
 
+
 def displayVideoStillThumb(request, flightName=None, time=None):
     return displayVideoStill(request, flightName, time, thumbnail=True)
+
 
 def displayVideoStill(request, flightName=None, time=None, thumbnail=False):
     """
@@ -277,8 +280,23 @@ def showStillViewerWindow(request, flightName=None, time=None):
     timestamp = datetime.datetime.strptime(time, "%Y-%m-%d_%H-%M-%S")
     event_timestring = timestamp.strftime("%Y-%m-%d %H:%M:%S")
     formattedTime = timestamp.strftime('%H:%M:%S')
+
+    # build up the form
+    flightGroup, videoSource = flightName.split("_")
+    GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
+    episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
+    source = SOURCE_MODEL.get().objects.get(shortName=videoSource)
+    form = NoteForm()
+    form.index = 0
+    form.fields["index"] = 0
+    form.source = source
+    form.fields["source"] = source
+    form.fields["extras"].initial = callGetNoteExtras([episode], form.source, request)
+
     return render_to_response('xgds_video/video_still_viewer.html',
-                              {'flightName': flightName,
+                              {'noteForm': form,
+                               'flightName': flightName,
+                               'source': source,
                                'formattedTime': formattedTime,
                                'timeKey': time,
                                'event_timestring': event_timestring,

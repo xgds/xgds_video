@@ -41,7 +41,7 @@
 	{% endif %}
 	{% if INCLUDE_NOTE_INPUT %}
 	  <section>
-            {% include "xgds_video/video_notes.html" with data=source.form source=source.shortName STATIC_URL=STATIC_URL %}
+            {% include "xgds_video/video_notes.html" with data=form source=source.shortName STATIC_URL=STATIC_URL %}
           </section>
         {% endif %}<br/>
 	<div><img src={%url 'videoStill' flightName timeKey %}></div>
