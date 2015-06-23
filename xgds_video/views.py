@@ -283,7 +283,10 @@ def showStillViewerWindow(request, flightName=None, time=None):
     formattedTime = timestamp.strftime('%H:%M:%S')
 
     # build up the form
-    flightGroup, videoSource = flightName.split("_")
+    try:
+        flightGroup, videoSource = flightName.split("_")
+    except:
+        return recordedVideoError(request, "This flight cannot be made into modern stills " + flightName)
     GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
     episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
     source = SOURCE_MODEL.get().objects.get(shortName=videoSource)
