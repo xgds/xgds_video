@@ -481,11 +481,12 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
     segmentNumber = None
     for i in xrange(1000):
         trySegDir = os.path.join(recordingDir, 'Segment%03d' % i)
-        if not os.path.exists(trySegDir):
+        if not os.path.exists(trySegDir) or not os.listdir(trySegDir):
             recordedVideoDir = trySegDir
             segmentNumber = i
             break
     assert segmentNumber is not None
+
     makedirsIfNeeded(recordedVideoDir)
     videoSettingsModel = SETTINGS_MODEL.get()(width=videoFeed.settings.width,
                                               height=videoFeed.settings.height,
@@ -541,10 +542,10 @@ def stopRecording(source, endTime):
     segmenterSvc = '%s_segmenter' % assetName
 
     # we need to set the endtime
-    if source.videosegment_set.all().count() != 0:
-        videoSegment = source.videosegment_set.all()[0]
-        videoSegment.endTime = endTime
-        videoSegment.save()
+    unended_segments = source.videosegment_set.filter(endTime=None)
+    for segment in unended_segments:
+        segment.endTime = endTime
+        segment.save()
 
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
