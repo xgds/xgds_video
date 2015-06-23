@@ -341,16 +341,24 @@ def getChunkfilePathAndOffsetForTime(flightName, time):
     chunkOffset = segmentOffset - (totalDuration - chunkList[chunkCounter].duration)
     chunkFilePath = "%s/%s" % (chunkList[chunkCounter].base_uri, chunkList[chunkCounter].uri)
     return (chunkFilePath, chunkOffset)
-    
+
+
 def getSegmentForTime(flightName, time):
     flightGroup, videoSource = flightName.split("_")
-    GET_EPISODE_FROM_NAME_METHOD = \
-                    getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
+    GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
     episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
     source = SOURCE_MODEL.get().objects.get(shortName=videoSource)
-    segment = VideoSegment.objects.get(episode=episode, startTime__lte=time,
-                                       endTime__gte=time, source=source)
-    return segment
+    if episode.endTime:
+        segment = VideoSegment.objects.get(episode=episode, startTime__lte=time,
+                                           endTime__gte=time, source=source)
+        return segment
+    else:
+        try:
+            segment = VideoSegment.objects.get(episode=episode, startTime__lte=time, endTime__gte=time, source=source)
+        except:
+            segment = VideoSegment.objects.get(episode=episode, startTime__lte=time, endTime=None, source=source)
+        return segment
+
 
 def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=None):
     """
@@ -552,7 +560,7 @@ def videoIndexFile(request, flightName=None, sourceShortName=None, segmentNumber
     suffix = GET_INDEX_FILE_METHOD(flightName, sourceShortName, segmentNumber)
 
     # use regex substitution to replace hostname, etc.
-    newIndex = util.updateIndexFilePrefix(suffix, settings.SCRIPT_NAME)
+    newIndex = util.updateIndexFilePrefix(suffix, settings.SCRIPT_NAME, flightName)
     # return modified file in next line
     response = HttpResponse(newIndex, content_type="application/x-mpegurl")
     response['Content-Disposition'] = 'filename = "prog_index.m3u8"'

@@ -27,6 +27,10 @@ TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
 VIDEO_DELAY_SECONDS = 1
 
 
+def getDelaySeconds(flightName):
+    return VIDEO_DELAY_SECONDS
+
+
 def getShortTimeString(dateTime):
     return dateTime.strftime("%H:%M:%S")
 
@@ -122,7 +126,7 @@ def getIndexFileSuffix(flightName, sourceShortName, segmentNumber):
     return 'images/%s/%s/Segment%03d/prog_index.m3u8' % (flightName, sourceShortName, int(segmentNumber))
 
 
-def updateIndexFilePrefix(indexFileSuffix, subst):
+def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
     """
     search and replace in file
     pattern: regex pattern for searching
@@ -134,7 +138,7 @@ def updateIndexFilePrefix(indexFileSuffix, subst):
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
     try:
         baseFile = open(indexFilePath)
-        videoDelayInSecs = VIDEO_DELAY_SECONDS  # getVideoDelay() - settings.XGDS_VIDEO_DELAY_MINIMUM_SEC
+        videoDelayInSecs = getDelaySeconds(flightName)  # getVideoDelay() - settings.XGDS_VIDEO_DELAY_MINIMUM_SEC
         if videoDelayInSecs < 0:
             videoDelayInSecs = 0
         videoDelayInSegments = int(round(videoDelayInSecs / settings.XGDS_VIDEO_SEGMENT_SEC))

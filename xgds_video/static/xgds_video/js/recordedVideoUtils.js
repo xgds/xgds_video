@@ -300,11 +300,12 @@ function allPaused() {
  */
 function showStillViewer(groupName, source, timestring) {
     // if source name is already appended to groupName, don't add it again
-    if (groupName.substr(groupName.length-3, 3) == source) 
-	window.open(videoStillViewerUrl + "/" + groupName + "/" + timestring, "_blank");
-    else
-	window.open(videoStillViewerUrl + "/" + groupName + "_" + source + "/" + 
+    if (groupName.substr(groupName.length-3, 3) == source) {
+        window.open(videoStillViewerUrl + "/" + groupName + "/" + timestring, "_blank");
+    } else {
+        window.open(videoStillViewerUrl + "/" + groupName + "_" + source + "/" + 
 		    timestring, "_blank");
+    }   
 }
 
 /**

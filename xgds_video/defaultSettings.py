@@ -67,6 +67,9 @@ RECORDED_VIDEO_URL_BASE = None
 # Path in data where you will find your video files
 XGDS_VIDEO_INDEX_FILE_METHOD = 'xgds_video.util.getIndexFileSuffix'
 
+# Method for looking up delay from a flight
+XGDS_VIDEO_DELAY_AMOUNT_METHOD = 'xgds_video.util.getDelaySeconds'
+
 # Override this in your siteSettings to include a key for enterprise JWPLAYER
 """
 
