@@ -139,8 +139,9 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
     try:
         baseFile = open(indexFilePath)
-        DELAY_METHOD = getClassByName(settings.XGDS_VIDEO_DELAY_AMOUNT_METHOD)
-        videoDelayInSecs = DELAY_METHOD(flightName)
+#        DELAY_METHOD = getClassByName(settings.XGDS_VIDEO_DELAY_AMOUNT_METHOD)
+#        videoDelayInSecs = DELAY_METHOD(flightName)
+        videoDelayInSecs = getDelay(flightName)
         if videoDelayInSecs < 0:
             videoDelayInSecs = 0
         videoDelayInSegments = int(round(videoDelayInSecs / settings.XGDS_VIDEO_SEGMENT_SEC))
