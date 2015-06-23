@@ -139,7 +139,8 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
     try:
         baseFile = open(indexFilePath)
-        videoDelayInSecs = getDelaySeconds(flightName)  # getVideoDelay() - settings.XGDS_VIDEO_DELAY_MINIMUM_SEC
+        DELAY_METHOD = getClassByName(settings.XGDS_VIDEO_DELAY_AMOUNT_METHOD)
+        videoDelayInSecs = DELAY_METHOD(flightName)
         if videoDelayInSecs < 0:
             videoDelayInSecs = 0
         videoDelayInSegments = int(round(videoDelayInSecs / settings.XGDS_VIDEO_SEGMENT_SEC))
@@ -154,7 +155,7 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
         lineList = processedClips.split("\n")
         maxLineNum = len(lineList) - videoDelayInLines
         processedIndex = []
-	if maxLineNum <= 0:
+        if maxLineNum <= 0:
             processedIndex.append(header)
         else:
             for idx, line in enumerate(lineList):
