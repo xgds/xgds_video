@@ -488,17 +488,25 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
     assert segmentNumber is not None
 
     makedirsIfNeeded(recordedVideoDir)
-    videoSettingsModel = SETTINGS_MODEL.get()(width=videoFeed.settings.width,
-                                              height=videoFeed.settings.height,
-                                              compressionRate=None,
-                                              playbackDataRate=None)
-    videoSettingsModel.save()
+    try:
+        videoSettingses = SETTINGS_MODEL.get().objects.filter(width=videoFeed.settings.width,
+                                                              height=videoFeed.settings.height,
+                                                              compressionRate=None,
+                                                              playbackDataRate=None)
+        videoSettings = videoSettingses.first()
+    except:
+        # make a new one
+        videoSettings = SETTINGS_MODEL.get()()
+        videoSettings.width = videoFeed.settings.width
+        videoSettings.height = videoFeed.settings.height
+        videoSettings.save()
+
     videoSegment = SEGMENT_MODEL.get()(directoryName="Segment",
                                        segNumber=segmentNumber,
                                        indexFileName="prog_index.m3u8",
                                        startTime=startTime,
                                        endTime=None,
-                                       settings=videoSettingsModel,
+                                       settings=videoSettings,
                                        source=source,
                                        episode=episode)
     videoSegment.save()
