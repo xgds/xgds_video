@@ -18,13 +18,14 @@ import pytz
 import re
 import datetime
 import os
+import traceback
 
 from xgds_video import settings
 from geocamUtil.loader import getClassByName
 # from plrpExplorer.views import getVideoDelay # FIX-ME: should be abstracted better from video
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
-VIDEO_DELAY_SECONDS = 1
+VIDEO_DELAY_SECONDS = 300
 
 
 def getDelaySeconds(flightName):
@@ -146,21 +147,26 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
 
         #  edit the index file
         clips = baseFile.read().split('#EXTINF:')
+        baseFile.close()
         header = clips.pop(0)
 #        clips.pop(0)  # badFirstClip
         processedClips = '#EXTINF:'.join([header] + clips)
         lineList = processedClips.split("\n")
         maxLineNum = len(lineList) - videoDelayInLines
         processedIndex = []
-        for idx, line in enumerate(lineList):
-            if idx < maxLineNum:
-                processedIndex.append(processLine(segmentDirectoryUrl, line))
-        baseFile.close()
+	if maxLineNum <= 0:
+            processedIndex.append(header)
+        else:
+            for idx, line in enumerate(lineList):
+                if idx < maxLineNum:
+                    processedIndex.append(processLine(segmentDirectoryUrl, line))
         if videoDelayInSecs == 0:
             if not any([findEndMarker(item) for item in processedIndex]):
                 processedIndex.append("#EXT-X-ENDLIST")
         else:
-            print "Video delay non-zero - NOT adding any extra end tag"
+            print "Video delay %d - NOT adding any extra end tag" % videoDelayInSecs
         return "\n".join(processedIndex) + "\n"
     except:
+	traceback.print_exc()
+	traceback.print_stack()
         return segmentDirectoryUrl
