@@ -23,13 +23,12 @@ import traceback
 from xgds_video import settings
 from geocamUtil.loader import getClassByName
 # from plrpExplorer.views import getVideoDelay # FIX-ME: should be abstracted better from video
+from xgds_video import settings
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
-VIDEO_DELAY_SECONDS = 300
-
 
 def getDelaySeconds(flightName):
-    return VIDEO_DELAY_SECONDS
+    return settings.VIDEO_DELAY_SECONDS
 
 
 def getShortTimeString(dateTime):
