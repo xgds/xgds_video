@@ -347,10 +347,13 @@ def getChunkfilePathAndOffsetForTime(flightName, time):
 
 
 def getSegmentForTime(flightName, time):
-    flightGroup, videoSource = flightName.split("_")
+    try:
+        flightGroup, videoSource = flightName.split("_")
+        source = SOURCE_MODEL.get().objects.get(shortName=videoSource)
+    except:
+        return None
     GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
     episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
-    source = SOURCE_MODEL.get().objects.get(shortName=videoSource)
     if episode.endTime:
         segment = VideoSegment.objects.get(episode=episode, startTime__lte=time,
                                            endTime__gte=time, source=source)
