@@ -54,7 +54,7 @@ XGDS_VIDEO_ON = True
 # Delayed video information
 XGDS_VIDEO_DELAY_MINIMUM_SEC = 20.0
 XGDS_VIDEO_SEGMENT_SEC = 5.0
-VIDEO_DELAY_SECONDS = 0
+XGDS_VIDEO_DELAY_SECONDS = 0
 
 ZEROMQ_PORTS = 'path to ports.json file -- set this in siteSettings.py'
 

@@ -373,6 +373,7 @@ def getTimezoneFromFlightName(flightName):
 
 
 def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=None):
+    """ TODO flightName is actually groupName """
     """
     Returns first segment of all sources that are part of a given episode.
     Used for both playing back videos from active episode and also
@@ -396,8 +397,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     if flightName:
         GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
         episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
-        GET_TIMEZONE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_TIMEZONE_FROM_NAME)
-        flightTimezone = GET_TIMEZONE_FROM_NAME_METHOD(flightName)
+
     # this happens when user looks for live recorded
     if not episode:
         GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
@@ -414,8 +414,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     # get the segments
     segments = episode.videosegment_set.all()
     if not segments:
-        print 'NO SEGMENTS, flightname'
-        print flightName
+        print 'NO SEGMENTS for %s ' %  flightName
         msg = 'Video segments not found '
         if flightName:
             msg = msg + flightName
@@ -450,10 +449,16 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         source.form = form
         index = index + 1
 
+    if flightName:
+        fullFlightName = flightName + "_" + sources[0].shortName
+        GET_TIMEZONE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_TIMEZONE_FROM_NAME)
+        flightTimezone = GET_TIMEZONE_FROM_NAME_METHOD(str(fullFlightName))
+    else:
+        flightTimezone = GET_TIMEZONE_FROM_NAME_METHOD(None)
+
     if not segmentsDict:
         return recordedVideoError(request, "No video segments found " + flightName)
     segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4, cls=DatetimeJsonEncoder)
-    print segmentsJson
     episodeJson = json.dumps(episode.getDict())
 
     ctx = {
