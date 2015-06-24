@@ -178,10 +178,10 @@ class AbstractVideoEpisode(models.Model):
         episodeEndTime = None
 
         if self.startTime:
-            episodeStartTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime))
+            episodeStartTime = util.pythonDatetimeToJSON(self.startTime) #util.convertUtcToLocal(self.startTime))
 
         if self.endTime:  # if endTime is none (when live stream has not ended)
-            episodeEndTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime))
+            episodeEndTime = util.pythonDatetimeToJSON(self.endTime) #util.convertUtcToLocal(self.endTime))
 
         return {"shortName": self.shortName,
                 "startTime": episodeStartTime,

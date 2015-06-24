@@ -356,7 +356,7 @@ function setupPlaylist(source) {
  * the seek time value specified in the 'seek' text box.
  */
 function seekCallBack() {
-    var seekTimeStr = $('#seekTime').value();
+    var seekTimeStr = $('#seekTime').val();
     if ((seekTimeStr == null) ||
         (Object.keys(xgds_video.displaySegments).length < 1)) {
         return;
