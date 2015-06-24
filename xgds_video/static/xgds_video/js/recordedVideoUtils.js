@@ -14,6 +14,12 @@
 //specific language governing permissions and limitations under the License.
 // __END_LICENSE__
 
+// TODO better to have the server provide
+moment.tz.add([
+    'America/Los_Angeles|PST PDT|80 70|0101|1Lzm0 1zb0 Op0',
+    'America/New_York|EST EDT|50 40|0101|1Lz50 1zb0 Op0'
+]);
+
 jQuery(function($) {
     var windowWidth = $(window).width();
     $(window).resize(function()  {
@@ -42,8 +48,8 @@ function toJsDateTime(jsonDateTime) {
         //need to subtract one from month since Javascript datetime indexes month
         //as 0 to 11.
         jsonDateTime.month = jsonDateTime.month - 1;
-        return new Date(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day,
-                jsonDateTime.hour, jsonDateTime.min, jsonDateTime.seconds, 0);
+        return new Date(Date.UTC(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day,
+                jsonDateTime.hour, jsonDateTime.min, jsonDateTime.seconds, 0));
     }
     return null;
 }
@@ -121,10 +127,15 @@ function getSliderTime() {
     return new Date(xgds_video.masterSlider.slider('value') * 1000);
 }
 
-
+function getLocalTimeString(datetime){
+    var utctime = moment(datetime);
+    var pdttime = utctime.tz(xgds_video.flightTZ)
+    var time = pdttime.format("HH:mm:ss z")
+    return time;
+}
 function setSliderTimeLabel(datetime) {
-    var time = datetime.toTimeString().replace('GMT-0700', '');
-    $('#sliderTimeLabel').text(time);
+//    var time = datetime.toTimeString().replace('GMT-0700', '');
+    $('#sliderTimeLabel').text(getLocalTimeString(datetime));
 }
 
 
@@ -140,7 +151,7 @@ function setSliderTime(datetime) {
  * Set test site time of the player
  */
 function setPlayerTimeLabel(datetime, sourceName) {
-    $('#testSiteTime' + sourceName).html(datetime.toString());
+    $('#testSiteTime' + sourceName).html(getLocalTimeString(datetime));
 }
 
 

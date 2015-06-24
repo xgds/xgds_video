@@ -24,6 +24,9 @@
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}underscore/underscore-min.js"></script>
     <script type="text/javascript" src="{{ EXTERNAL_URL }}masonry/dist/masonry.pkgd.min.js" ></script>
     <script type="text/javascript" src="{{ EXTERNAL_URL }}jwplayer/jwplayer.js"></script>
+    <script type="text/javascript" src="{{ EXTERNAL_URL }}moment/moment.js"></script>
+    <script type="text/javascript" src="{{ EXTERNAL_URL }}moment-timezone/moment-timezone.js"></script>
+    
     <script type="text/javascript">
         jwplayer.key="{{ JWPLAYER_KEY }}";
         STATIC_URL='{{ STATIC_URL }}';
@@ -69,7 +72,7 @@
 		   			</tr>
 	   			{% endif %}
 	   			<tr>
-	   				<td>Current Time: </td>
+	   				<td>Local Time: </td>
 	   				<td> <span id="sliderTimeLabel"></span></td>
 	   			</tr>
 	   		</table>
@@ -157,7 +160,8 @@ var indexFileUrl = null;
                        indexFileUrl: indexFileUrl,
 	                   noteTimeStamp: toJsDateTime({{ noteTimeStamp|safe }}),
 	                   flightName: {% if flightName %} "{{ flightName }}" {% else %} null {% endif %},
-	                   sourceVehicle: {{ sourceVehicle|safe }}
+	                   sourceVehicle: {{ sourceVehicle|safe }},
+	                   flightTZ: '{{ flightTZ }}'
                      };
 
     // displaySegments are in json format like this:

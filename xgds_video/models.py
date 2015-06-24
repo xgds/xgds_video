@@ -136,8 +136,8 @@ class AbstractVideoSegment(models.Model):
                 "segNumber": self.segNumber,
                 "indexFileName": self.indexFileName,
                 "source": self.source.getDict(),
-                "startTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.startTime)),
-                "endTime": util.pythonDatetimeToJSON(util.convertUtcToLocal(self.endTime)),
+                "startTime": util.pythonDatetimeToJSON(self.startTime), # util.convertUtcToLocal(self.startTime)),
+                "endTime": util.pythonDatetimeToJSON(self.endTime), # util.convertUtcToLocal(self.endTime)),
                 "timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'],
                 "settings": self.settings.getDict(),
                 "episode": self.episode.getDict()}

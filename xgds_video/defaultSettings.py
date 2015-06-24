@@ -60,6 +60,7 @@ ZEROMQ_PORTS = 'path to ports.json file -- set this in siteSettings.py'
 XGDS_VIDEO_GET_EPISODE_FROM_NAME = 'xgds_video.views.getEpisodeFromName'
 XGDS_VIDEO_GET_ACTIVE_EPISODE = 'xgds_video.views.getActiveEpisode'
 XGDS_VIDEO_GET_SOURCES_FROM_VEHICLE = 'xgds_video.views.getSourcesFromVehicle'
+XGDS_VIDEO_GET_TIMEZONE_FROM_NAME = 'xgds_video.views.getTimezoneFromFlightName'
 
 # set this in siteSettings.py example: DATA_URL
 RECORDED_VIDEO_URL_BASE = None
@@ -88,4 +89,6 @@ XGDS_VIDEO_BOWER_INSTALLED_APPS = (
     'AC_QuickTime=https://java.net/projects/swinglabs/sources/svn/content/trunk/website/web/scripts/AC_QuickTime.js?raw=true',
     'http://p.jwpcdn.com/6/jwpsrv_frq.js',
     'http://p.jwpcdn.com/6/8/jwpsrv.js',
+    'moment',
+    'moment-timezone',
 )

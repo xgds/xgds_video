@@ -15,6 +15,7 @@
 # __END_LICENSE__
 
 from __future__ import division
+import json
 import stat
 import logging
 import os
@@ -35,8 +36,8 @@ from django.template import RequestContext
 # from django.views.generic.list_detail import object_list
 from django.contrib import messages
 
-from geocamUtil import anyjson as json
 from geocamUtil import dateparse
+from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 
 from xgds_notes.forms import NoteForm
 
@@ -55,6 +56,7 @@ SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 
 logging.basicConfig(level=logging.INFO)
+
 
 def test(request):
     return render_to_response("xgds_video/test.html",
@@ -366,6 +368,10 @@ def getSegmentForTime(flightName, time):
         return segment
 
 
+def getTimezoneFromFlightName(flightName):
+    return 'America/Los_Angeles'
+
+
 def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=None):
     """
     Returns first segment of all sources that are part of a given episode.
@@ -390,6 +396,8 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     if flightName:
         GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
         episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
+        GET_TIMEZONE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_TIMEZONE_FROM_NAME)
+        flightTimezone = GET_TIMEZONE_FROM_NAME_METHOD(flightName)
     # this happens when user looks for live recorded
     if not episode:
         GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
@@ -444,7 +452,8 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
 
     if not segmentsDict:
         return recordedVideoError(request, "No video segments found " + flightName)
-    segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4)
+    segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4, cls=DatetimeJsonEncoder)
+    print segmentsJson
     episodeJson = json.dumps(episode.getDict())
 
     ctx = {
@@ -455,6 +464,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         'noteTimeStamp': requestedTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
         'sources': sources,
         'flightName': flightName,
+        'flightTZ': flightTimezone,
         'sourceVehicle': json.dumps(sourceVehicle),
         'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT
     }
