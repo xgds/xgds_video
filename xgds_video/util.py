@@ -162,7 +162,7 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
             for idx, line in enumerate(lineList):
                 if idx < maxLineNum:
                     processedIndex.append(processLine(segmentDirectoryUrl, line))
-        if videoDelayInSecs == 0:
+        if False:
             if not any([findEndMarker(item) for item in processedIndex]):
                 processedIndex.append("#EXT-X-ENDLIST")
         else:
