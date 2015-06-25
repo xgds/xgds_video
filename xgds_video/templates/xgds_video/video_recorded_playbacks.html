@@ -99,7 +99,7 @@
 			<div class="item" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
 	            <div class="buttons">
 	                 <div class="toprow-left">Camera: <b>{{ source.name }}</b></div>
-                     <a class="mybutton toprow-right" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{{flightName}}_{{source.shortName}}" style="width:130px">New Window</a>
+                     <a class="mybutton toprow-right" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{% if sources|length > 1 %}{{flightName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
                      <a class="mybutton toprow-right" href="#" style="width:130px" onClick="showStillViewer('{{flightName}}', '{{source.shortName}}', getUrlFormatPlayerTime('{{source.shortName}}'));">Still</a>
 	                 {% with feed=source.feed_set.all.0.shortName %}
 	                 {% if feed %}
