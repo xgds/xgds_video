@@ -522,13 +522,13 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
         videoSettings.height = videoFeed.settings.height
         videoSettings.save()
 
-    videoSegment = SEGMENT_MODEL.get().objects.get_or_create(directoryName="Segment",
-                                                             segNumber=segmentNumber,
-                                                             indexFileName="prog_index.m3u8",
-                                                             endTime=None,
-                                                             settings=videoSettings,
-                                                             source=source,
-                                                             episode=episode)
+    videoSegment, created = SEGMENT_MODEL.get().objects.get_or_create(directoryName="Segment",
+                                                                      segNumber=segmentNumber,
+                                                                      indexFileName="prog_index.m3u8",
+                                                                      endTime=None,
+                                                                      settings=videoSettings,
+                                                                      source=source,
+                                                                      episode=episode)
     videoSegment.startTime = startTime
     videoSegment.save()
 
