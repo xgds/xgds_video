@@ -169,6 +169,6 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
             print "Video delay %d - NOT adding any extra end tag" % videoDelayInSecs
         return "\n".join(processedIndex) + "\n"
     except:
-	traceback.print_exc()
-	traceback.print_stack()
+        traceback.print_exc()
+        traceback.print_stack()
         return segmentDirectoryUrl

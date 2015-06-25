@@ -16,7 +16,7 @@
 
 
 /**
- * Initialize jw player
+ * Initialize jw player; this is used for old .mov video
  */
 function setupJWplayer() {
     jwplayer.key = xgds_video.key;
@@ -26,8 +26,6 @@ function setupJWplayer() {
         autostart: false,
         width: "100%",
         aspectratio: "16:9",
-//        width: maxWidth,
-//        height: videoHeight,
         mute: false,
         analytics: {
             enabled: false,
