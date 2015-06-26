@@ -1,33 +1,14 @@
-{% extends "base.html" %}
+{% extends "xgds_video/video_recorded_playbacks.html" %}
 {% load url from future %}
-{% load nav %}
-{% block siteSection %}Video{% endblock %}
-    {% block nav %}
-    {% nav "xgds_video_flights" %}
-    {{ block.super }}
-    {% endblock %}
-
-    {% block sitemenu-content-secondary %}
-   		{% include "xgds_video/video_subnav.html" %}
-    {% endblock %}
-
- {% block cssExtras %}
- {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery.tagsinput/dist/jquery.tagsinput.min.css"></link>
-    <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.min.css" ></link>
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_video/css/xgds_video.css"></link>
- {% endblock cssExtras %}
-
-{% block scripts %}
-{{block.super}}
-	{% include "xgds_video/VideoJS.html" with INCLUDE_NOTE_INPUT=INCLUDE_NOTE_INPUT JWPLAYER_KEY=JWPLAYER_KEY STATIC_URL=STATIC_URL %}
-	<script type="text/javascript">
-        var hasSliderTimeLabel = true;
-        var hasMasterSlider = true;
-    </script>
-	
-{% endblock %}
  
+ {% block scripts %}
+	{{block.super}}
+	<script type="text/javascript">
+        var hasSliderTimeLabel = false;
+        var hasMasterSlider = false;
+    </script>
+{% endblock %}
+
 {% block contents %}
 	{% if messages %}
 	    <ul class="messages" id="errorMessage" style="color:red;">
@@ -38,19 +19,8 @@
 	{% endif %}
 
     {% if segmentsJson %}
-    	<div id="topStuff" >
-    		<div id="controllers" > 
-    			<br/>
-    			<div class="controller_div">
-	          	<a class="btn btn-info" id="playbuttonLink" href="#" onclick="playButtonCallback()">
-	              <i id="playbutton" class="icon-play"></i>
-	              </a>
-	            <a class="btn btn-info" id="pausebuttonLink" href="#" onclick="pauseButtonCallback()">
-	              <i id="pausebutton" class="icon-pause active"></i>
-	              </a>
-	             </div>
-	          </div>
-	    	<div id="infoTable" >
+    	<div id="topStuff">
+	    	<div id="infoTable">
 	    	<table>
 	    		{% if episode %}
 		   			<tr>
@@ -58,31 +28,29 @@
 		   				<td> {{ episode.shortName }} </td>
 		   			</tr>
 	   			{% endif %}
-	   			<tr>
-	   				<td>Local Time: </td>
-	   				<td> <span id="sliderTimeLabel"></span></td>
-	   			</tr>
 	   		</table>
-	   		</div>
-	   		<div id="seekTimeBox" >
-				<label for="seekTime">Jump to:</label>
-	   			<input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
-	   			<button type="submit" class="mybutton small" id="seekButton" onclick=seekCallBack()> Go </button>
 	   		</div>
    		</div>
 
  		<fieldset id="videoFieldset">
- 			  <div id="ribbon"></div>
-		 	  <div id="masterSlider" class="masterSlider"></div>
+	          <div > 
+	          	<a class="btn btn-small btn-info" href="#" onclick="playButtonCallback()">
+	              <i id="playbutton" class="icon-play active"></i>
+	              </a>
+	            <a class="btn btn-small btn-info" href="#" onclick="pauseButtonCallback()">
+	              <i id="pausebutton" class="icon-pause"></i>
+	              </a>
+	          </div>
+  		  	  <div id="legend"></div>
  		</fieldset>
 
-        <div id="container"> <!--   class="js-packery" data-packery-options='{ "itemSelector": ".item", "gutter": 5, "isInitLayout":false }'> --> 
+        <div id="container" class="js-masonry" data-masonry-options='{"itemSelector": ".item", "gutter":5, "isInitLayout":false}'>
         {% for source in sources %}
-			<div class={% if sources|length > 1 %}"item w2"{% else %}"item"{% endif %} id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
+			<div class="item" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
 	            <div class="buttons">
 	                 <div class="toprow-left">Camera: <b>{{ source.name }}</b></div>
-                     <a class="mybutton toprow-right" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{% if sources|length > 1 %}{{flightName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
-                     <a class="mybutton toprow-right" href="#" style="width:130px" onClick="showStillViewer('{{flightName}}', '{{source.shortName}}', getUrlFormatPlayerTime('{{source.shortName}}'));">Still</a>
+                     <a class="mybutton toprow-right" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="_blank" style="width:130px">New Window</a>
+                     <a class="mybutton toprow-right" href="#" style="width:130px" onClick="showStillViewer('{{flightName}}', '{{source.shortName}}', getUrlFormatPlayerTime('{{source.shortName}}'));">TODO Still</a>
 	                 {% with feed=source.feed_set.all.0.shortName %}
 	                 {% if feed %}
 	                     <a class="mybutton" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>
@@ -96,8 +64,8 @@
              	{% endif %}
              	<!--embed the video-->
              	<section>
-              		<div id="player_container" class="row"> <!-- float-left">  -->
-             			<div id="{{ source.shortName }}" class="eleven columns"></div>
+              		<div id="player_container" class="float-left">
+             			<div id="{{ source.shortName }}"></div>
              		</div> <!--  player-container -->
              		<div id="{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
              	</section>
@@ -108,7 +76,7 @@
              	</section>
             </div><!--  item -->
         {% endfor %}
-        </div> <!--  js packery container -->
+        </div> <!--  js masonry container -->
 
     {% endif %}
 {% endblock contents %}
@@ -146,10 +114,13 @@ var indexFileUrl = null;
 	                   flightTZ: '{{ flightTZ }}'
                      };
 
+
+    //convert episode start/end time to javascript dateTime
     {% if episode %}
     	convertJSONtoJavascriptDateTime(xgds_video.episode);
 	{% endif %}
 
+    // convert segment start and end times to javascript dateTime
     {% for source in sources %}
         var segments = xgds_video.displaySegments["{{ source.shortName }}"];
         if ((segments != undefined) && (segments.length > 0)) {
@@ -179,23 +150,19 @@ var indexFileUrl = null;
         }
     {% endfor %}
 
-    //set up the slider and the player
-    if (hasMasterSlider){
-    	setupSlider();
-    }
-    
+    presizeVideoDivs();
+
+    //set up the player
     var jwplayerOptions = {
-            //autostart: false,
-            //width: "100%",
-        	//aspectratio: "16:9",
-            mute: true,
+//            autostart: true,
+//        	width: "100%",
+//        	aspectratio: "16:9",
+//             width: maxWidth,
+//            height: videoHeight,
+            mute: true
             };
-    setupJWplayer(jwplayerOptions, hasMasterSlider, false, "100%");
+    setupJWplayer(jwplayerOptions, hasMasterSlider, true);
 {% endif %}
- 	//update  sizing
- 	var $container = $('#container');
- 	$container.packery({
-  	itemSelector: '.item',
-  	gutter: 10
-	}).packery();
- {% endblock jsInit %}
+ 	//update masonry sizing
+ 	$('#container').masonry().masonry();
+{% endblock jsInit %}

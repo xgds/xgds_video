@@ -81,11 +81,11 @@ function startPlayers() {
         }
     }
     else {
-	console.log("INITIAL SEEK!!");
-	// force an initial seek to buffer data
+        console.log("INITIAL SEEK!!");
+	//  force an initial seek to buffer data
         xgds_video.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
-	for (var source in xgds_video.displaySegments) {
-	    console.log("Seeking: " + source);
+        for (var source in xgds_video.displaySegments) {
+            console.log("Seeking: " + source);
 //	    jwplayer(source).playlistItem(0).seek(0);
 	}
     }
@@ -113,13 +113,12 @@ function startPlayer(player) {
             seekAllPlayersToTime(datetime);
             return;
         }
-    }
-    else {
-	console.log("INITIAL SEEK!!");
+    } else {
+        console.log("INITIAL SEEK!!");
 	// force and initial seek to buffer data
         xgds_video.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
-	console.log("Seeking: " + player.id);
-	player.playlistItem(0);
+        console.log("Seeking: " + player.id);
+        player.playlistItem(0);
     }
     
     //find the first segment and play it.
@@ -130,7 +129,7 @@ function startPlayer(player) {
 //            player.pause(true);
     } else {
         console.log('delaying ' + player.id);
-	player.pause(true);
+        player.pause(true);
     }
 }
 
@@ -168,24 +167,163 @@ function soundController() {
     }
 }
 
+var commonOptions = {
+        controls: false,
+        analytics: {
+            enabled: false,
+            cookies: false
+        },
+        events: {
+            onReady: function() {
+                setupPlaylist(this.id);
+                //if there is a seektime in the url, start videos at that time.
+                if (window.location.hash) {
+                    seekFromUrlOffset();
+                } else {
+                    startPlayer(this);
+                }
+                soundController();
+            },
+            onComplete: function() {
+                //stop until start of the next segment.
+                this.pause(true);
+                onSegmentComplete(this);
+            },
+            onPlay: function(e) { //gets called per source
+                console.log("onPlay: playlist " + this.id + " index " + this.getPlaylistIndex());
+                var segments = xgds_video.displaySegments[this.id];
+                var segment = segments[this.getPlaylistIndex()];
+                console.log("seg start " + segment.startTime + " seg end " + segment.endTime);
+                var pendingActions = pendingPlayerActions[this.id];
+                if (!(_.isUndefined(pendingActions)) && !(_.isEmpty(pendingActions))) {
+                    for (var i = 0; i < pendingActions.length; i++) {
+                        console.log(this.id + " ABOUT TO SEEK ");
+                        pendingActions[i].action(pendingActions[i].arg);
+                        console.log(this.id + ": pending: " + pendingActions[i].arg);
+                        console.log("onPlay1: playlist " + this.id + " index " + this.getPlaylistIndex());
+                    }
+                    pendingPlayerActions[this.id] = [];
+                }
+                if (xgds_video.initialState == true) {
+                    xgds_video.initialState = false;
+                }
+                if (xgds_video.seekFlag) {
+                    xgds_video.seekFlag = false;
+                    console.log("onPlay2: playlist " + this.id + " index " + this.getPlaylistIndex());
+                    if (hasMasterSlider){ 
+                        updateSliderFromPlayer();
+                        console.log("onPlay3: playlist " + this.id + " index " + this.getPlaylistIndex());
+                    }
+                }
+                onTimeController(this);
+                console.log("onPlay4: playlist " + this.id + " index " + this.getPlaylistIndex());
+            },
+            onPause: function(e) {
+                //just make sure the item does get paused.
+        console.log("*** ON PAUSE ***");
+                onTimeController(this);
+            },
+            onBuffer: function(e) {
+                onTimeController(this);
+            },
+            onIdle: function(e) {
+                if (e.position > Math.floor(e.duration)) {
+                    this.pause(true);
+                    onSegmentComplete(this);
+                }
+                onTimeController(this);
+            },
+    onSeek: function(e) {
+        console.log('seek with player state: ' + this.getState());
+        // onTimeController(this);
+            },
+            onTime: function(object) {
+                // need this. otherwise slider jumps around while moving.
+                if (hasMasterSlider){
+                    if (xgds_video.movingSlider == true) {
+                        return;
+                    }
+                }
+
+                if (!xgds_video.playFlag) {
+                    this.pause(true);
+                    return;
+                }
+
+                // update test site time (all sources that are 'PLAYING')
+                if (!xgds_video.seekFlag && !xgds_video.movingSlider) {
+                    var testSiteTime = getPlayerVideoTime(this.id);
+                    setPlayerTimeLabel(testSiteTime, this.id);
+
+                    if (xgds_video.initialState != true) {
+                        //if this call is from the current 'onTimePlayer'
+                        if (xgds_video.onTimePlayer == this.id) {
+                            // update the slider here.
+                            var updateTime = getPlayerVideoTime(this.id);
+                            if (!(_.isUndefined(updateTime))) {
+                                awakenIdlePlayers(updateTime, this.id);
+                                setSliderTime(updateTime);
+                            }
+                        }
+                    }
+                }
+                //if at the end of the segment, pause.
+                if (object.position > Math.floor(object.duration)) {
+                    this.pause(true);
+                    onSegmentComplete(this);
+                }
+            }
+        }
+    };
+
+function buildOptions(initial, theFile, autoStart, width){
+    /*listbar: {
+    position: "right",
+    size: 240
+    },
+        controls: true, //for debugging
+        */
+    initial['autostart'] = autoStart;
+    initial['file'] = theFile;
+    initial['width'] = width;
+    initial['aspectratio'] = "16:9";
+//    initial['width'] = xgds_video.wh[0];
+//    initial['height'] = xgds_video.wh[1];
+    var result =  $.extend(initial, commonOptions);
+    return result;
+}
+
+function getWidthHeight(){
+    var numSources = Object.keys(xgds_video.displaySegments).length;
+    var maxWidth = getMaxWidth(numSources);
+    var videoHeight = Math.round(maxWidth * (9/16));
+    return [maxWidth, videoHeight]
+}
+
+function presizeVideoDivs() {
+    xgds_video.wh = getWidthHeight();
+    for (var source in xgds_video.displaySegments) {
+        $("#"+ source).width(xgds_video.wh[0]);
+        $("#"+ source).height(xgds_video.wh[1]);
+    }
+}
 
 /**
  * Initialize jw player and call update values
  */
-function setupJWplayer() {
-    var numSources = Object.keys(xgds_video.displaySegments).length;
-    var maxWidth = getMaxWidth(numSources);
-    var videoHeight = Math.round(maxWidth * (9/16));
+function setupJWplayer(jwplayerOptions, hasMasterSlider, autoStart, width) {
+    if (autoStart){
+        xgds_video.playFlag = true;
+    }
+    presizeVideoDivs();
 
     for (var source in xgds_video.displaySegments) {
-    //for (var i = 0; i < numSources; i = i + 1) {
-    //    var source = Object.keys(xgds_video.displaySegments)[i];
         // list of video segments with same source & episode (if given)
         var segments = xgds_video.displaySegments[source];
         xgds_video.displaySegments[source].startTime = segments[0].startTime;
         xgds_video.displaySegments[source].endTime = segments[segments.length - 1].endTime;
         
-        //if there are no segments to show, dont build a player.
+        //if there are no segments to show, don't build a player.
         if (_.isUndefined(segments) || _.isEmpty(segments)) {
             continue;
         }
@@ -197,123 +335,7 @@ function setupJWplayer() {
         }
         var videoPaths = getFilePaths(flightName, source, segments);
         
-        jwplayer(source).setup({
-            file: videoPaths[0], // note jwplayer bug prevents initial load of playlist until onReady
-            autostart: false,
-            width: maxWidth,
-            height: videoHeight,
-            //skin: STATIC_URL + 'external/js/jwplayer/jw6-skin-sdk/skins/six/six.xml',
-            mute: true,
-            analytics: {
-                enabled: false,
-                cookies: false
-            },
-	    /*listbar: {
-		position: "right",
-		size: 240
-	    },
-            controls: true, //for debugging
-            */
-            events: {
-                onReady: function() {
-                    setupPlaylist(this.id);
-                    //if there is a seektime in the url, start videos at that time.
-                    if (window.location.hash) {
-                        seekFromUrlOffset();
-                    } else {
-//                        startPlayers();
-			startPlayer(this);
-                    }
-                    soundController();
-                },
-                onComplete: function() {
-                    //stop until start of the next segment.
-                    this.pause(true);
-                    onSegmentComplete(this);
-                },
-                onPlay: function(e) { //gets called per source
-                    console.log("onPlay: playlist " + this.id + " index " + this.getPlaylistIndex());
-                    var segments = xgds_video.displaySegments[this.id];
-                    var segment = segments[this.getPlaylistIndex()];
-                    console.log("seg start " + segment.startTime + " seg end " + segment.endTime);
-                    var pendingActions = pendingPlayerActions[this.id];
-                    if (!(_.isUndefined(pendingActions)) && !(_.isEmpty(pendingActions))) {
-                        for (var i = 0; i < pendingActions.length; i++) {
-                            console.log(this.id + " ABOUT TO SEEK ");
-                            pendingActions[i].action(pendingActions[i].arg);
-                            console.log(this.id + ": pending: " + pendingActions[i].arg);
-                            console.log("onPlay1: playlist " + this.id + " index " + this.getPlaylistIndex());
-                        }
-                        pendingPlayerActions[this.id] = [];
-                    }
-                    if (xgds_video.initialState == true) {
-                        xgds_video.initialState = false;
-                    }
-                    if (xgds_video.seekFlag) {
-                        xgds_video.seekFlag = false;
-                        console.log("onPlay2: playlist " + this.id + " index " + this.getPlaylistIndex());
-                        updateSliderFromPlayer();
-                        console.log("onPlay3: playlist " + this.id + " index " + this.getPlaylistIndex());
-                    }
-                    onTimeController(this);
-                    console.log("onPlay4: playlist " + this.id + " index " + this.getPlaylistIndex());
-                },
-                onPause: function(e) {
-                    //just make sure the item does get paused.
-		    console.log("*** ON PAUSE ***");
-                    onTimeController(this);
-                },
-                onBuffer: function(e) {
-                    onTimeController(this);
-                },
-                onIdle: function(e) {
-                    if (e.position > Math.floor(e.duration)) {
-                        this.pause(true);
-                        onSegmentComplete(this);
-                    }
-                    onTimeController(this);
-                },
-		onSeek: function(e) {
-		    // console.log("seek playlist index " + this.getPlaylistIndex());
-		    console.log('seek with player state: ' + this.getState());
-		    // onTimeController(this);
-                },
-                onTime: function(object) {
-                    // need this. otherwise slider jumps around while moving.
-                    if (xgds_video.movingSlider == true) {
-                        return;
-                    }
-
-                    if (!xgds_video.playFlag) {
-                        this.pause(true);
-                        return;
-                    }
-
-                    // update test site time (all sources that are 'PLAYING')
-                    if (!xgds_video.seekFlag && !xgds_video.movingSlider) {
-                        var testSiteTime = getPlayerVideoTime(this.id);
-                        setPlayerTimeLabel(testSiteTime, this.id);
-
-                        if (xgds_video.initialState != true) {
-                            //if this call is from the current 'onTimePlayer'
-                            if (xgds_video.onTimePlayer == this.id) {
-                                // update the slider here.
-                                var updateTime = getPlayerVideoTime(this.id);
-                                if (!(_.isUndefined(updateTime))) {
-                                    awakenIdlePlayers(updateTime, this.id);
-                                    setSliderTime(updateTime);
-                                }
-                            }
-                        }
-                    }
-                    //if at the end of the segment, pause.
-                    if (object.position > Math.floor(object.duration)) {
-                        this.pause(true);
-                        onSegmentComplete(this);
-                    }
-                }
-            }
-        });
+        jwplayer(source).setup(buildOptions(jwplayerOptions, videoPaths[0], autoStart, width));
     }
 }
 
@@ -364,21 +386,69 @@ function seekCallBack() {
     seekHelper(seekTimeStr);
 }
 
+function playButtonCallback() {
+    if (xgds_video.playFlag){
+        return;
+    }
+    xgds_video.playFlag = true;
+    $('#playbutton').addClass("active");
+    $('#pausebutton').removeClass("active");
+    if (hasMasterSlider){
+        var currTime = getSliderTime();
+    }
+    for (var source in xgds_video.displaySegments) {
+        var segments = xgds_video.displaySegments[source];
+
+        // make sure that you have stuff to play for each source
+        var segments = xgds_video.displaySegments[source];
+        if (hasMasterSlider){
+            var currentIndex = jwplayer(source).getPlaylistIndex();
+            if (!(_.isUndefined(currentIndex))) {
+                var segment = segments[currentIndex];
+                if ((segment.startTime <= currTime) && (segment.endTime >= currTime)) {
+                    jwplayer(source).play(true);
+                }
+            }
+        } else {
+            // no slider = active mode, so play the latest thing in the list.
+            var theplaylist = jwplayer(source).getPlaylist();
+            jwplayer(source).playlistItem(theplaylist.length - 1);
+        }
+    }
+    if (hasMasterSlider){
+        setSliderTime(currTime);
+    }
+}
+
+function pauseButtonCallback() {
+    if (!xgds_video.playFlag){
+        return;
+    }
+    xgds_video.playFlag = false;
+    $('#pausebutton').addClass("active");
+    $('#playbutton').removeClass("active");
+    for (var source in xgds_video.displaySegments) {
+        jwplayer(source).pause(true);
+    }
+}
 
 /**
  * Callback function for play/pause button
  */
 function playPauseButtonCallBack() {
-    xgds_video.playFlag = !xgds_video.playFlag;
     if (xgds_video.playFlag) {
         $('#playbutton').addClass("icon-pause");
+        $('#playbutton').addClass("active");
         $('#playbutton').removeClass("icon-play");
     } else {
         $('#playbutton').removeClass("icon-pause");
+        $('#playbutton').removeClass("active");
         $('#playbutton').addClass("icon-play");
     }
 
-    var currTime = getSliderTime();
+    if (hasMasterSlider){
+        var currTime = getSliderTime();
+    }
     for (var source in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[source];
 
@@ -387,16 +457,24 @@ function playPauseButtonCallBack() {
         } else {
             // make sure that you have stuff to play for each source
             var segments = xgds_video.displaySegments[source];
-            var currentIndex = jwplayer(source).getPlaylistIndex();
-            if (!(_.isUndefined(currentIndex))) {
-	            var segment = segments[currentIndex];
-                if ((segment.startTime <= currTime) && (segment.endTime >= currTime)) {
-                    jwplayer(source).play(true);
+            if (hasMasterSlider){
+                var currentIndex = jwplayer(source).getPlaylistIndex();
+                if (!(_.isUndefined(currentIndex))) {
+    	            var segment = segments[currentIndex];
+                    if ((segment.startTime <= currTime) && (segment.endTime >= currTime)) {
+                        jwplayer(source).play(true);
+                    }
                 }
+            } else {
+                // no slider = active mode, so play the latest thing in the list.
+                var theplaylist = jwplayer(source).getPlaylist();
+                jwplayer(source).playlistItem(theplaylist.length - 1);
             }
         }
     }
-    setSliderTime(currTime);
+    if (hasMasterSlider){
+        setSliderTime(currTime);
+    }
 }
 
 

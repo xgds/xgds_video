@@ -22,7 +22,7 @@ function setupJWplayer() {
     jwplayer.key = xgds_video.key;
     
     jwplayer("player_div").setup({
-        file: xgds_video.videoUrl, // note jwplayer bug prevents initial load of playlist until onReady
+        file: xgds_video.videoUrl, 
         autostart: false,
         width: "100%",
         aspectratio: "16:9",

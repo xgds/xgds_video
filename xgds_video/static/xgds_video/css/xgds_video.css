@@ -19,6 +19,10 @@ table tr td:first-child {
 	font-size: 1rem;
 }
 
+controller_div div {
+	display:inline-block;
+}
+
 .tags ul{
     list-style: none;
     padding: 0px;
@@ -162,17 +166,26 @@ div.ui-slider-range.ui-widget-header {
     font-family: FontAwesome;
 }
 
-.item {
+/*.item {
     background:#CACACA; 
     padding-bottom:30px; 
-    padding-left:10px;
-    padding-right:10px;
-    padding-top:5px;
     margin-bottom:20px; 
     border-width:2px; 
-    /*border-style:solid;*/
     box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-}
+}*/
+
+.item { width: 100%; 
+		padding-left:10px;
+    	padding-right:10px;
+    	padding-top:5px;
+    	background:#CACACA; 
+    	padding-bottom:20px; 
+    	margin-bottom:20px; 
+    	border-width:2px; 
+    	box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    	}
+.item.w2 { width: 49%; 
+    	}
 
 .imageStream {
 	border-width:1.5px;
