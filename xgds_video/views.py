@@ -380,6 +380,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     for playing videos associated with each note.
     """
     requestedTime = ""
+    active = False
     episode = {}
     if time is not None:
         # TODO: this is a duplicate path for playing back video at a certain time, it is legacy from PLRP
@@ -389,21 +390,23 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
             requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
         except:
             requestedTime = dateparse.parse_datetime(time)
-        print requestedTime
-        requestedTime = util.pythonDatetimeToJSON(util.convertUtcToLocal(requestedTime))
-        print requestedTime
+        requestedTime = util.pythonDatetimeToJSON(requestedTime)  # util.convertUtcToLocal(requestedTime))
+
+    GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
+    activeepisode = GET_ACTIVE_EPISODE_METHOD()
 
     # this happens when user clicks on a flight name to view video
     if flightName:
         GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
         episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
+        if (episode == activeepisode):
+            active = True
 
     # this happens when user looks for live recorded
     if not episode:
-        GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
-        episode = GET_ACTIVE_EPISODE_METHOD()
+        episode = activeepisode
+        active = True
     if not episode:
-#        return recordedVideoError(request, 'Episode not found ' + flightName)
         return redirect("xgds_video_flights")
 
     if episode:
@@ -478,7 +481,11 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         extraVideoContextFn = getClassByName(settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT)
         extraVideoContextFn(ctx)
 
-    return render_to_response('xgds_video/video_recorded_playbacks.html',
+    theTemplate = 'xgds_video/video_recorded_playbacks.html'
+#     if active:
+#         theTemplate = 'xgds_video/video_active_playbacks.html'
+
+    return render_to_response(theTemplate,
                               ctx,
                               context_instance=RequestContext(request))
 

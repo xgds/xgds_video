@@ -76,7 +76,7 @@
 		 	  <div id="masterSlider" class="masterSlider"></div>
  		</fieldset>
 
-        <div id="container"> <!--   class="js-packery" data-packery-options='{ "itemSelector": ".item", "gutter": 5, "isInitLayout":false }'> --> 
+        <div id="container"> 
         {% for source in sources %}
 			<div class={% if sources|length > 1 %}"item w2"{% else %}"item"{% endif %} id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
 	            <div class="buttons">
@@ -184,18 +184,7 @@ var indexFileUrl = null;
     	setupSlider();
     }
     
-    var jwplayerOptions = {
-            //autostart: false,
-            //width: "100%",
-        	//aspectratio: "16:9",
-            mute: true,
-            };
-    setupJWplayer(jwplayerOptions, hasMasterSlider, false, "100%");
+    setupJWplayer({"mute":true}, hasMasterSlider, false, "100%");
 {% endif %}
- 	//update  sizing
- 	var $container = $('#container');
- 	$container.packery({
-  	itemSelector: '.item',
-  	gutter: 10
-	}).packery();
+	initializePackery();
  {% endblock jsInit %}

@@ -286,9 +286,7 @@ function buildOptions(initial, theFile, autoStart, width){
     initial['autostart'] = autoStart;
     initial['file'] = theFile;
     initial['width'] = width;
-    initial['aspectratio'] = "16:9";
-//    initial['width'] = xgds_video.wh[0];
-//    initial['height'] = xgds_video.wh[1];
+    initial['aspectratio'] = "16:9"; //TODO get *this* from the video
     var result =  $.extend(initial, commonOptions);
     return result;
 }
@@ -335,7 +333,13 @@ function setupJWplayer(jwplayerOptions, hasMasterSlider, autoStart, width) {
         }
         var videoPaths = getFilePaths(flightName, source, segments);
         
-        jwplayer(source).setup(buildOptions(jwplayerOptions, videoPaths[0], autoStart, width));
+        var thePlayer = jwplayer(source).setup(buildOptions(jwplayerOptions, videoPaths[0], autoStart, width));
+        
+        //TODO if the container resizes shorter than the video box resize the video to fit.
+//        $('.item').on( 'resize', { source : source, }, function( event, ui ) {
+//            var height = ui.element[0].getBoundingClientRect().height;
+//            var theSource = $("#" + event.data['source']);
+//        });
     }
 }
 
