@@ -335,11 +335,6 @@ function setupJWplayer(jwplayerOptions, hasMasterSlider, autoStart, width) {
         
         var thePlayer = jwplayer(source).setup(buildOptions(jwplayerOptions, videoPaths[0], autoStart, width));
         
-        //TODO if the container resizes shorter than the video box resize the video to fit.
-//        $('.item').on( 'resize', { source : source, }, function( event, ui ) {
-//            var height = ui.element[0].getBoundingClientRect().height;
-//            var theSource = $("#" + event.data['source']);
-//        });
     }
 }
 
