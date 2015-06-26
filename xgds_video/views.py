@@ -441,7 +441,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         sources.append(source)
         sourceVehicle[source.shortName] = source.vehicleName
         sourceSegments = segments.filter(source=source)
-        util.setSegmentEndTimes(segments.all(), episode, source)  # this passes back segments for this source.
+#         util.setSegmentEndTimes(segments.all(), episode, source)  # this passes back segments for this source.
         segmentsDict[source.shortName] = [seg.getDict() for seg in sourceSegments]
         form = NoteForm()
         form.index = index
@@ -482,8 +482,8 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         extraVideoContextFn(ctx)
 
     theTemplate = 'xgds_video/video_recorded_playbacks.html'
-#     if active:
-#         theTemplate = 'xgds_video/video_active_playbacks.html'
+    if active:
+        theTemplate = 'xgds_video/video_active_playbacks.html'
 
     return render_to_response(theTemplate,
                               ctx,

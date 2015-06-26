@@ -24,20 +24,11 @@ jQuery(function($) {
     var windowWidth = $(window).width();
     $(window).resize(function()  {
         if (windowWidth != $(window).width()) {
-//            alert("resize window and reload? holy crap");
-//            location.reload();
             return;
         }
     });
 });
 
-/***
- * Helper that converts javascript datetime to UNIX POSIX time.
- * http://unixtime.info/javascript.html
- */
-function toUnixPosixTime(jsTime) {
-    return jsTime.getTime() / 1000;
-}
 
 
 /**
@@ -124,7 +115,11 @@ function getFilePaths(flightName, sourceShortName, segments) {
 
 
 function getSliderTime() {
-    return new Date(xgds_video.masterSlider.slider('value') * 1000);
+    if (!_.isUndefined(xgds_video.masterSlider)) {
+        return new Date(xgds_video.masterSlider.slider('value') * 1000);
+    } else {
+        return new Date(); // TODO this is probably not right you may be on delay
+    }
 }
 
 function getLocalTimeString(datetime){

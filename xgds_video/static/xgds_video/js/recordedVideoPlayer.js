@@ -36,7 +36,7 @@ function onTimeController(player) {
     } else if (jwplayer(xgds_video.onTimePlayer).getState() != 'PLAYING') {
         switchPlayer = true;
     }
-    if (switchPlayer) {
+    if (hasMasterSlider && switchPlayer) {
         updateSliderFromPlayer();
     }
 }
@@ -55,13 +55,15 @@ function updateSliderFromPlayer() {
     if (foundPlayingPlayer == false) {
         //set the xgds_video.onTimePlayer to the player with the nearest segment
         //to current slider time
-        var time = getSliderTime();
-        var sourceName = getNextAvailableSegment(time)['source'];
-        if (!(_.isUndefined(sourceName)) && !(_.isEmpty(sourceName))) { //there is only one segment for each source and
-            //none of the players are in 'PLAYING' state.
-            xgds_video.onTimePlayer = sourceName;
-            console.log("TIME DRIVING PLAYER NEXT SEGMENT" + sourceName);
-        } //else leave the onTimePlayer as it is.
+        if (hasMasterSlider){
+            var time = getSliderTime();
+            var sourceName = getNextAvailableSegment(time)['source'];
+            if (!(_.isUndefined(sourceName)) && !(_.isEmpty(sourceName))) { //there is only one segment for each source and
+                //none of the players are in 'PLAYING' state.
+                xgds_video.onTimePlayer = sourceName;
+                console.log("TIME DRIVING PLAYER NEXT SEGMENT" + sourceName);
+            } //else leave the onTimePlayer as it is.
+        }
     }
 }
 
@@ -104,6 +106,7 @@ function startPlayers() {
 }
 
 function startPlayer(player) {
+    var index = 0;
     if (xgds_video.noteTimeStamp != null) { // noteTimeStamp is in local time (i.e. PDT)
         var datetime = xgds_video.noteTimeStamp;
         //check if datetime is valid
@@ -114,22 +117,33 @@ function startPlayer(player) {
             return;
         }
     } else {
-        console.log("INITIAL SEEK!!");
-	// force and initial seek to buffer data
+	// force an initial seek to buffer data
         xgds_video.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
         console.log("Seeking: " + player.id);
-        player.playlistItem(0);
+        if (!hasMasterSlider){
+            index = player.getPlaylist().length - 1;
+            console.log("LOAD PLAYLIST ITEM " + index);
+            player.playlistItem(index);
+        } else {
+            console.log("LOAD PLAYLIST ITEM 0");
+            player.playlistItem(0);
+        }
     }
     
-    //find the first segment and play it.
-    var startTime = xgds_video.firstSegment.startTime;
-    var segments = xgds_video.displaySegments[player.id];
-    if (startTime >= segments[0].startTime) {
-        console.log('starting ' + player.id);
-//            player.pause(true);
+    //find the  segment and play it.
+    if (hasMasterSlider){
+        var startTime = xgds_video.firstSegment.startTime;
+        var segments = xgds_video.displaySegments[player.id];
+        if (startTime >= segments[0].startTime) {
+            console.log('starting ' + player.id);
+    //            player.pause(true);
+        } else {
+            console.log('delaying ' + player.id);
+            player.pause(true);
+        }
     } else {
-        console.log('delaying ' + player.id);
-        player.pause(true);
+        xgds_video.playFlag = true;
+        player.play(true);
     }
 }
 
@@ -238,11 +252,12 @@ var commonOptions = {
         // onTimeController(this);
             },
             onTime: function(object) {
+                if (!hasMasterSlider){
+                    return;
+                }
                 // need this. otherwise slider jumps around while moving.
-                if (hasMasterSlider){
-                    if (xgds_video.movingSlider == true) {
-                        return;
-                    }
+                if (xgds_video.movingSlider == true) {
+                    return;
                 }
 
                 if (!xgds_video.playFlag) {
@@ -477,6 +492,15 @@ function playPauseButtonCallBack() {
 }
 
 
+//TODO DELETE ALL THE BELOW
+/***
+ * Helper that converts javascript datetime to UNIX POSIX time.
+ * http://unixtime.info/javascript.html
+ */
+function toUnixPosixTime(jsTime) {
+    return jsTime.getTime() / 1000;
+}
+
 /**
  * Event for 'Image Info" button click
  */
@@ -504,3 +528,4 @@ function imageInfoButtonEvent(sourceShortName) {
     var filePath = mvpAppUrl.replace('dummy',imageName);
     window.open(filePath);
 }
+// END DELETE 
