@@ -109,7 +109,15 @@ $(function() {
             url: submitNoteUrl,
             data: dataString,
             success: function(response) {
-                showSuccess('Saved ' + content + ' ' + iso_string, index);
+                var printtime = iso_string;
+                try {
+                    printtime = response['event_time'];
+                    m = moment(new Date(response['event_time']));
+                    printtime = m.format("MM/DD/YYYY HH:mm:ss");
+                } catch(err) {
+                    // pass
+                }
+                showSuccess('Saved ' + content + ' ' + printtime, index);
                 content_text.val('');
                 tagInput.importTags('');
             },
