@@ -96,10 +96,12 @@ $(function() {
             try {
                 if (event_timestring !== undefined){
                     dataString = dataString + '&event_time=' + event_timestring;
+                } else {
+                    dataString = dataString + "&serverNow=true";
                 }
             }
             catch(err) {
-                console.log(err.message);
+                dataString = dataString + "&serverNow=true";
             }
         } 
         $.ajax({

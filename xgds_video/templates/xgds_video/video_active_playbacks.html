@@ -6,6 +6,7 @@
 	<script type="text/javascript">
         var hasSliderTimeLabel = false;
         var hasMasterSlider = false;
+        var isLive = true;
     </script>
 {% endblock %}
 
@@ -61,11 +62,9 @@
 	                 {% endwith %}
 	            </div>
 	            {% if INCLUDE_NOTE_INPUT %}
-	            <!--  
 				<section>
              		{% include "xgds_video/video_notes.html" with data=source.form source=source.shortName STATIC_URL=STATIC_URL %}
              	</section>
-             	-->
              	{% endif %}
              	<!--embed the video-->
              	<section>
