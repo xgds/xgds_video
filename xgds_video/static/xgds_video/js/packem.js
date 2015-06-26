@@ -13,7 +13,9 @@
         // get item elements, jQuery-ify them
         var $itemElems = $( $container.packery('getItemElements') );
         // make item elements draggable
-        $itemElems.draggable().resizable();
+        $itemElems.draggable().resizable({
+            aspectRatio: true
+        });
         // bind Draggable events to Packery
         $container.packery( 'bindUIDraggableEvents', $itemElems );
         
