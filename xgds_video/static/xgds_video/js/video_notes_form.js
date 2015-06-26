@@ -62,7 +62,8 @@ $(function() {
         var index = parent.find('input#id_index').val();
         // validate and process form here
         var content_text = parent.find('input#id_content' + index);
-        var content = content_text.val();
+        var content = content_text.serialize(); 
+        var contentVal = content_text.val();
 
         hideError(index);
         var tagsId = 'input#id_tags' + index;
@@ -83,7 +84,7 @@ $(function() {
             return false;
         }
         var extras = parent.find('input#id_extras').val();
-        var dataString = 'content=' + content + '&tags=' + tags + '&extras=' + extras;
+        var dataString = content + '&tags=' + tags + '&extras=' + extras;
         // not live, pull the time out of the video
         var iso_string = '';
         if (isLive == false) {
@@ -117,7 +118,7 @@ $(function() {
                 } catch(err) {
                     // pass
                 }
-                showSuccess('Saved ' + content + ' ' + printtime, index);
+                showSuccess('Saved ' + contentVal + ' ' + printtime, index);
                 content_text.val('');
                 tagInput.importTags('');
             },
