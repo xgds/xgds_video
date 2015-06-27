@@ -61,7 +61,7 @@ $(function() {
         // get the index
         var index = parent.find('input#id_index').val();
         // validate and process form here
-        var content_text = parent.find('input#id_content' + index);
+        var content_text = parent.find('textarea#id_content' + index);
         var content = content_text.serialize(); 
         var contentVal = content_text.val();
 

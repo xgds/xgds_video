@@ -1,23 +1,22 @@
 {% with form=data %}
 {% if user.is_authenticated %}
-<div style="clear:left;padding-top:2px; padding-bottom:2px;" >
+<div class="notediv" >
 	<form id="create_note{{ form.index }}" class="create_note_form" action="" method="POST">
 		<input type="hidden" id="id_index" value="{{ form.index }}" >
        	<input type="hidden" id="id_event_time" value="{{ form.event_time.value }}" >
        	<input type="hidden" id="source" value="{{ source }}" >
-		<div id="error_div{{ form.index }}" style="float:left; height:15px;padding-bottom:2px;">
+		<div id="error_div{{ form.index }}" class="noteerrordiv">
 			<img src="{{STATIC_URL}}xgds_video/images/ipx.gif" id="error_image{{ form.index }}" width="12" alt="error image {{form.index}}"></img>
 			<span id="error_content{{ form.index }}" ></span>
 		</div>
-		<div style="clear:left; padding-top:3px;">
-			<div style="float:left;padding-right: 5px;">
-				<label for="id_content{{form.index}}">Note:</label><input class="noteinput" id="id_content{{form.index}}" type="text" name="content" maxlength="500" size="20">
-			</div>
-			<div style="float:left; ">
-	        	<label for="id_tags{{form.index}}">Tags:</label>
+		<div class="notecontainer" > 
+				<label for="id_content{{form.index}}" class="notelabel ">Note:</label>
+				<textarea class="noteinput "  id="id_content{{form.index}}" type="text" name="content" maxlength="500" style="height:50px;width:65%;margin-right:5px;"></textarea>
+			<div class="noteitem" > 
+	        	<label for="id_tags{{form.index}}" class=" notelabel">Tags:</label>
 	        	<input id="id_tags{{ form.index }}" type="text" class="tags" />
 	        	{{ form.extras }}
-	        	<input id="save_note{{ form.index }}" type="submit" value="Save" class="mybutton noteSubmit">
+	        	<input id="save_note{{ form.index }}" type="submit" value="Save" class="mybutton noteSubmit small">
 	        </div>
         </div>
   </form>

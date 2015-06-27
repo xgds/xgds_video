@@ -1,5 +1,9 @@
 /* css for xgds_video */
 
+ui-wrapper {
+	padding-bottom: 0px !important;
+}
+
 body {
 	color: black;
 }
@@ -226,6 +230,48 @@ div.ui-slider-range.ui-widget-header {
 	height: 1100px;
 }
 
+.notelabel {
+	width: 40px;
+	vertical-align: text-top;
+}
+
+.noteinput input textarea{
+	min-height:20px;
+	min-width: 400px;
+	padding-bottom: 0px;
+	width: 75%;
+}
+
+.notediv {
+	/*clear:left; */
+	padding-top:2px; 
+}
+
+.noteerrordiv {
+	float:left; 
+	height:15px;
+	padding-bottom:2px;
+}
+
+blocky div label input{
+	display: inline-block !important;
+}
+
+.notecontainer {
+	display: flex;
+	align-content: stretch;
+	flex-wrap: wrap;
+	flex-flow: row wrap;
+	width: 100%;
+}
+
+.noteitem {
+	flex-basis: auto;
+}
+
+.noteitem.stretch {
+	align-self: stretch;
+}
 /* __BEGIN_LICENSE__
 /*Copyright (c) 2015, United States Government, as represented by the 
 /*Administrator of the National Aeronautics and Space Administration. 
