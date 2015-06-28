@@ -78,7 +78,7 @@
 
         <div id="container"> 
         {% for source in sources %}
-			<div class={% if sources|length > 1 %}"item w2"{% else %}"item"{% endif %} id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
+			<div class="item {% if sources|length > 1 %}w2{% endif %} lockAspect" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
 	            <div class="buttons">
 	                 <div class="toprow-left">Camera: <b>{{ source.name }}</b></div>
                      <a class="mybutton toprow-right small" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{% if sources|length > 1 %}{{flightName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
