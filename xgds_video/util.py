@@ -19,6 +19,7 @@ import re
 import datetime
 import os
 import traceback
+import m3u8
 
 from xgds_video import settings
 from geocamUtil.loader import getClassByName
@@ -127,6 +128,19 @@ def getIndexFileSuffix(flightName, sourceShortName, segmentNumber):
     return 'images/%s/%s/Segment%03d/prog_index.m3u8' % (flightName, sourceShortName, int(segmentNumber))
 
 
+def getSegmentsFromEndForDelay(delayTime, indexPath):
+    index = m3u8.load(indexPath)
+    segList = index.segments
+    segCount = 0
+    totalTime = 0
+    for s in reversed(segList):
+        totalTime += s.duration
+        segCount += 1
+        if totalTime >= delayTime:
+            break
+    return segCount
+
+
 def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
     """ TODO flightName is really groupName"""
     """
@@ -144,7 +158,12 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
         videoDelayInSecs = DELAY_METHOD(indexFileSuffix.split('/')[0])
         if videoDelayInSecs < 0:
             videoDelayInSecs = 0
-        videoDelayInSegments = int(round(videoDelayInSecs / settings.XGDS_VIDEO_SEGMENT_SEC))
+#        videoDelayInSegments = int(round(videoDelayInSecs / settings.XGDS_VIDEO_SEGMENT_SEC))
+        if videoDelayInSecs > 0:
+            videoDelayInSegments = getSegmentsFromEndForDelay(videoDelayInSecs-30,
+                                                          indexFilePath)
+        else:
+            videoDelayInSegments = 0
         videoDelayInLines = 2 * videoDelayInSegments + 1
 
         #  edit the index file
