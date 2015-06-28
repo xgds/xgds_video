@@ -1,5 +1,4 @@
 {% extends "xgds_video/video_recorded_playbacks.html" %}
-{% load url from future %}
  
  {% block scripts %}
 	{{block.super}}
@@ -16,16 +15,10 @@
     </script>
 {% endblock %}
 
-{% block contents %}
-	{% if messages %}
-	    <ul class="messages" id="errorMessage" style="color:red;">
-	    {% for message in messages %}
-	        <li>{% if message.tags %} {{ message.tags }}: {% endif %}  {{ message }}</li>
-	    {% endfor %}
-	    </ul>
-	{% endif %}
 
+    {% block topStuff %}
     {% if segmentsJson %}
+    
     	<div id="topStuff">
     			<div id="controllers" > 
     			<br/>
@@ -53,127 +46,36 @@
  		<fieldset id="videoFieldset">
 		 	  <div id="masterSlider" class="masterSlider"></div>
  		</fieldset>
+ 		 {% endif %}
+		{% endblock topStuff %}
 
-        <div id="container" >
-        {% for source in sources %}
-        	<div class="item {% if sources|length > 1 %}w2{% endif %} lockAspect" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
-	            <div class="buttons">
-	                 <div class="toprow-left">Camera: <b>{{ source.name }}</b></div>
-                     <a class="mybutton toprow-right small" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="_blank" style="width:130px">New Window</a>
-                     <!--  <a class="mybutton toprow-right" href="#" style="width:130px" onClick="showStillViewer('{{flightName}}', '{{source.shortName}}', getUrlFormatPlayerTime('{{source.shortName}}'));">TODO Still</a> -->
-	                 {% with feed=source.feed_set.all.0.shortName %}
-	                 {% if feed %}
-	                     <a class="mybutton" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>
-	                 {% endif %}
-	                 {% endwith %}
-	            </div>
-	            {% if INCLUDE_NOTE_INPUT %}
-				<section>
-             		{% include "xgds_video/video_notes.html" with data=source.form source=source.shortName STATIC_URL=STATIC_URL %}
-             	</section>
-             	{% endif %}
-             	<!--embed the video-->
-             	<section>
-              		<div id="player_container" class="row">
-             			<div id="{{ source.shortName }}" class="eleven columns"></div>
-             		</div> <!--  player-container -->
-             		<div id="{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
-             	</section>
-             	<section>
-             		<div class="float-left">
-                 	Local Time: <span id="testSiteTime{{ source.shortName }}">0</span>
-             		</div>
-             	</section>
-            </div><!--  item -->
-        {% endfor %}
         
+        {% block otherPackery %}
         {% if SSE %}
+        {% if segmentsJson %}
+        <!--  heretamar -->
        	<div class="item {% if sources|length > 1 %}w2{% endif %} freeAspect" id="notesDiv" style="background-color:#F9FADE;">
        	<div id="messageDiv">
 		</div>
 		<table id="notesTable" class="display">
 		</table>
        	</div>
-        {% endif %}
-        </div> <!--  js packery container -->
+       	{% endif %}
+       	{% endif %}
+        {% endblock otherPackery %}
 
-    {% endif %}
-{% endblock contents %}
-
-{% block jsInit %}
-{% if INCLUDE_NOTE_INPUT %}
-{% include "xgds_video/init_notes.js" %}
-{% endif %}
-
+{% block notesSetup %}
+{{ block.super }}
+{% if SSE %}
 var liveNotesController = new liveNotes.LiveNotesController({
            liveNotesStreamURL: "{% url 'xgds_notes_liveNotes_stream' %}",
            liveNotesStateURL: "{% url 'xgds_notes_liveNotes' %}",
        });
-
-var indexFileUrl = null;
-
-{% if episode %}
-    indexFileUrl = "{% url 'xgds_video_index_file' 'flightName' 'sourceShortName' 'segmentIndex' %}";
 {% endif %}
+{% endblock notesSetup %}
 
-{% if segmentsJson %}
-    //globals
-    var xgds_video = { masterSlider: '',
-                       playFlag: false,
-                       seekFlag: false,
-                       initialState: false,
-                       seekOffsetList: {},
-                       baseUrl: "{{ baseUrl }}",
-                       episode: {{ episodeJson|safe }},
-                       displaySegments: {{ segmentsJson|safe }},
-                       firstSegment: null,
-                       lastSegment: null,
-                       onTimePlayer: "{{ sources.0.shortName }}",
-                       movingSlider: false, //if slider is moving, turn off onTime call
-                       seekOffsetList: {}, //needed for seeking vid in flash mode,
-                       indexFileUrl: indexFileUrl,
-	                   noteTimeStamp: toJsDateTime({{ noteTimeStamp|safe }}),
-	                   flightName: {% if flightName %} "{{ flightName }}" {% else %} null {% endif %},
-	                   sourceVehicle: {{ sourceVehicle|safe }},
-	                   flightTZ: '{{ flightTZ }}'
-                     };
-
-
-    //convert episode start/end time to javascript dateTime
-    {% if episode %}
-    	convertJSONtoJavascriptDateTime(xgds_video.episode);
-	{% endif %}
-
-    // convert segment start and end times to javascript dateTime
-    {% for source in sources %}
-        var segments = xgds_video.displaySegments["{{ source.shortName }}"];
-        if ((segments != undefined) && (segments.length > 0)) {
-            $.each(segments, function(id) {
-                var segment = segments[id];
-                segment.startTime = toJsDateTime(segment.startTime);
-                segment.endTime = toJsDateTime(segment.endTime);
-
-                if(xgds_video.firstSegment == null) {
-                    xgds_video.firstSegment = segment;
-                }
-                if (xgds_video.lastSegment == null) {
-                    xgds_video.lastSegment = segment;
-                }
-
-                if (segment.startTime) {
-                    if(segment.startTime < xgds_video.firstSegment.startTime) {
-                        xgds_video.firstSegment = segment;
-                    }
-                }
-                if (segment.endTime) {
-                    if (segment.endTime > xgds_video.lastSegment.endTime) {
-                        xgds_video.lastSegment = segment;
-                    }
-                }
-            });
-        }
-    {% endfor %}
-
+	{% block hookControls %}
+	{% if segmentsJson %}
     presizeVideoDivs();
 
     //set up the player
@@ -181,8 +83,6 @@ var indexFileUrl = null;
             mute: true
             };
     setupJWplayer({"mute":true}, hasMasterSlider, false, "100%");
-    
-{% endif %}
- 	setupNotesUI();
-	initializePackery();
-{% endblock jsInit %}
+    setupNotesUI();
+    {% endif %}
+    {% endblock hookControls %}

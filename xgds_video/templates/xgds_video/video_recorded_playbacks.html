@@ -25,10 +25,10 @@
         var hasSliderTimeLabel = true;
         var hasMasterSlider = true;
     </script>
-	
 {% endblock %}
  
 {% block contents %}
+	{% block errorMessages %}
 	{% if messages %}
 	    <ul class="messages" id="errorMessage" style="color:red;">
 	    {% for message in messages %}
@@ -36,8 +36,10 @@
 	    {% endfor %}
 	    </ul>
 	{% endif %}
+	{% endblock errorMessages %}
 
     {% if segmentsJson %}
+    {% block topStuff %}
     	<div id="topStuff" >
     		<div id="controllers" > 
     			<br/>
@@ -75,8 +77,12 @@
  			  <div id="ribbon"></div>
 		 	  <div id="masterSlider" class="masterSlider"></div>
  		</fieldset>
+ 		{% endblock topStuff %}
 
+		{% block packery %}
         <div id="container"> 
+        
+        {% block videoSources %}
         {% for source in sources %}
 			<div class="item {% if sources|length > 1 %}w2{% endif %} lockAspect" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
 	            <div class="buttons">
@@ -108,22 +114,33 @@
              	</section>
             </div><!--  item -->
         {% endfor %}
+        {% endblock videoSources %}
+        
+        {% block otherPackery %}
+        {% endblock otherPackery %}
+        
         </div> <!--  js packery container -->
+        {% endblock packery %}
 
     {% endif %}
 {% endblock contents %}
 
 {% block jsInit %}
+{% block notesSetup %}
 {% if INCLUDE_NOTE_INPUT %}
 {% include "xgds_video/init_notes.js" %}
 {% endif %}
+{% endblock notesSetup %}
 
+{% block setupIndexUrl %}
 var indexFileUrl = null;
 
 {% if episode %}
     indexFileUrl = "{% url 'xgds_video_index_file' 'flightName' 'sourceShortName' 'segmentIndex' %}";
 {% endif %}
+{% endblock setupIndexUrl %}
 
+{% block initSegments %}
 {% if segmentsJson %}
     //globals
     var xgds_video = { masterSlider: '',
@@ -178,15 +195,21 @@ var indexFileUrl = null;
             });
         }
     {% endfor %}
+    {% endif %}
+    {% endblock initSegments %}
 
+	{% block hookControls %}
+	{% if segmentsJson %}
     //set up the slider and the player
     if (hasMasterSlider){
     	setupSlider();
     }
-    
     setupJWplayer({"mute":true}, hasMasterSlider, false, "100%");
-{% endif %}
+    setupNotesUI();
+    {% endif %}
+    {% endblock hookControls %}
 	
-	setupNotesUI();
+	{% block lastJsInit %}
 	initializePackery();
+	{% endblock lastJsInit %}
  {% endblock jsInit %}
