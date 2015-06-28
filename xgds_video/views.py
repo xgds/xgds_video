@@ -474,6 +474,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         'flightName': flightName,
         'flightTZ': flightTimezone,
         'sourceVehicle': json.dumps(sourceVehicle),
+        'SSE': settings.XGDS_SSE,
         'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT
     }
 

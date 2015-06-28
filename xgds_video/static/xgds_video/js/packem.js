@@ -12,10 +12,18 @@
     function makeResizable($container) {
         // get item elements, jQuery-ify them
         var $itemElems = $( $container.packery('getItemElements') );
+        
+        var $lockAspects = $(".lockAspect");
         // make item elements draggable
-        $itemElems.draggable().resizable({
+        $lockAspects.draggable().resizable({
             aspectRatio: true
         });
+        
+        var $freeAspects = $(".freeAspect");
+        if ($freeAspects !== null){
+            $freeAspects.draggable().resizable();
+        }
+        
         // bind Draggable events to Packery
         $container.packery( 'bindUIDraggableEvents', $itemElems );
         

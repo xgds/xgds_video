@@ -3,6 +3,12 @@
  
  {% block scripts %}
 	{{block.super}}
+	{% if SSE %}
+	<script type="text/javascript" src="{{ EXTERNAL_URL }}underscore/underscore-min.js"></script>
+    <script type="text/javascript" src="{{ EXTERNAL_URL }}klass/klass.min.js"></script>
+	<script type="text/javascript" src="{{ EXTERNAL_URL }}datatables/media/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_notes/js/liveNotesTable.js'></script>
+	{% endif %}
 	<script type="text/javascript">
         var hasSliderTimeLabel = false;
         var hasMasterSlider = false;
@@ -50,7 +56,7 @@
 
         <div id="container" >
         {% for source in sources %}
-        	<div class={% if sources|length > 1 %}"item w2"{% else %}"item"{% endif %} id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
+        	<div class="item {% if sources|length > 1 %}w2{% endif %} lockAspect" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
 	            <div class="buttons">
 	                 <div class="toprow-left">Camera: <b>{{ source.name }}</b></div>
                      <a class="mybutton toprow-right small" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="_blank" style="width:130px">New Window</a>
@@ -80,6 +86,15 @@
              	</section>
             </div><!--  item -->
         {% endfor %}
+        
+        {% if SSE %}
+       	<div class="item {% if sources|length > 1 %}w2{% endif %} freeAspect" id="notesDiv" style="background-color:#F9FADE;">
+       	<div id="messageDiv">
+		</div>
+		<table id="notesTable" class="display">
+		</table>
+       	</div>
+        {% endif %}
         </div> <!--  js packery container -->
 
     {% endif %}
@@ -89,6 +104,11 @@
 {% if INCLUDE_NOTE_INPUT %}
 {% include "xgds_video/init_notes.js" %}
 {% endif %}
+
+var liveNotesController = new liveNotes.LiveNotesController({
+           liveNotesStreamURL: "{% url 'xgds_notes_liveNotes_stream' %}",
+           liveNotesStateURL: "{% url 'xgds_notes_liveNotes' %}",
+       });
 
 var indexFileUrl = null;
 
