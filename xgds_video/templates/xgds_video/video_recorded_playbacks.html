@@ -21,10 +21,14 @@
 {% block scripts %}
 {{block.super}}
 	{% include "xgds_video/VideoJS.html" with INCLUDE_NOTE_INPUT=INCLUDE_NOTE_INPUT JWPLAYER_KEY=JWPLAYER_KEY STATIC_URL=STATIC_URL %}
+	{% block myscripts %}
+	<script type="text/javascript" src='{{STATIC_URL}}xgds_notes/js/recordedNotesTable.js'></script>
+	
 	<script type="text/javascript">
         var hasSliderTimeLabel = true;
         var hasMasterSlider = true;
     </script>
+    {% endblock myscripts %}
 {% endblock %}
  
 {% block contents %}
@@ -117,6 +121,12 @@
         {% endblock videoSources %}
         
         {% block otherPackery %}
+        <div class="item {% if sources|length > 1 %}w2{% endif %} freeAspect" id="notesDiv" style="background-color:#F9FADE;">
+       	<div id="messageDiv">
+		</div>
+		<table id="notesTable" class="display">
+		</table>
+       	</div>
         {% endblock otherPackery %}
         
         </div> <!--  js packery container -->
@@ -130,7 +140,29 @@
 {% if INCLUDE_NOTE_INPUT %}
 {% include "xgds_video/init_notes.js" %}
 {% endif %}
+{% block myNotesSetup %}
+{% if segmentsJson %}
+{% if sources|length = 1 %}
+{% with filter="flight__name"|add:":"|add:episode.shortName|add:"_"|add:sources.0.shortName%}
+var thefilter = '{{filter}}';
+var recordedNotesController = new recordedNotes.RecordedNotesController({
+           recordedNotesURL: "/notes/notesJson/" +  thefilter + "/0"
+       });
+{% endwith %}
+{% else %}
+{% with filter="flight__group__episode__shortName"|add:":"|add:episode.shortName %}
+var thefilter = '{{filter}}';
+var recordedNotesController = new recordedNotes.RecordedNotesController({
+           recordedNotesURL: "/notes/notesJson/"  + thefilter + "/0" 
+       });
+ {% endwith %}
+{% endif %}
+{% endif %}
+
+{% endblock myNotesSetup %}
 {% endblock notesSetup %}
+
+
 
 {% block setupIndexUrl %}
 var indexFileUrl = null;

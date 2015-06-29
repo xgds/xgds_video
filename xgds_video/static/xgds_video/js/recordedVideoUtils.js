@@ -128,6 +128,7 @@ function getLocalTimeString(datetime){
     var time = pdttime.format("HH:mm:ss z")
     return time;
 }
+
 function setSliderTimeLabel(datetime) {
 //    var time = datetime.toTimeString().replace('GMT-0700', '');
     $('#sliderTimeLabel').text(getLocalTimeString(datetime));
