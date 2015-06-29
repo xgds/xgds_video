@@ -1,4 +1,5 @@
 {% extends "xgds_video/video_recorded_playbacks.html" %}
+{% load url from future %}
  
  {% block scripts %}
 	{{block.super}}
@@ -67,10 +68,23 @@
 {% block notesSetup %}
 {{ block.super }}
 {% if SSE %}
+{% if sources|length = 1 %}
+{% with filter="flight__name"|add:":"|add:episode.shortName|add:"_"|add:sources.0.shortName%}
+var thefilter = '{{filter}}';
 var liveNotesController = new liveNotes.LiveNotesController({
-           liveNotesStreamURL: "{% url 'xgds_notes_liveNotes_stream' %}",
-           liveNotesStateURL: "{% url 'xgds_notes_liveNotes' %}",
+           liveNotesStateURL: " {% url 'xgds_notes_liveNotes' %}" +  thefilter, // 'flight__group__episode__shortName' episode.shortName
+           liveNotesStreamURL: "{% url 'xgds_notes_liveNotes_stream'  %}" +  thefilter,
        });
+{% endwith %}
+{% else %}
+{% with filter="flight__group__episode__shortName"|add:":"|add:episode.shortName %}
+var thefilter = '{{filter}}';
+var liveNotesController = new liveNotes.LiveNotesController({
+           liveNotesStreamURL: "{% url 'xgds_notes_liveNotes_stream' %}"  + thefilter,
+           liveNotesStateURL: " {% url 'xgds_notes_liveNotes'  %}"  + thefilter, // 'flight__group__episode__shortName' episode.shortName 
+       });
+ {% endwith %}
+{% endif %}
 {% endif %}
 {% endblock notesSetup %}
 
