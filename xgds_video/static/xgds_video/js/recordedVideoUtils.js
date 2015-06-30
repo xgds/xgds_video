@@ -55,7 +55,7 @@ function seekHelper(seekTimeStr) {
     //XXX for now assume seek time's date is same as first segment's end date
     seekDateTime = new Date(xgds_video.firstSegment.endTime);
     seekDateTime.setHours(parseInt(seekTime[0]));
-    if (seektime.length >= 2){
+    if (seekTime.length >= 2){
         seekDateTime.setMinutes(parseInt(seekTime[1]));
     } else {
         seekDateTime.setMinutes(0);
@@ -397,7 +397,7 @@ function seekAllPlayersToTime(datetime) {
 
         var player = jwplayer(source);
         if (player != undefined) {
-            jumpToPosition(datetime, source, null);
+            jumpToPosition(datetime, source, undefined);
         }
     }
     if (datetime != null) {
