@@ -15,6 +15,7 @@
  {{ block.super }}
     <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery.tagsinput/dist/jquery.tagsinput.min.css"></link>
     <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.min.css" ></link>
+    <!-- <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}datatables/media/css/jquery.dataTables.css"></link>  -->
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_video/css/xgds_video.css"></link>
  {% endblock cssExtras %}
 
@@ -72,7 +73,7 @@
 	   		</div>
 	   		<div id="seekTimeBox" >
 				<label for="seekTime">Jump to:</label>
-	   			<input  id="seekTime" type="text" name="text-input" placeholder="&#xf017; play from time (HH:MM:SS)" class="stylish"/>
+	   			<input  id="seekTime" type="text" name="text-input" placeholder="HH:MM:SS" class="stylish"/>
 	   			<button type="submit" class="mybutton small" id="seekButton" onclick=seekCallBack()> Go </button>
 	   		</div>
    		</div>
@@ -85,6 +86,15 @@
 
 		{% block packery %}
         <div id="container"> 
+        
+        {% block otherPackery %}
+        <div class="item {% if sources|length > 1 %}w2{% endif %} freeAspect" id="notesDiv" style="background-color:#F9FADE;">
+       	<div id="messageDiv">
+		</div>
+		<table id="notesTable" class="display">
+		</table>
+       	</div>
+        {% endblock otherPackery %}
         
         {% block videoSources %}
         {% for source in sources %}
@@ -120,15 +130,6 @@
         {% endfor %}
         {% endblock videoSources %}
         
-        {% block otherPackery %}
-        <div class="item {% if sources|length > 1 %}w2{% endif %} freeAspect" id="notesDiv" style="background-color:#F9FADE;">
-       	<div id="messageDiv">
-		</div>
-		<table id="notesTable" class="display">
-		</table>
-       	</div>
-        {% endblock otherPackery %}
-        
         </div> <!--  js packery container -->
         {% endblock packery %}
 
@@ -140,26 +141,6 @@
 {% if INCLUDE_NOTE_INPUT %}
 {% include "xgds_video/init_notes.js" %}
 {% endif %}
-{% block myNotesSetup %}
-{% if segmentsJson %}
-{% if sources|length = 1 %}
-{% with filter="flight__name"|add:":"|add:episode.shortName|add:"_"|add:sources.0.shortName%}
-var thefilter = '{{filter}}';
-var recordedNotesController = new recordedNotes.RecordedNotesController({
-           recordedNotesURL: "/notes/notesJson/" +  thefilter + "/0"
-       });
-{% endwith %}
-{% else %}
-{% with filter="flight__group__episode__shortName"|add:":"|add:episode.shortName %}
-var thefilter = '{{filter}}';
-var recordedNotesController = new recordedNotes.RecordedNotesController({
-           recordedNotesURL: "/notes/notesJson/"  + thefilter + "/0" 
-       });
- {% endwith %}
-{% endif %}
-{% endif %}
-
-{% endblock myNotesSetup %}
 {% endblock notesSetup %}
 
 
@@ -240,6 +221,28 @@ var indexFileUrl = null;
     setupNotesUI();
     {% endif %}
     {% endblock hookControls %}
+    
+    {% block myNotesSetup %}
+	{% if segmentsJson %}
+	{% if sources|length = 1 %}
+	{% with filter="flight__name"|add:":"|add:episode.shortName|add:"_"|add:sources.0.shortName%}
+	var thefilter = '{{filter}}';
+	var recordedNotesController = new recordedNotes.RecordedNotesController({
+	           recordedNotesURL: "/notes/notesJson/" +  thefilter + "/0",
+	           xgds_video: xgds_video
+	       });
+	{% endwith %}
+	{% else %}
+	{% with filter="flight__group__episode__shortName"|add:":"|add:episode.shortName %}
+	var thefilter = '{{filter}}';
+	var recordedNotesController = new recordedNotes.RecordedNotesController({
+	           recordedNotesURL: "/notes/notesJson/"  + thefilter + "/0",
+	           xgds_video: xgds_video 
+	       });
+	 {% endwith %}
+	{% endif %}
+	{% endif %}
+	{% endblock myNotesSetup %}
 	
 	{% block lastJsInit %}
 	initializePackery();

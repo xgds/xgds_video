@@ -47,7 +47,6 @@ function updateSliderFromPlayer() {
         if (jwplayer(source).getState() == 'PLAYING') {
             xgds_video.onTimePlayer = source;
             foundPlayingPlayer = true;
-            console.log("TIME DRIVING PLAYER " + source);
             break;
         }
     }
@@ -61,7 +60,6 @@ function updateSliderFromPlayer() {
             if (!(_.isUndefined(sourceName)) && !(_.isEmpty(sourceName))) { //there is only one segment for each source and
                 //none of the players are in 'PLAYING' state.
                 xgds_video.onTimePlayer = sourceName;
-                console.log("TIME DRIVING PLAYER NEXT SEGMENT" + sourceName);
             } //else leave the onTimePlayer as it is.
         }
     }
@@ -83,13 +81,12 @@ function startPlayers() {
         }
     }
     else {
-        console.log("INITIAL SEEK!!");
 	//  force an initial seek to buffer data
         xgds_video.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
         for (var source in xgds_video.displaySegments) {
             console.log("Seeking: " + source);
-//	    jwplayer(source).playlistItem(0).seek(0);
-	}
+            jwplayer(source).playlistItem(0).seek(0);
+        }
     }
     
     //find the first segment and play it.

@@ -36,8 +36,7 @@ jQuery(function($) {
  */
 function toJsDateTime(jsonDateTime) {
     if ((jsonDateTime) && (jsonDateTime != 'None') && (jsonDateTime != '') && (jsonDateTime != undefined)) {
-        //need to subtract one from month since Javascript datetime indexes month
-        //as 0 to 11.
+        //need to subtract one from month since Javascript datetime indexes month  0 to 11.
         jsonDateTime.month = jsonDateTime.month - 1;
         return new Date(Date.UTC(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day,
                 jsonDateTime.hour, jsonDateTime.min, jsonDateTime.seconds, 0));
@@ -56,8 +55,16 @@ function seekHelper(seekTimeStr) {
     //XXX for now assume seek time's date is same as first segment's end date
     seekDateTime = new Date(xgds_video.firstSegment.endTime);
     seekDateTime.setHours(parseInt(seekTime[0]));
-    seekDateTime.setMinutes(parseInt(seekTime[1]));
-    seekDateTime.setSeconds(parseInt(seekTime[2]));
+    if (seektime.length >= 2){
+        seekDateTime.setMinutes(parseInt(seekTime[1]));
+    } else {
+        seekDateTime.setMinutes(0);
+    }
+    if (seekTime.length == 3){
+        seekDateTime.setSeconds(parseInt(seekTime[2]));
+    } else {
+        seekDateTime.setSeconds(0);
+    }
     seekAllPlayersToTime(seekDateTime);
 }
 
