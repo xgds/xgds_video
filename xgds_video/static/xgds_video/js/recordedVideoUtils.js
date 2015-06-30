@@ -167,24 +167,57 @@ function withinRange(position, offset) {
  * Find the playlist item index and offset the current time
  * falls under for this player.
  */
-function getPlaylistIdxAndOffset(currentTime, source) {
+function getPlaylistIdxAndOffset(datetime, source) {
+    if (_.isUndefined(datetime)) {
+        return false;
+    }
     var playlistIdx = null;
     var offset = null;
     var segments = xgds_video.displaySegments[source];
     
-    if (currentTime >= xgds_video.displaySegments[source].startTime && currentTime <= xgds_video.displaySegments[source].endTime) {
-        for (var i = 0; i < segments.length; i++) {
-            if ((currentTime >= segments[i].startTime) &&
-                    (currentTime <= segments[i].endTime)) {
+//    if (datetime >= xgds_video.displaySegments[source].startTime && datetime <= xgds_video.displaySegments[source].endTime) {
+//        for (var i = 0; i < segments.length; i++) {
+//            if ((datetime >= segments[i].startTime) &&
+//                    (datetime <= segments[i].endTime)) {
+//                playlistIdx = i;
+//                //in seconds
+//                offset = Math.round((datetime - segments[i].startTime) / 1000);
+//                break;
+//            }
+//        }
+//        if ((playlistIdx != null) && (offset != null)) {
+//            return {index: playlistIdx, offset: offset};
+//        } 
+//    }
+    
+    var nowMoment = moment(datetime);
+    var segments = xgds_video.displaySegments[source];
+    for (var i = 0; i < segments.length; i++ ) { 
+        var segment = segments[i];
+        if (_.isUndefined(segment.startTime)){
+            break;
+        }
+        if (nowMoment.isBefore(segment.startTime)) {
+            break;
+        } else if (nowMoment.isSame(segment.startTime)){
+            playlistIdx = i;
+            offset = Math.round(nowMoment.diff(segment.startTime, 'seconds'));
+            break;
+        } else if (nowMoment.isAfter(segment.startTime)){
+            if (_.isUndefined(segment.endTime)){
                 playlistIdx = i;
-                //in seconds
-                offset = Math.round((currentTime - segments[i].startTime) / 1000);
+                offset = Math.round(nowMoment.diff(segment.startTime, 'seconds'));
+                break;
+            } else if (nowMoment.isBefore(segment.endTime)){
+                playlistIdx = i;
+                offset = Math.round(nowMoment.diff(segment.startTime, 'seconds'));
                 break;
             }
         }
-        if ((playlistIdx != null) && (offset != null)) {
-            return {index: playlistIdx, offset: offset};
-        } 
+    }
+        
+    if ((playlistIdx != null) && (offset != null)) {
+       return {index: playlistIdx, offset: offset};
     }
     return false;
 }
@@ -208,18 +241,7 @@ function setPlaylistAndSeek(source, index, offset) {
         actionObj.action = player.seek;
     	actionObj.arg = offset;
         pendingPlayerActions[source] = [actionObj];
-/*
-        if (xgds_video.playFlag) {
-if ((player.getState() == 'PLAYING') ||
-                (player.getState() == 'IDLE')) {
-	    console.log("pausing from setplaylist and seek");
-	    player.pause(true);
-}
-        }
-*/
         player.playlistItem(index);
-        console.log("SET SEEK " + source + " playlist index " + player.getPlaylistIndex());
-        console.log("SET SEEK " + source + " SEEK " + offset);
     }
 }
 
@@ -228,8 +250,10 @@ if ((player.getState() == 'PLAYING') ||
  * Given current time in javascript datetime,
  * find the playlist item and the offset (seconds) and seek to there.
  */
-function jumpToPosition(currentTime, source) {
-    var seekValues = getPlaylistIdxAndOffset(currentTime, source);
+function jumpToPosition(currentTime, source, seekValues) {
+    if (seekValues === null) {
+        seekValues = getPlaylistIdxAndOffset(currentTime, source);
+    }
     var player = jwplayer(source);
     //currentTime falls in one of the segments.
     if (seekValues != false) {
@@ -242,8 +266,7 @@ function jumpToPosition(currentTime, source) {
         }
     } else { //current time is not in the playable range.
         //pause the player
-        if ((player.getState() == 'PLAYING') ||
-                (player.getState() == 'IDLE')) {
+        if ((player.getState() == 'PLAYING') || (player.getState() == 'IDLE')) {
             player.pause(true);
         }
     }
@@ -355,7 +378,7 @@ function seekAllPlayersToTime(datetime) {
 
         var player = jwplayer(source);
         if (player != undefined) {
-            jumpToPosition(datetime, source);
+            jumpToPosition(datetime, source, null);
         }
     }
     if (datetime != null) {
@@ -368,41 +391,13 @@ function awakenIdlePlayers(datetime, exceptThisPlayer) {
     if (_.isUndefined(datetime)) {
         return;
     }
-    var nowMoment = moment(datetime);
     for (var source in xgds_video.displaySegments) {
         if (source != exceptThisPlayer) {
             var state = jwplayer(source).getState();
             if ((state == 'IDLE') || (state == 'PAUSED')) {
-                var segments = xgds_video.displaySegments[source];
-                for (var i = 0; i < segments.length; i++ ) { 
-                    var segment = segments[i];
-                    if (_.isUndefined(segment.startTime)){
-                        break;
-                    }
-		    console.log ("now: " + datetime.toString() + " start: " + segment.startTime.toString());
-                    if (nowMoment.isBefore(segment.startTime)) {
-			break;
-                    } else if (nowMoment.isSame(segment.startTime)){
-                        console.log("AWAKENING " + source + " TO SEGMENT " + i);
-                        jumpToPosition(datetime, source);
-                        break;
-                    } else if (nowMoment.isAfter(segment.startTime)){
-                        if (_.isUndefined(segment.endTime)){
-                            console.log("AWAKENING " + source + " TO SEGMENT " + i);
-                            jumpToPosition(datetime, source);
-                            break;
-                        } else if (nowMoment.isBefore(segment.endTime)){
-
-                            console.log(" end: " + segment.endTime.toString());
-                            console.log("AWAKENING " + source + " TO SEGMENT " + i);
-                            jumpToPosition(datetime, source);
-                            break;
-                        }
-                    }
-//                    if ((datetime >= segment.startTime) && (datetime <= segment.endTime)) {
-//                        console.log("AWAKENING " + source + " TO SEGMENT " + s);
-//                        jumpToPosition(datetime, source);
-//                    }
+                found = getPlaylistIdxAndOffset(datetime, source);
+                if (found != false){
+                    jumpToPosition(datetime, source, found);
                 }
             }
         }

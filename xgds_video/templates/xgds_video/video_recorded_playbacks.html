@@ -87,15 +87,6 @@
 		{% block packery %}
         <div id="container"> 
         
-        {% block otherPackery %}
-        <div class="item {% if sources|length > 1 %}w2{% endif %} freeAspect" id="notesDiv" style="background-color:#F9FADE;">
-       	<div id="messageDiv">
-		</div>
-		<table id="notesTable" class="display">
-		</table>
-       	</div>
-        {% endblock otherPackery %}
-        
         {% block videoSources %}
         {% for source in sources %}
 			<div class="item {% if sources|length > 1 %}w2{% endif %} lockAspect" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
@@ -129,6 +120,15 @@
             </div><!--  item -->
         {% endfor %}
         {% endblock videoSources %}
+
+	{% block otherPackery %}
+        <div class="item {% if sources|length > 1 %}w2{% endif %} freeAspect" id="notesDiv" style="background-color:#F9FADE;">
+        <div id="messageDiv">
+                </div>
+                <table id="notesTable" class="display">
+                </table>
+        </div>
+        {% endblock otherPackery %}
         
         </div> <!--  js packery container -->
         {% endblock packery %}
