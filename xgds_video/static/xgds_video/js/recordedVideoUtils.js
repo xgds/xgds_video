@@ -368,19 +368,41 @@ function awakenIdlePlayers(datetime, exceptThisPlayer) {
     if (_.isUndefined(datetime)) {
         return;
     }
+    var nowMoment = moment(datetime);
     for (var source in xgds_video.displaySegments) {
         if (source != exceptThisPlayer) {
             var state = jwplayer(source).getState();
-            console.log("player " + source + " is " + state);
             if ((state == 'IDLE') || (state == 'PAUSED')) {
                 var segments = xgds_video.displaySegments[source];
-                for (var s in segments) {
-                    var segment = segments[s];
-		    console.log ("now: " + datetime.toString() + " start: " + segment.startTime.toString() + " end: " + segment.endTime.toString());
-                    if ((datetime >= segment.startTime) && (datetime <= segment.endTime)) {
-                        console.log("AWAKENING " + source + " TO SEGMENT " + s);
-                        jumpToPosition(dateTime, source);
+                for (var i = 0; i < segments.length; i++ ) { 
+                    var segment = segments[i];
+                    if (_.isUndefined(segment.startTime)){
+                        break;
                     }
+		    console.log ("now: " + datetime.toString() + " start: " + segment.startTime.toString());
+                    if (nowMoment.isBefore(segment.startTime)) {
+			break;
+                    } else if (nowMoment.isSame(segment.startTime)){
+                        console.log("AWAKENING " + source + " TO SEGMENT " + i);
+                        jumpToPosition(datetime, source);
+                        break;
+                    } else if (nowMoment.isAfter(segment.startTime)){
+                        if (_.isUndefined(segment.endTime)){
+                            console.log("AWAKENING " + source + " TO SEGMENT " + i);
+                            jumpToPosition(datetime, source);
+                            break;
+                        } else if (nowMoment.isBefore(segment.endTime)){
+
+                            console.log(" end: " + segment.endTime.toString());
+                            console.log("AWAKENING " + source + " TO SEGMENT " + i);
+                            jumpToPosition(datetime, source);
+                            break;
+                        }
+                    }
+//                    if ((datetime >= segment.startTime) && (datetime <= segment.endTime)) {
+//                        console.log("AWAKENING " + source + " TO SEGMENT " + s);
+//                        jumpToPosition(datetime, source);
+//                    }
                 }
             }
         }
