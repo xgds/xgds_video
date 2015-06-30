@@ -173,4 +173,14 @@ function setupNotesUI(){
     var $tagsElems = $(".tagsinput");
     $tagsElems.resizable();
     
+    for (var source in xgds_video.displaySegments) {
+        toggleNoteInput(source);
+    }
+    
+}
+
+function toggleNoteInput(sourceName){
+    var sectionName = "#" + sourceName + "_noteInput";
+    $(sectionName).toggle();
+    
 }
