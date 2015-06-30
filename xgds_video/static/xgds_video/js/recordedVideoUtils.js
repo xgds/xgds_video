@@ -376,6 +376,7 @@ function awakenIdlePlayers(datetime, exceptThisPlayer) {
                 var segments = xgds_video.displaySegments[source];
                 for (var s in segments) {
                     var segment = segments[s];
+		    console.log ("now: " + datetime.toString() + " start: " + segment.startTime.toString() + " end: " + segment.endTime.toString());
                     if ((datetime >= segment.startTime) && (datetime <= segment.endTime)) {
                         console.log("AWAKENING " + source + " TO SEGMENT " + s);
                         jumpToPosition(dateTime, source);

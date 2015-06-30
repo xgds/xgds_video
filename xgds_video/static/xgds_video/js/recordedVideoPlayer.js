@@ -255,7 +255,6 @@ var commonOptions = {
                             // update the slider here.
                             var updateTime = getPlayerVideoTime(this.id);
                             if (!(_.isUndefined(updateTime))) {
-                                console.log("calling awaken idle players");
                                 awakenIdlePlayers(updateTime, this.id);
                                 setSliderTime(updateTime);
                             }
