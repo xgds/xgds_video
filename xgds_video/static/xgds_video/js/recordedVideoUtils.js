@@ -230,18 +230,37 @@ function getPlaylistIdxAndOffset(datetime, source) {
  */
 function setPlaylistAndSeek(source, index, offset) {
     var player = jwplayer(source);
+    var currentIndex = player.getPlaylistIndex();
+    var currentOffset = 0;
+    var playlistLoaded = false;
+    if (currentIndex == index){
+        playlistLoaded = true;
+        currentOffset = player.getPosition();
+        if (currentOffset == offset){
+            return;
+        }
+    }
     // Calling immediately seems to work better for HTML5,
     // Queuing in list for handling in onPlay(), below, works better for Flash. Yuck!
     if (player.getRenderingMode() == 'html5') {
-        player.playlistItem(index).seek(offset);
+        if (!playlistLoaded){
+            player.playlistItem(index).seek(offset);
+        } else {
+           player.seek(offset);
+                
+        }
         console.log("SET SEEK playlist index " + player.getPlaylistIndex());
     }
     else {
-        var actionObj = new Object();
-        actionObj.action = player.seek;
-    	actionObj.arg = offset;
-        pendingPlayerActions[source] = [actionObj];
-        player.playlistItem(index);
+        if (!playlistLoaded){
+            var actionObj = new Object();
+            actionObj.action = player.seek;
+            actionObj.arg = offset;
+            pendingPlayerActions[source] = [actionObj];
+            player.playlistItem(index);
+        } else {
+            player.seek(offset);
+        }
     }
 }
 
@@ -251,12 +270,12 @@ function setPlaylistAndSeek(source, index, offset) {
  * find the playlist item and the offset (seconds) and seek to there.
  */
 function jumpToPosition(currentTime, source, seekValues) {
-    if (seekValues === null) {
+    if (_.isUndefined(seekValues)) {
         seekValues = getPlaylistIdxAndOffset(currentTime, source);
     }
     var player = jwplayer(source);
     //currentTime falls in one of the segments.
-    if (seekValues != false) {
+    if (!_.isUndefined(seekValues) && seekValues != false) {
         setPlaylistAndSeek(source, seekValues.index, seekValues.offset);
         if (xgds_video.playFlag) {
             player.play(true);
