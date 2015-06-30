@@ -371,6 +371,7 @@ function awakenIdlePlayers(datetime, exceptThisPlayer) {
     for (var source in xgds_video.displaySegments) {
         if (source != exceptThisPlayer) {
             var state = jwplayer(source).getState();
+            console.log("player " + source + " is " + state);
             if ((state == 'IDLE') || (state == 'PAUSED')) {
                 var segments = xgds_video.displaySegments[source];
                 for (var s in segments) {

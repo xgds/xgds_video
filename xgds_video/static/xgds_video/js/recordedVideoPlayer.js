@@ -84,7 +84,6 @@ function startPlayers() {
 	//  force an initial seek to buffer data
         xgds_video.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
         for (var source in xgds_video.displaySegments) {
-            console.log("Seeking: " + source);
             jwplayer(source).playlistItem(0).seek(0);
         }
     }
@@ -94,10 +93,8 @@ function startPlayers() {
     for (var source in xgds_video.displaySegments) {
         var segments = xgds_video.displaySegments[source];
         if (startTime >= segments[0].startTime) {
-            console.log('starting ' + source);
             jwplayer(source).pause(true);
         } else {
-            console.log('delaying ' + source);
         }
     }
 }
@@ -116,13 +113,10 @@ function startPlayer(player) {
     } else {
 	// force an initial seek to buffer data
         xgds_video.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
-        console.log("Seeking: " + player.id);
         if (!hasMasterSlider){
             index = player.getPlaylist().length - 1;
-            console.log("LOAD PLAYLIST ITEM " + index);
             player.playlistItem(index);
         } else {
-            console.log("LOAD PLAYLIST ITEM 0");
             player.playlistItem(0);
         }
     }
@@ -132,10 +126,8 @@ function startPlayer(player) {
         var startTime = xgds_video.firstSegment.startTime;
         var segments = xgds_video.displaySegments[player.id];
         if (startTime >= segments[0].startTime) {
-            console.log('starting ' + player.id);
     //            player.pause(true);
         } else {
-            console.log('delaying ' + player.id);
             player.pause(true);
         }
     } else {
@@ -201,17 +193,12 @@ var commonOptions = {
                 onSegmentComplete(this);
             },
             onPlay: function(e) { //gets called per source
-                console.log("onPlay: playlist " + this.id + " index " + this.getPlaylistIndex());
                 var segments = xgds_video.displaySegments[this.id];
                 var segment = segments[this.getPlaylistIndex()];
-                console.log("seg start " + segment.startTime + " seg end " + segment.endTime);
                 var pendingActions = pendingPlayerActions[this.id];
                 if (!(_.isUndefined(pendingActions)) && !(_.isEmpty(pendingActions))) {
                     for (var i = 0; i < pendingActions.length; i++) {
-                        console.log(this.id + " ABOUT TO SEEK ");
                         pendingActions[i].action(pendingActions[i].arg);
-                        console.log(this.id + ": pending: " + pendingActions[i].arg);
-                        console.log("onPlay1: playlist " + this.id + " index " + this.getPlaylistIndex());
                     }
                     pendingPlayerActions[this.id] = [];
                 }
@@ -220,18 +207,14 @@ var commonOptions = {
                 }
                 if (xgds_video.seekFlag) {
                     xgds_video.seekFlag = false;
-                    console.log("onPlay2: playlist " + this.id + " index " + this.getPlaylistIndex());
                     if (hasMasterSlider){ 
                         updateSliderFromPlayer();
-                        console.log("onPlay3: playlist " + this.id + " index " + this.getPlaylistIndex());
                     }
                 }
                 onTimeController(this);
-                console.log("onPlay4: playlist " + this.id + " index " + this.getPlaylistIndex());
             },
             onPause: function(e) {
                 //just make sure the item does get paused.
-        console.log("*** ON PAUSE ***");
                 onTimeController(this);
             },
             onBuffer: function(e) {
@@ -244,9 +227,8 @@ var commonOptions = {
                 }
                 onTimeController(this);
             },
-    onSeek: function(e) {
-        console.log('seek with player state: ' + this.getState());
-        // onTimeController(this);
+            onSeek: function(e) {
+                //  onTimeController(this);
             },
             onTime: function(object) {
                 if (!hasMasterSlider){
@@ -267,12 +249,13 @@ var commonOptions = {
                     var testSiteTime = getPlayerVideoTime(this.id);
                     setPlayerTimeLabel(testSiteTime, this.id);
 
-                    if (xgds_video.initialState != true) {
+                    if (!xgds_video.initialState) {
                         //if this call is from the current 'onTimePlayer'
                         if (xgds_video.onTimePlayer == this.id) {
                             // update the slider here.
                             var updateTime = getPlayerVideoTime(this.id);
                             if (!(_.isUndefined(updateTime))) {
+                                console.log("calling awaken idle players");
                                 awakenIdlePlayers(updateTime, this.id);
                                 setSliderTime(updateTime);
                             }
