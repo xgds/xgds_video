@@ -368,6 +368,7 @@ function awakenIdlePlayers(datetime, exceptThisPlayer) {
     if (_.isUndefined(datetime)) {
         return;
     }
+    var nowMoment = moment(datetime);
     for (var source in xgds_video.displaySegments) {
         if (source != exceptThisPlayer) {
             var state = jwplayer(source).getState();
@@ -376,10 +377,28 @@ function awakenIdlePlayers(datetime, exceptThisPlayer) {
                 var segments = xgds_video.displaySegments[source];
                 for (var s in segments) {
                     var segment = segments[s];
-                    if ((datetime >= segment.startTime) && (datetime <= segment.endTime)) {
-                        console.log("AWAKENING " + source + " TO SEGMENT " + s);
-                        jumpToPosition(dateTime, source);
+                    if (_.isUndefined(segment.startTime)){
+                        break;
                     }
+                    if (nowMoment.isSame(segment.startTime)){
+                        console.log("AWAKENING " + source + " TO SEGMENT " + s);
+                        jumpToPosition(datetime, source);
+                        break;
+                    } else if (nowMoment.isAfter(segment.startTime)){
+                        if (_.isUndefined(segment.endTime)){
+                            console.log("AWAKENING " + source + " TO SEGMENT " + s);
+                            jumpToPosition(datetime, source);
+                            break;
+                        } else if (nowMoment.isBefore(segment.endTime)){
+                            console.log("AWAKENING " + source + " TO SEGMENT " + s);
+                            jumpToPosition(datetime, source);
+                            break;
+                        }
+                    }
+//                    if ((datetime >= segment.startTime) && (datetime <= segment.endTime)) {
+//                        console.log("AWAKENING " + source + " TO SEGMENT " + s);
+//                        jumpToPosition(datetime, source);
+//                    }
                 }
             }
         }
