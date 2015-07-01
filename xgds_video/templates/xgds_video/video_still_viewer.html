@@ -19,6 +19,7 @@
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}underscore/underscore-min.js"></script>
     <script type="text/javascript">
+    	var source = '{{source.shortName}}';
         var submitNoteUrl = "{% url 'record_simple' %}";
         STATIC_URL='{{ STATIC_URL }}';
         var event_timestring = '{{event_timestring}}';
@@ -40,16 +41,34 @@
 	    {% endfor %}
 	    </ul>
 	{% endif %}
+	<div>
+	{% if INCLUDE_NOTE_INPUT %}<a class="mybutton " href="#" onclick="toggleNoteInput('{{source.shortName}}')">Take Note</a>{% endif %}
+	<!-- <a class="mybutton " href="#" onclick="#">Download Image</a>
+	 -->
+	 </div>
+	
 	{% if INCLUDE_NOTE_INPUT %}
-	  <section>
+	  <section id="{{source.shortName}}_noteInput">
             {% include "xgds_video/video_notes.html" with data=form source=source.shortName STATIC_URL=STATIC_URL %}
           </section>
         {% endif %}<br/>
-	<div><img src={%url 'videoStill' flightName timeKey %}></div>
+	<div>
+	<img src={%url 'videoStill' flightName timeKey %}>
+	{% if position %}
+	<table>
+	<tr><td>Lat:</td><td>{{position.latitude}}</td></tr>
+	<tr><td>Lon:</td><td>{{position.longitude}}</td></tr>
+	{% if position.depth %}
+	<tr><td>Lat:</td><td>{{position.depth}} m</td></tr>
+	{% endif %}
+	</table>
+	{% endif %}
+	</div>
 {% endblock contents %}
 
 {% block jsInit %}
 {% if INCLUDE_NOTE_INPUT %}
 {% include "xgds_video/init_notes.js" %}
 {% endif %}
+toggleNoteInput(source);
 {% endblock jsInit %}

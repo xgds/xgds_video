@@ -299,10 +299,14 @@ def showStillViewerWindow(request, flightName=None, time=None):
     form.fields["source"] = source
     form.fields["extras"].initial = callGetNoteExtras([episode], form.source, request)
 
+    stillLocationFxn = getClassByName(settings.XGDS_VIDEO_GPS_LOCATION_METHOD)
+    locationInfo = stillLocationFxn(flightName, timestamp)
+
     return render_to_response('xgds_video/video_still_viewer.html',
                               {'form': form,
                                'flightName': flightName,
                                'source': source,
+                               'position': locationInfo,
                                'formattedTime': formattedTime,
                                'timeKey': time,
                                'event_timestring': event_timestring,

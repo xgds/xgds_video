@@ -173,9 +173,11 @@ function setupNotesUI(){
     var $tagsElems = $(".tagsinput");
     $tagsElems.resizable();
     
-    for (var source in xgds_video.displaySegments) {
-        toggleNoteInput(source);
-    }
+    if (!_.isUndefined(xgds_video.displaySegments)){
+        for (var source in xgds_video.displaySegments) {
+            toggleNoteInput(source);
+        }
+    } 
     
 }
 
