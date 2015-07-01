@@ -235,7 +235,7 @@ def displayVideoStillThumb(request, flightName=None, time=None):
     return displayVideoStill(request, flightName, time, thumbnail=True)
 
 
-def displayVideoStill(request, flightName=None, time=None, thumbnail=False):
+def displayVideoStill(request, flightName=None, time=None, thumbnail=False, isDownload=0):
     """
     Returns a video still for a given flight at the requested time.  If the still already exists for that time, it is just displayed,
     otherwise a new one is created.
@@ -270,7 +270,10 @@ def displayVideoStill(request, flightName=None, time=None, thumbnail=False):
 
     imageBits = f.read()
     f.close()
-    return HttpResponse(imageBits, content_type=mimeType)
+    response = HttpResponse(imageBits, content_type=mimeType)
+    if isDownload:
+        response['Content-disposition'] = 'attachment; filename=%s' % os.path.basename(fullSizePath)
+    return response
 
 
 def showStillViewerWindow(request, flightName=None, time=None):

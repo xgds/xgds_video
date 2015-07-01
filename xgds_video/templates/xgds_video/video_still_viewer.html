@@ -41,11 +41,23 @@
 	    {% endfor %}
 	    </ul>
 	{% endif %}
-	<div>
+	<div class="row">
+	<div class="three columns">
 	{% if INCLUDE_NOTE_INPUT %}<a class="mybutton " href="#" onclick="toggleNoteInput('{{source.shortName}}')">Take Note</a>{% endif %}
-	<!-- <a class="mybutton " href="#" onclick="#">Download Image</a>
-	 -->
+	<a class="mybutton " href="{% url 'xgds_video_downloadStill' flightName timeKey 1 %}" >Download Image</a>
 	 </div>
+	 <div class="nine columns">
+	{% if position %}
+	<table>
+	<tr><td>Lat:</td><td>{{position.latitude}}</td></tr>
+	<tr><td>Lon:</td><td>{{position.longitude}}</td></tr>
+	{% if position.depthMeters %}
+	<tr><td>Depth:</td><td>{{position.depthMeters}} m</td></tr>
+	{% endif %}
+	</table>
+	{% endif %}
+	</div>
+	</div>
 	
 	{% if INCLUDE_NOTE_INPUT %}
 	  <section id="{{source.shortName}}_noteInput">
@@ -54,16 +66,6 @@
         {% endif %}<br/>
 	<div>
 	<img src={%url 'videoStill' flightName timeKey %}>
-	{% if position %}
-	<table>
-	<tr><td>Lat:</td><td>{{position.latitude}}</td></tr>
-	<tr><td>Lon:</td><td>{{position.longitude}}</td></tr>
-	{% if position.depth %}
-	<tr><td>Lat:</td><td>{{position.depth}} m</td></tr>
-	{% endif %}
-	</table>
-	{% endif %}
-	</div>
 {% endblock contents %}
 
 {% block jsInit %}

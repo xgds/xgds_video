@@ -30,6 +30,7 @@ urlpatterns = patterns(
     (r'^videoStillViewer/$', views.showStillViewerWindow, {}, 'videoStillViewer'),
     (r'^videoStill/(?P<flightName>\w+)/(?P<time>[^/]+).thumbnail.jpg/$', views.displayVideoStillThumb, {}, 'videoStillThumb'),  # still thumbnail
     (r'^videoStill/(?P<flightName>\w+)/(?P<time>[^/]+).jpg/$', views.displayVideoStill, {}, 'videoStill'),  # full-size still from video
+    (r'^videoStill/(?P<flightName>\w+)/(?P<time>[^/]+).jpg/(?P<isDownload>\d)/$', views.displayVideoStill, {}, 'xgds_video_downloadStill'),  # full-size still from video
     (r'^recorded/$', views.displayRecordedVideo, {'loginRequired': False}, 'xgds_video_recorded'),  # active live recorded video
     (r'^recorded/(?P<flightName>\w+)/$', views.displayRecordedVideo, {'loginRequired': False}, 'xgds_video_recorded'),  # active live recorded video
     (r'^recorded/(?P<flightName>\w+)/(?P<sourceShortName>\w+)/$', views.displayRecordedVideo, {'loginRequired': False}, 'xgds_video_recorded'),  # active live recorded video
