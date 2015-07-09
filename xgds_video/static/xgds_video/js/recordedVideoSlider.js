@@ -57,19 +57,19 @@ function createSliderLegend(isResizing) {
             color = '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
         }
         
+        var fullWidth = $("#masterSlider").width(); 
+        ribbon.append('<div class="divider" id="' + dividerName + '">' + source.shortName );
         sourceRibbon = ribbon.find("#divider-" + source.shortName);
         
         if (!singleSource){
             //handle empty space in front of first segment
             var emptySegmentDuration = firstSegmentStartMoment.diff(episodeStartMoment, 'seconds');
-            var fullWidth = $("#masterSlider").width(); 
             var emptySegmentWidth = Math.round(fullWidth * (emptySegmentDuration / totalDuration));
             var emptySegmentHTML = '<img class="legend-segment ' + source.shortName + '-legend' +
                              '" alt="emptySegment"' +
                              ' src="' + STATIC_URL + 'xgds_video/images/ipx.gif"' +
                              '" width="' + emptySegmentWidth +
                              '" height="4px" style="opacity:0;">';
-            ribbon.append('<div class="divider" id="' + dividerName + '">' + source.shortName );
             sourceRibbon.append(emptySegmentHTML);
         }
         //for each video segment
