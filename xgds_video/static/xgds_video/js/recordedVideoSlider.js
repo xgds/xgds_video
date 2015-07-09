@@ -26,6 +26,7 @@ function createSliderLegend(isResizing) {
         xgds_video.resizeSlider = true;
     }
     
+    var singleSource = (Object.keys(xgds_video.displaySegments).length == 1);
      for (var sourceName in xgds_video.displaySegments) {
          var segments = xgds_video.displaySegments[sourceName];
          var source = segments[0].source;
@@ -46,27 +47,31 @@ function createSliderLegend(isResizing) {
             return;
         }
         //get the total slider range in seconds
-        var episodeStartMoment = moment(xgds_video.episode.startTime);
-        var episodeEndMoment = moment(xgds_video.episode.endTime);
+        var firstSegmentStartMoment = moment(segments[0].startTime);
+        var episodeStartMoment = singleSource ? firstSegmentStartMoment : moment(xgds_video.episode.startTime);
+        var episodeEndMoment = singleSource ? moment(segments[segments.length - 1].endTime) : moment(xgds_video.episode.endTime);
         var totalDuration = episodeEndMoment.diff(episodeStartMoment, 'seconds');
         var color = source.displayColor;
         if (color == '') {
             //assign a random color
             color = '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
         }
-        //handle empty space in front of first segment
-        var firstSegmentStartMoment = moment(segments[0].startTime);
-        var emptySegmentDuration = firstSegmentStartMoment.diff(episodeStartMoment, 'seconds');
-        var fullWidth = $("#masterSlider").width(); 
-        var emptySegmentWidth = Math.round(fullWidth * (emptySegmentDuration / totalDuration));
-        var emptySegmentHTML = '<img class="legend-segment ' + source.shortName + '-legend' +
-                         '" alt="emptySegment"' +
-                         ' src="' + STATIC_URL + 'xgds_video/images/ipx.gif"' +
-                         '" width="' + emptySegmentWidth +
-                         '" height="4px" style="opacity:0;">';
-        ribbon.append('<div class="divider" id="' + dividerName + '">' + source.shortName );
+        
         sourceRibbon = ribbon.find("#divider-" + source.shortName);
-        sourceRibbon.append(emptySegmentHTML);
+        
+        if (!singleSource){
+            //handle empty space in front of first segment
+            var emptySegmentDuration = firstSegmentStartMoment.diff(episodeStartMoment, 'seconds');
+            var fullWidth = $("#masterSlider").width(); 
+            var emptySegmentWidth = Math.round(fullWidth * (emptySegmentDuration / totalDuration));
+            var emptySegmentHTML = '<img class="legend-segment ' + source.shortName + '-legend' +
+                             '" alt="emptySegment"' +
+                             ' src="' + STATIC_URL + 'xgds_video/images/ipx.gif"' +
+                             '" width="' + emptySegmentWidth +
+                             '" height="4px" style="opacity:0;">';
+            ribbon.append('<div class="divider" id="' + dividerName + '">' + source.shortName );
+            sourceRibbon.append(emptySegmentHTML);
+        }
         //for each video segment
         $.each(segments, function(id) {
             var segment = segments[id];
