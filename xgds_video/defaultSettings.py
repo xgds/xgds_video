@@ -85,7 +85,6 @@ JWPLAYER_KEY = None
 # include this in your siteSettings.py BOWER_INSTALLED_APPS
 XGDS_VIDEO_BOWER_INSTALLED_APPS = (
     'jwplayer=https://account.jwplayer.com/static/download/jwplayer-6.12.zip',
-    'datejs',
     'packery',
     'AC_QuickTime=https://java.net/projects/swinglabs/sources/svn/content/trunk/website/web/scripts/AC_QuickTime.js?raw=true',
     'http://p.jwpcdn.com/6/jwpsrv_frq.js',
