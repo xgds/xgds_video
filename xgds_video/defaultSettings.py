@@ -86,7 +86,6 @@ JWPLAYER_KEY = None
 XGDS_VIDEO_BOWER_INSTALLED_APPS = (
     'jwplayer=https://account.jwplayer.com/static/download/jwplayer-6.12.zip',
     'packery',
-    'AC_QuickTime=https://java.net/projects/swinglabs/sources/svn/content/trunk/website/web/scripts/AC_QuickTime.js?raw=true',
     'moment',
     'moment-timezone',
 )
