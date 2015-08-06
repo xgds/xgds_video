@@ -42,7 +42,7 @@ from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 from xgds_notes.forms import NoteForm
 
 from geocamUtil.loader import LazyGetModelByName, getClassByName
-from xgds_video import settings
+from django.conf import settings
 from xgds_video import util
 from xgds_video.models import *  # pylint: disable=W0401
 from django.http import HttpResponse

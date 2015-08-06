@@ -21,10 +21,10 @@ import os
 import traceback
 import m3u8
 
-from xgds_video import settings
+from django.conf import settings
 from geocamUtil.loader import getClassByName
 # from plrpExplorer.views import getVideoDelay # FIX-ME: should be abstracted better from video
-from xgds_video import settings
+from django.conf import settings
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
 

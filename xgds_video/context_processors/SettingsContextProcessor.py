@@ -14,7 +14,7 @@
 #specific language governing permissions and limitations under the License.
 # __END_LICENSE__
 
-from xgds_video import settings
+from django.conf import settings
 
 
 def SettingsContextProcessor(request):

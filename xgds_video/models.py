@@ -16,7 +16,7 @@
 
 from django.db import models
 from geocamUtil.models import UuidField
-from xgds_video import settings
+from django.conf import settings
 from xgds_video import util
 
 #  pylint: disable=C1001,E1101
