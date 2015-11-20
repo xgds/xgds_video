@@ -39,7 +39,7 @@ from django.contrib import messages
 from geocamUtil import dateparse
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 
-from xgds_notes.forms import NoteForm
+from xgds_notes2.forms import NoteForm
 
 from geocamUtil.loader import LazyGetModelByName, getClassByName
 from django.conf import settings
@@ -444,7 +444,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     index = 0
     distinctSources = segments.values('source').distinct()
     for sourceDict in distinctSources:
-        source = SOURCE_MODEL.get().objects.get(id=sourceDict['source'])
+        source = SOURCE_MODEL.get().objects.get(pk=sourceDict['source'])
         sources.append(source)
         sourceVehicle[source.shortName] = source.vehicleName
         sourceSegments = segments.filter(source=source)

@@ -44,7 +44,7 @@ class AbstractVideoSource(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return u"%s(%s, name='%s')" % (self.__class__.__name__, self.id, self.name)
+        return u"%s(%s, name='%s')" % (self.__class__.__name__, self.pk, self.name)
 
     def getDict(self):
         return {"name": self.name, "shortName": self.shortName,
@@ -78,7 +78,7 @@ class AbstractVideoSettings(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return u"%s(%s, %s x %s)" % (self.__class__.__name__, self.id, self.width, self.height)
+        return u"%s(%s, %s x %s)" % (self.__class__.__name__, self.pk, self.width, self.height)
 
 
 class VideoSettings(AbstractVideoSettings):
@@ -107,7 +107,7 @@ class AbstractVideoFeed(models.Model):
     def __unicode__(self):
         return (u"%s(%s, url='%s', shortName='%s', active=%s)" %
                 (self.__class__.__name__,
-                 self.id,
+                 self.pk,
                  self.url,
                  self.shortName,
                  self.active))
@@ -148,7 +148,7 @@ class AbstractVideoSegment(models.Model):
     def __unicode__(self):
         return (u"%s(%s,sourceName=%s, segNumber=%s, self.startTime=%s, self.endTime='%s', self.episode='%s')" %
                 (self.__class__.__name__,
-                 self.id,
+                 self.pk,
                  self.source.shortName,
                  self.segNumber,
                  self.startTime,
@@ -193,7 +193,7 @@ class AbstractVideoEpisode(models.Model):
     def __unicode__(self):
         return (u"%s(%s, shortName='%s', startTime=%s, endTime=%s)" %
                 (self.__class__.__name__,
-                 self.id,
+                 self.pk,
                  self.shortName,
                  repr(self.startTime),
                  repr(self.endTime)))
@@ -227,7 +227,7 @@ class VideoSourceGroup(models.Model):
 
     def __unicode__(self):
         return (u"VideoSourceGroup(%s, name='%s', shortName='%s')"
-                % (self.id, self.name, self.shortName))
+                % (self.pk, self.name, self.shortName))
 
 
 class VideoSourceGroupEntry(models.Model):
@@ -243,4 +243,4 @@ class VideoSourceGroupEntry(models.Model):
 
     def __unicode__(self):
         return (u"VideoSourceGroupEntry(%s, rank=%s, source='%s', group='%s')"
-                % (self.id, self.rank, self.source.name, self.group.name))
+                % (self.pk, self.rank, self.source.name, self.group.name))
