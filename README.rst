@@ -1,4 +1,4 @@
-Fill me in
+xGDS submodule to support recording and synchronized replay of video.
 
 .. o __BEGIN_LICENSE__
 .. o  Copyright (c) 2015, United States Government, as represented by the
