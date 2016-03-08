@@ -39,7 +39,7 @@ def getShortTimeString(dateTime):
 
 def convertUtcToLocal(time):
     if time:
-        time = time.replace(tzinfo=pytz.UTC)
+        time = time.replace(tzinfo=pytz.utc)
         return time.astimezone(TIME_ZONE)
     else:
         return ""
