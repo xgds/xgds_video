@@ -89,6 +89,10 @@ class VideoSettings(AbstractVideoSettings):
     pass
 
 
+DEFAULT_SETTINGS_FIELD = lambda: models.ForeignKey(VideoSettings, null=True, blank=True)
+DEFAULT_SOURCE_FIELD = lambda: models.ForeignKey(VideoSource, null=True, blank=True)
+
+
 class AbstractVideoFeed(models.Model):
     # name: human-readable title
     name = models.CharField(max_length=128, blank=True, null=True)
@@ -97,8 +101,8 @@ class AbstractVideoFeed(models.Model):
     # url: the url where you can watch the live video
     url = models.CharField(max_length=512, blank=False)
     active = models.BooleanField(default=False)
-    settings = models.ForeignKey(videoSettings.XGDS_VIDEO_SETTINGS_MODEL)
-    source = models.ForeignKey(videoSettings.XGDS_VIDEO_SOURCE_MODEL)
+    settings = 'set to DEFAULT_SETTINGS_FIELD() or similar in derived classes'
+    source = 'set to DEFAULT_SOURCE_FIELD() or similar in derived classes'
     uuid = UuidField(db_index=True)
 
     class Meta:
@@ -117,7 +121,11 @@ class VideoFeed(AbstractVideoFeed):
     """
     A VideoFeed gives you enough information to watch a live video.
     """
-    pass
+    settings = DEFAULT_SETTINGS_FIELD()
+    source = DEFAULT_SOURCE_FIELD()
+
+
+DEFAULT_EPISODE_FIELD = lambda: models.ForeignKey('xgds_video.VideoEpisode', null=True, blank=True)
 
 
 class AbstractVideoSegment(models.Model):
@@ -126,9 +134,9 @@ class AbstractVideoSegment(models.Model):
     indexFileName = models.CharField(max_length=50, help_text="ie. prog_index.m3u8")
     startTime = models.DateTimeField(null=True, blank=True, help_text="Second precision, utc. Start time needs to be later than episode start time")  # second precision, utc
     endTime = models.DateTimeField(null=True, blank=True, help_text="needs to be earlier than episode end time")
-    settings = models.ForeignKey(videoSettings.XGDS_VIDEO_SETTINGS_MODEL, null=True, blank=True, help_text="usually (640: 360)")
-    source = models.ForeignKey(videoSettings.XGDS_VIDEO_SOURCE_MODEL, null=True, blank=True, help_text="from video source. same as NewFlight's AssetRole.")
-    episode = models.ForeignKey(videoSettings.XGDS_VIDEO_EPISODE_MODEL, null=True, blank=True, help_text="episodes contain segments")
+    settings = 'set to DEFAULT_SETTINGS_FIELD() or similar in derived classes'
+    source = 'set to DEFAULT_SOURCE_FIELD() or similar in derived classes'
+    episode = 'set to DEFAULT_EPISODE_FIELD() or similar in derived classes'
     uuid = UuidField()
 
     def getDict(self):
@@ -162,7 +170,9 @@ class VideoSegment(AbstractVideoSegment):
     over a time interval with continuous video data. It points to a file
     on disk that contains the data.
     """
-    pass
+    settings = DEFAULT_SETTINGS_FIELD()
+    source = DEFAULT_SOURCE_FIELD()
+    episode = DEFAULT_EPISODE_FIELD()
 
 
 class AbstractVideoEpisode(models.Model):
@@ -230,17 +240,22 @@ class VideoSourceGroup(models.Model):
                 % (self.pk, self.name, self.shortName))
 
 
-class VideoSourceGroupEntry(models.Model):
+class AbstractVideoSourceGroupEntry(models.Model):
     """
     An entry in the ordered list of the VideoSourceGroup.
     """
     rank = models.PositiveIntegerField()
-    source = models.ForeignKey(settings.XGDS_VIDEO_SOURCE_MODEL)
+    source = 'set to DEFAULT_SOURCE_FIELD() or similar in derived classes'
     group = models.ForeignKey('VideoSourceGroup', related_name='sources')
 
     class Meta:
+        abstract = True
         ordering = ['rank']
 
     def __unicode__(self):
         return (u"VideoSourceGroupEntry(%s, rank=%s, source='%s', group='%s')"
                 % (self.pk, self.rank, self.source.name, self.group.name))
+
+
+class VideoSourceGroupEntry(AbstractVideoSourceGroupEntry):
+    source = DEFAULT_SOURCE_FIELD()
