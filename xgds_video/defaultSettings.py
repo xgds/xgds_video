@@ -15,6 +15,7 @@
 #__END_LICENSE__
 
 import platform
+from geocamUtil.SettingsUtil import getOrCreateArray
 
 XGDS_VIDEO_NEW_DIR_PERMISSIONS = 0777
 XGDS_VIDEO_MAX_EPISODE_DURATION_MINUTES = 180
@@ -82,10 +83,9 @@ XGDS_VIDEO_DELAY_AMOUNT_METHOD = 'xgds_video.util.getDelaySeconds'
  """
 JWPLAYER_KEY = None
 
-# include this in your siteSettings.py BOWER_INSTALLED_APPS
-XGDS_VIDEO_BOWER_INSTALLED_APPS = (
-    'jwplayer=https://account.jwplayer.com/static/download/jwplayer-6.12.zip',
-    'packery',
-    'moment',
-    'moment-timezone',
-)
+BOWER_INSTALLED_APPS = getOrCreateArray('BOWER_INSTALLED_APPS')
+BOWER_INSTALLED_APPS += ['jwplayer=https://account.jwplayer.com/static/download/jwplayer-6.12.zip',
+                         'packery',
+                         'moment',
+                         'moment-timezone',
+                         ]
