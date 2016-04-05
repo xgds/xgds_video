@@ -85,7 +85,6 @@ JWPLAYER_KEY = None
 
 BOWER_INSTALLED_APPS = getOrCreateArray('BOWER_INSTALLED_APPS')
 BOWER_INSTALLED_APPS += ['jwplayer=https://account.jwplayer.com/static/download/jwplayer-6.12.zip',
-                         'packery',
                          'moment',
                          'moment-timezone',
                          ]
