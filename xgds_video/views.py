@@ -30,6 +30,7 @@ try:
 except ImportError:
     pass  # zerorpc not needed for most views
 
+from django.db.models import Max
 from django.shortcuts import render_to_response
 from django.shortcuts import redirect
 from django.template import RequestContext
@@ -150,15 +151,6 @@ def getSegments(source=None, episode=None):
     GET_SEGMENTS_METHOD
     """
     return None
-
-
-def makedirsIfNeeded(path):
-    """
-    Helper for displayEpisodeRecordedVideo
-    """
-    if not os.path.exists(path):
-        os.makedirs(path)
-        os.chmod(path, (stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU))
 
 
 def getEpisodeFromName(flightName):
@@ -364,14 +356,14 @@ def getSegmentForTime(flightName, time):
     GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
     episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
     if episode.endTime:
-        segment = VideoSegment.objects.get(episode=episode, startTime__lte=time,
+        segment = SEGMENT_MODEL.get().objects.get(episode=episode, startTime__lte=time,
                                            endTime__gte=time, source=source)
         return segment
     else:
         try:
-            segment = VideoSegment.objects.get(episode=episode, startTime__lte=time, endTime__gte=time, source=source)
+            segment = SEGMENT_MODEL.get().objects.get(episode=episode, startTime__lte=time, endTime__gte=time, source=source)
         except:
-            segment = VideoSegment.objects.get(episode=episode, startTime__lte=time, endTime=None, source=source)
+            segment = SEGMENT_MODEL.get().objects.get(episode=episode, startTime__lte=time, endTime=None, source=source)
         return segment
 
 
@@ -508,94 +500,6 @@ def extraVideoContext(ctx):
     pass
 
 
-def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDuration, episode):
-    if not source.videofeed_set.all():
-        logging.info("video feeds set is empty")
-        return
-    videoFeed = source.videofeed_set.all()[0]
-    recordedVideoDir = None
-    segmentNumber = None
-    for i in xrange(1000):
-        trySegDir = os.path.join(recordingDir, 'Segment%03d' % i)
-        if not os.path.exists(trySegDir) or not os.listdir(trySegDir):
-            recordedVideoDir = trySegDir
-            segmentNumber = i
-            break
-    assert segmentNumber is not None
-
-    makedirsIfNeeded(recordedVideoDir)
-    try:
-        videoSettingses = SETTINGS_MODEL.get().objects.filter(width=videoFeed.settings.width,
-                                                              height=videoFeed.settings.height,
-                                                              compressionRate=None,
-                                                              playbackDataRate=None)
-        videoSettings = videoSettingses.first()
-    except:
-        # make a new one
-        videoSettings = SETTINGS_MODEL.get()()
-        videoSettings.width = videoFeed.settings.width
-        videoSettings.height = videoFeed.settings.height
-        videoSettings.save()
-
-    videoSegment, created = SEGMENT_MODEL.get().objects.get_or_create(directoryName="Segment",
-                                                                      segNumber=segmentNumber,
-                                                                      indexFileName="prog_index.m3u8",
-                                                                      endTime=None,
-                                                                      settings=videoSettings,
-                                                                      source=source,
-                                                                      episode=episode)
-    videoSegment.startTime = startTime
-    videoSegment.save()
-
-    if settings.PYRAPTORD_SERVICE is True:
-        pyraptord = getPyraptordClient()
-    assetName = source.shortName  # flight.assetRole.name
-    vlcSvc = '%s_vlc' % assetName
-    vlcCmd = ('%s %s %s'
-              % (settings.XGDS_VIDEO_VLC_PATH,
-                 videoFeed.url,
-                 settings.XGDS_VIDEO_VLC_PARAMETERS))
-    segmenterSvc = '%s_segmenter' % assetName
-    segmenterCmdTemplate = '%s %s' % (settings.XGDS_VIDEO_SEGMENTER_PATH,
-                                      settings.XGDS_VIDEO_SEGMENTER_ARGS)
-
-    segmenterCmdCtx = {
-        'recordingUrl': recordingUrl,
-        'segmentNumber': segmentNumber,
-        'recordedVideoDir': recordedVideoDir,
-        'maxFlightDuration': maxFlightDuration,
-    }
-    segmenterCmd = segmenterCmdTemplate % segmenterCmdCtx
-    print vlcCmd + "|" + segmenterCmd
-    if settings.PYRAPTORD_SERVICE is True:
-        stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
-        stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
-        pyraptord.updateServiceConfig(vlcSvc,
-                                      {'command': vlcCmd})
-        pyraptord.updateServiceConfig(segmenterSvc,
-                                      {'command': segmenterCmd,
-                                       'cwd': recordedVideoDir})
-        pyraptord.restart(vlcSvc)
-        pyraptord.restart(segmenterSvc)
-
-
-def stopRecording(source, endTime):
-    if settings.PYRAPTORD_SERVICE is True:
-        pyraptord = getPyraptordClient('pyraptord')
-    assetName = source.shortName  # flight.assetRole.name
-    vlcSvc = '%s_vlc' % assetName
-    segmenterSvc = '%s_segmenter' % assetName
-
-    # we need to set the endtime
-    unended_segments = source.videosegment_set.filter(endTime=None)
-    for segment in unended_segments:
-        segment.endTime = endTime
-        segment.save()
-
-    if settings.PYRAPTORD_SERVICE is True:
-        stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
-        stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
-
 
 def videoIndexFile(request, flightName=None, sourceShortName=None, segmentNumber=None):
     """
@@ -611,3 +515,4 @@ def videoIndexFile(request, flightName=None, sourceShortName=None, segmentNumber
     response = HttpResponse(newIndex, content_type="application/x-mpegurl")
     response['Content-Disposition'] = 'filename = "prog_index.m3u8"'
     return response
+

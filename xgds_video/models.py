@@ -22,7 +22,7 @@ from xgds_video import util
 #  pylint: disable=C1001,E1101
 
 #  incase settings is shadowed
-videoSettings = settings
+# videoSettings = settings
 
 
 class AbstractVideoSource(models.Model):

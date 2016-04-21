@@ -64,8 +64,11 @@ XGDS_VIDEO_GET_ACTIVE_EPISODE = 'xgds_video.views.getActiveEpisode'
 XGDS_VIDEO_GET_SOURCES_FROM_VEHICLE = 'xgds_video.views.getSourcesFromVehicle'
 XGDS_VIDEO_GET_TIMEZONE_FROM_NAME = 'xgds_video.views.getTimezoneFromFlightName'
 
+
 # set this in siteSettings.py example: DATA_URL
+RECORDED_VIDEO_DIR_BASE = None
 RECORDED_VIDEO_URL_BASE = None
+
 
 # Path in data where you will find your video files
 XGDS_VIDEO_INDEX_FILE_METHOD = 'xgds_video.util.getIndexFileSuffix'
