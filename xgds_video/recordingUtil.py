@@ -58,6 +58,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
             recordedVideoDir = os.path.join(recordingDir, 'Segment%03d' % segmentNumber)
     except:
         segmentNumber = 0
+        recordedVideoDir = os.path.join(recordingDir, 'Segment%03d' % segmentNumber)
     
 #     recordedVideoDir = None
 #     segmentNumber = None
