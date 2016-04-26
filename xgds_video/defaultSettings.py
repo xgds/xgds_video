@@ -30,7 +30,7 @@ XGDS_VIDEO_INDEX_FILE_NAME = "prog_index.m3u8"
 XGDS_VIDEO_INDEX_FILE_END_TAG = "#EXT-X-ENDLIST"
 if platform.system() == 'Linux':
     XGDS_VIDEO_VLC_PATH = '/usr/bin/vlc'
-    XGDS_VIDEO_SEGMENTER_PATH = '/usr/local/bin/avconv'
+    XGDS_VIDEO_SEGMENTER_PATH = '/usr/bin/avconv'
     XGDS_VIDEO_SEGMENTER_ARGS = '-i pipe:0 -strict experimental -codec copy -map 0 -g 30 -f hls -hls_time 5 -hls_list_size 99999 prog_index.m3u8'
 else:
     XGDS_VIDEO_VLC_PATH = "/Applications/VLC.app/Contents/MacOS/VLC"
