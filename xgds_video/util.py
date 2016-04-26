@@ -125,7 +125,7 @@ def findEndMarker(item):
 
 
 def getIndexFileSuffix(flightName, sourceShortName, segmentNumber):
-    return 'images/%s/%s/Segment%03d/prog_index.m3u8' % (flightName, sourceShortName, int(segmentNumber))
+    return '%s/Video/Recordings/Segment%03d/prog_index.m3u8' % (flightName, sourceShortName, int(segmentNumber))
 
 
 def getSegmentsFromEndForDelay(delayTime, indexPath):
