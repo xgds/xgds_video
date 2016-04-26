@@ -30,7 +30,7 @@ $(document).ready(function() {
        input_idTags.tagsInput({
 	    	width: 'auto',
 		    height: '14px',
-		    autocomplete_url: "{% url 'note_tags_list' %}"
+		    autocomplete_url: "{% url 'xgds_notes_tags_array' %}"
 //		    autocomplete:{selectFirst:true,width:'80px',autoFill:true}
 			});
 			
