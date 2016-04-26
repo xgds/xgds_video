@@ -392,7 +392,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         requestedTime = util.pythonDatetimeToJSON(requestedTime)  # util.convertUtcToLocal(requestedTime))
 
     GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
-    activeepisode = GET_ACTIVE_EPISODE_METHOD()
+    activeepisode = GET_ACTIVE_EPISODE_METHOD(flightName)
 
     # this happens when user clicks on a flight name to view video
     if flightName:
