@@ -371,6 +371,45 @@ def getTimezoneFromFlightName(flightName):
     return 'America/Los_Angeles'
 
 
+def getEpisodeSegmentsJson(request, flightName=None, sourceShortName=None):
+    """ flightName is either flightName or groupFlightName 
+    Returns first segment of all sources that are part of a given episode.
+    Used for both playing back videos from active episode and also
+    for playing videos associated with each note.
+    """
+    episode = None
+    if flightName:
+        episode = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)(flightName)
+    else:
+        episode = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)(flightName)
+    
+    if not episode:
+        return HttpResponse(json.dumps({'error': 'No episode found'}), content_type='application/json', status=406)
+    
+    active = (episode.endTime == None)
+    if not flightName:
+        flightName = episode.shortName
+
+    # get the segments
+    segments = {}
+    if sourceShortName:
+        segments[sourceShortName] = episode.videosegment_set.filter(source__shortName=sourceShortName)
+    else:
+        distinctSources = episode.videosegment_set.values('source').distinct()
+        for theSource in distinctSources:
+            segments[theSource.shortName] = episode.videosegment_set.filter(source__shortName=theSource.shortName)
+        
+    if not segments:
+        return HttpResponse(json.dumps({'error': 'No segments found for ' + flightName}), content_type='application/json', status=406)
+
+    result = []
+    result.append({'active': active})
+    result.append({'episode': episode.getDict()})
+    result.append({'segments': segments })
+    
+    return HttpResponse(json.dumps(result, sort_keys=True, indent=4, cls=DatetimeJsonEncoder), content_type='application/json')
+
+
 def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=None):
     """ TODO flightName is actually groupName """
     """

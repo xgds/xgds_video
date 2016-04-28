@@ -35,4 +35,6 @@ urlpatterns = [
     url(r'^recorded/(?P<flightName>\w+)/(?P<sourceShortName>\w+)/$', views.displayRecordedVideo, {'loginRequired': False}, 'xgds_video_recorded'),  # active live recorded video
     url(r'^liveImageStream/$', views.liveImageStream, {'loginRequired': False}, 'live_image_stream'),  # shows image stream from rover.
     url(r'^test/$', views.test, {}, 'test'),  # debug only
+    url(r'^recorded/(?P<flightName>\w+).json$', views.getEpisodeSegmentsJson, {'loginRequired': False}, 'xgds_video_recorded_json'),  # active recorded video json
+    url(r'^recorded/(?P<flightName>\w+)/(?P<sourceShortName>\w+).json$', views.getEpisodeSegmentsJson, {'loginRequired': False}, 'xgds_video_recorded_json'),  # active recorded video json
     ]

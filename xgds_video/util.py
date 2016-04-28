@@ -142,6 +142,9 @@ def getSegmentsFromEndForDelay(delayTime, indexPath):
 
 
 def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
+    """ This is truncating the last n rows from the m3u8 file and reappending the end and the metadata at the top.
+    This fakes our delay
+    """
     """ TODO flightName is really groupName"""
     """
     search and replace in file
@@ -161,7 +164,7 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
 #        videoDelayInSegments = int(round(videoDelayInSecs / settings.XGDS_VIDEO_SEGMENT_SEC))
         if videoDelayInSecs > 0:
             videoDelayInSegments = getSegmentsFromEndForDelay(videoDelayInSecs-30,
-                                                          indexFilePath)
+                                                              indexFilePath)
         else:
             videoDelayInSegments = 0
         videoDelayInLines = 2 * videoDelayInSegments + 1
