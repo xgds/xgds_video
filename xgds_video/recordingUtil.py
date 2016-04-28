@@ -23,7 +23,8 @@ from django.db.models.aggregates import Max
 
 from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfRunning
 
-from geocamUtil.loader import LazyGetModelByName
+from geocamUtil.loader import LazyGetModelByName, getClassByName
+
 
 SETTINGS_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
@@ -155,3 +156,9 @@ def getRecordedVideoUrl(name):
         (settings.RECORDED_VIDEO_URL_BASE,
          name)
     return recordedVideoUrl
+
+def endActiveEpisode(end_time):
+    episode = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)()
+    if episode:
+        episode.endTime = end_time
+        episode.save()

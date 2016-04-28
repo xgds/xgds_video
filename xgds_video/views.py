@@ -161,13 +161,12 @@ def getEpisodeFromName(flightName):
     return None
 
 
-def getActiveEpisode(flightName):
+def getActiveEpisode():
     """
     Point to site settings to see real implementation of this function
     GET_ACTIVE_EPISODE
     """
     return None
-
 
 def getSourcesFromVehicle(vehicleName):
     """
@@ -381,7 +380,7 @@ def getEpisodeSegmentsJson(request, flightName=None, sourceShortName=None):
     if flightName:
         episode = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)(flightName)
     else:
-        episode = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)(flightName)
+        episode = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)()
     
     if not episode:
         return HttpResponse(json.dumps({'error': 'No episode found'}), content_type='application/json', status=406)
@@ -432,7 +431,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         requestedTime = util.pythonDatetimeToJSON(requestedTime)  # util.convertUtcToLocal(requestedTime))
 
     GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
-    activeepisode = GET_ACTIVE_EPISODE_METHOD(flightName)
+    activeepisode = GET_ACTIVE_EPISODE_METHOD()
 
     # this happens when user clicks on a flight name to view video
     if flightName:
