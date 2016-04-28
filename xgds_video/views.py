@@ -393,11 +393,12 @@ def getEpisodeSegmentsJson(request, flightName=None, sourceShortName=None):
     # get the segments
     segments = {}
     if sourceShortName:
-        segments[sourceShortName] = episode.videosegment_set.filter(source__shortName=sourceShortName)
+        segments[sourceShortName] = [ s.getDict() for s in episode.videosegment_set.filter(source__shortName=sourceShortName)]
     else:
-        distinctSources = episode.videosegment_set.values('source').distinct()
+        distinctSources = episode.videosegment_set.values('source__shortName').distinct()
         for theSource in distinctSources:
-            segments[theSource['shortName']] = episode.videosegment_set.filter(source__shortName=theSource['shortName'])
+            sn = str(theSource['source__shortName'])
+            segments[sn] = [ s.getDict() for s in episode.videosegment_set.filter(source__shortName=sn)]
         
     if not segments:
         return HttpResponse(json.dumps({'error': 'No segments found for ' + flightName}), content_type='application/json', status=406)
