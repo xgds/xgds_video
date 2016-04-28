@@ -9,7 +9,7 @@
     
     <script type="text/javascript" src="{{ EXTERNAL_URL }}jwplayer/jwplayer.js"></script>
     <script type="text/javascript">
-        jwplayer.key="{{ JWPLAYER_KEY }}";
+        jwplayer.key="{{ settings.JWPLAYER_KEY }}";
         STATIC_URL='{{ STATIC_URL }}';
         var submitNoteUrl = "{% url 'record_simple' %}";
 		var videoStillViewerUrl = "{% url 'videoStillViewer' %}";

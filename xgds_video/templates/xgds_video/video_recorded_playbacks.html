@@ -20,7 +20,7 @@
 
 {% block scripts %}
 {{block.super}}
-	{% include "xgds_video/VideoJS.html" with INCLUDE_NOTE_INPUT=INCLUDE_NOTE_INPUT JWPLAYER_KEY=JWPLAYER_KEY STATIC_URL=STATIC_URL %}
+	{% include "xgds_video/VideoJS.html" with INCLUDE_NOTE_INPUT=INCLUDE_NOTE_INPUT JWPLAYER_KEY=settings.JWPLAYER_KEY STATIC_URL=STATIC_URL %}
 	{% block myscripts %}
 	<script type="text/javascript" src='{{STATIC_URL}}xgds_notes/js/recordedNotesTable.js'></script>
 	
