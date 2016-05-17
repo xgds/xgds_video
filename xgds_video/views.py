@@ -445,7 +445,13 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         episode = activeepisode
         active = True
     if not episode:
-        return redirect("xgds_video_flights")
+        message = 'Video not found'
+        if flightName:
+            message += ' for ' + flightName
+        else:
+            message += ': no live video'
+        messages.add_message(request, messages.ERROR, message)
+        return redirect(reverse('error'))
 
     if episode:
         # print 'FOUND EPISODE %s' % episode.shortName
