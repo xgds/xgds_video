@@ -12,17 +12,22 @@
 
  {% block cssExtras %}
  {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery.tagsinput/dist/jquery.tagsinput.min.css"></link>
     <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.min.css" ></link>
-    <!-- <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}datatables/media/css/jquery.dataTables.css"></link>  -->
+    {% include "xgds_notes2/NoteCSS.html" %}
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_video/css/xgds_video.css"></link>
  {% endblock cssExtras %}
 
 {% block scripts %}
 {{block.super}}
+	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js"></script>
+	{% include "xgds_notes2/NoteJS.html" %}
 	{% include "xgds_video/VideoJS.html" with INCLUDE_NOTE_INPUT=INCLUDE_NOTE_INPUT JWPLAYER_KEY=settings.JWPLAYER_KEY STATIC_URL=STATIC_URL %}
 	{% block myscripts %}
-	<script type="text/javascript" src='{{STATIC_URL}}xgds_notes/js/recordedNotesTable.js'></script>
+	{% if SSE %}
+	<script type="text/javascript" src='{{STATIC_URL}}xgds_notes2/js/liveNotesTable.js'></script>
+	{% else %}
+	<script type="text/javascript" src='{{STATIC_URL}}xgds_notes2/js/recordedNotesTable.js'></script>
+	{% endif %}
 	
 	<script type="text/javascript">
         var hasSliderTimeLabel = true;
@@ -93,18 +98,15 @@
 	                 <div class="toprow-left"><b>{{ source.name }}</b></div>
 	                 <a class="mybutton toprow-right small" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{% if sources|length > 1 %}{{flightName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
                      <a class="mybutton toprow-right small" href="#" onClick="showStillViewer('{{flightName}}', '{{source.shortName}}', getUrlFormatPlayerTime('{{source.shortName}}'));">Still</a>
-	                 {% if INCLUDE_NOTE_INPUT %}<a class="mybutton toprow-right small" href="#" onclick="toggleNoteInput('{{source.shortName}}')">Take Note</a>{% endif %}
                      {% with feed=source.feed_set.all.0.shortName %}
 	                 {% if feed %}
 	                     <a class="mybutton" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>
 	                 {% endif %}
 	                 {% endwith %}
 	            </div>
-	            {% if INCLUDE_NOTE_INPUT %}
 				<section id="{{source.shortName}}_noteInput">
              		{% include "xgds_video/video_notes.html" with data=source.form source=source.shortName STATIC_URL=STATIC_URL %}
              	</section>
-             	{% endif %}
              	<!--embed the video-->
              	<section>
               		<div id="player_container" class="row"> <!-- float-left">  -->
@@ -217,25 +219,36 @@ var indexFileUrl = null;
     	setupSlider();
     }
     setupJWplayer({"mute":true}, hasMasterSlider, false, "100%");
-    setupNotesUI();
+    xgds_notes.setupNotesUI();
     {% endif %}
     {% endblock hookControls %}
     
     {% block myNotesSetup %}
+    var minHeight = 100;
 	{% if segmentsJson %}
 	{% if sources|length = 1 %}
 	{% with filter="flight__name"|add:":"|add:episode.shortName|add:"_"|add:sources.0.shortName%}
 	var thefilter = '{{filter}}';
 	var recordedNotesController = new recordedNotes.RecordedNotesController({
-	           recordedNotesURL: "/notes/notesJson/" +  thefilter + "/0",
-	           xgds_video: xgds_video
+	           recordedNotesURL: "{% url 'xgds_map_server_objectsJson' 'XGDS_NOTES_NOTE_MODEL' filter %}",
+	//	           recordedNotesURL: "/notes/notesJson/"  + thefilter + "/0",
+			   columns: {{ settings.XGDS_NOTES_TABLE_DEFAULT_COLUMNS|safe }},
+		       ordering: "desc",
+		       divHeight: minHeight,
+		       editable: {% if settings.GEOCAM_UTIL_DATATABLES_EDITOR %}true{% else %} false {% endif %},
+	           xgds_video: xgds_video 
 	       });
 	{% endwith %}
 	{% else %}
 	{% with filter="flight__group__episode__shortName"|add:":"|add:episode.shortName %}
 	var thefilter = '{{filter}}';
 	var recordedNotesController = new recordedNotes.RecordedNotesController({
-	           recordedNotesURL: "/notes/notesJson/"  + thefilter + "/0",
+			   recordedNotesURL: "{% url 'xgds_map_server_objectsJson' 'XGDS_NOTES_NOTE_MODEL' filter %}",
+	//	           recordedNotesURL: "/notes/notesJson/"  + thefilter + "/0",
+			   columns: {{ settings.XGDS_NOTES_TABLE_DEFAULT_COLUMNS|safe }},
+		       ordering: "desc",
+		       divHeight: minHeight,
+		       editable: {% if settings.GEOCAM_UTIL_DATATABLES_EDITOR %}true{% else %} false {% endif %},
 	           xgds_video: xgds_video 
 	       });
 	 {% endwith %}

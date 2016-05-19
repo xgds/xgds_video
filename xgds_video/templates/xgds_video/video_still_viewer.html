@@ -8,7 +8,6 @@
 
  {% block cssExtras %}
  {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery.tagsinput/dist/jquery.tagsinput.min.css"></link>
     <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.min.css" ></link>
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_video/css/xgds_video.css"></link>
  {% endblock cssExtras %}
@@ -24,7 +23,6 @@
         var event_timestring = '{{event_timestring}}';
         var isLive = true;
     </script>
-    <script src="{{ EXTERNAL_URL }}jquery.tagsinput/src/jquery.tagsinput.js" type="text/javascript" ></script>
  	<script src="{{ EXTERNAL_URL }}jquery-form/jquery.form.js" type="text/javascript" ></script>
  	<script type="text/javascript" src="{{ EXTERNAL_URL }}date/index.js"></script>
  	{% if INCLUDE_NOTE_INPUT %}
@@ -42,7 +40,6 @@
 	{% endif %}
 	<div class="row">
 	<div class="three columns">
-	{% if INCLUDE_NOTE_INPUT %}<a class="mybutton " href="#" onclick="toggleNoteInput('{{source.shortName}}')">Take Note</a>{% endif %}
 	<a class="mybutton " href="{% url 'xgds_video_downloadStill' flightName timeKey 1 %}" >Download Image</a>
 	 </div>
 	 <div class="nine columns">
@@ -58,18 +55,14 @@
 	</div>
 	</div>
 	
-	{% if INCLUDE_NOTE_INPUT %}
 	  <section id="{{source.shortName}}_noteInput">
             {% include "xgds_video/video_notes.html" with data=form source=source.shortName STATIC_URL=STATIC_URL %}
           </section>
-        {% endif %}<br/>
+        <br/>
 	<div>
 	<img src={%url 'videoStill' flightName timeKey %}>
 {% endblock contents %}
 
 {% block jsInit %}
-{% if INCLUDE_NOTE_INPUT %}
 {% include "xgds_video/init_notes.js" %}
-{% endif %}
-toggleNoteInput(source);
 {% endblock jsInit %}

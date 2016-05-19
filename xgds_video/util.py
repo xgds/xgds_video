@@ -187,8 +187,8 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
         if False:
             if not any([findEndMarker(item) for item in processedIndex]):
                 processedIndex.append("#EXT-X-ENDLIST")
-        else:
-            print "Video delay %d - NOT adding any extra end tag" % videoDelayInSecs
+#         else:
+#             print "Video delay %d - NOT adding any extra end tag" % videoDelayInSecs
         return "\n".join(processedIndex) + "\n"
     except:
         traceback.print_exc()

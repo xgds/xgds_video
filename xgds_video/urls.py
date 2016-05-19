@@ -21,10 +21,9 @@ from xgds_video import views
 urlpatterns = [
     url(r'liveVideoFeed/(?P<feedName>\w+)$', views.liveVideoFeed, {'loginRequired': False}, 'xgds_video_live'),
     url(r'videoIndexFile/(?P<flightName>[^/]+)/(?P<sourceShortName>[^/]+)/(?P<segmentNumber>[^/]+)/prog_index.m3u8', views.videoIndexFile, {'loginRequired': False}, 'xgds_video_index_file'),
-    url(r'^noteVideo2013/(?P<flightName>\w+)/(?P<time>[^/]+)/$', views.displayRecordedVideo, {}, 'noteVideo2013'),  # recorded video for one note
+    url(r'^noteVideo2013/(?P<flightName>\w+)/(?P<time>[^/]+)/$', views.displayRecordedVideo, {}, 'xgds_video_recorded_time'),  # recorded video for one note
     # full-size still from video
-    url(r'^videoStillViewer/(?P<flightName>\w+)/(?P<time>[^/]+)/$', views.showStillViewerWindow, {},
-     'videoStillViewer'), 
+    url(r'^videoStillViewer/(?P<flightName>\w+)/(?P<time>[^/]+)/$', views.showStillViewerWindow, {},'videoStillViewer'), 
     # for AJAX-y pages where params are built later
     url(r'^videoStillViewer/$', views.showStillViewerWindow, {}, 'videoStillViewer'),
     url(r'^videoStill/(?P<flightName>\w+)/(?P<time>[^/]+).thumbnail.jpg/$', views.displayVideoStillThumb, {}, 'videoStillThumb'),  # still thumbnail

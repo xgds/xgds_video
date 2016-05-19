@@ -175,7 +175,7 @@ function setupNotesUI(){
     
     if (!_.isUndefined(xgds_video.displaySegments)){
         for (var source in xgds_video.displaySegments) {
-            toggleNoteInput(source);
+            xgds_notes.toggleNoteInput(source);
         }
     } 
     

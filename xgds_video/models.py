@@ -259,3 +259,23 @@ class AbstractVideoSourceGroupEntry(models.Model):
 
 class VideoSourceGroupEntry(AbstractVideoSourceGroupEntry):
     source = DEFAULT_SOURCE_FIELD()
+
+
+class AbstractStillFrame(models.Model):
+    event_time = models.DateTimeField(null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    width = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField(null=True, blank=True)
+    url = models.CharField(max_length=1024, null=True, blank=True)
+    thumbnailUrl = models.CharField(max_length=1024, null=True, blank=True)
+
+    @property
+    def videoUrl(self):
+        return '' #TODO implement
+
+    class Meta:
+        abstract = True
+        ordering = ['event_time']
+
+    def __unicode__(self):
+        return "%s" % (self.name)
