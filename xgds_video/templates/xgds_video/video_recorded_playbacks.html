@@ -22,6 +22,7 @@
 	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js"></script>
 	{% include "xgds_notes2/NoteJS.html" %}
 	{% include "xgds_video/VideoJS.html" with INCLUDE_NOTE_INPUT=INCLUDE_NOTE_INPUT JWPLAYER_KEY=settings.JWPLAYER_KEY STATIC_URL=STATIC_URL %}
+	
 	{% block myscripts %}
 	{% if SSE %}
 	<script type="text/javascript" src='{{STATIC_URL}}xgds_notes2/js/liveNotesTable.js'></script>

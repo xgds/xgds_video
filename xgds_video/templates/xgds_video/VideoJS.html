@@ -1,13 +1,10 @@
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}underscore/underscore-min.js"></script>
      <script type="text/javascript" src="{{ EXTERNAL_URL }}packery/dist/packery.pkgd.min.js" ></script>
-    <script type="text/javascript" src="{{ EXTERNAL_URL }}moment/moment.js"></script>
-    <script type="text/javascript" src="{{ EXTERNAL_URL }}moment-timezone/moment-timezone.js"></script>
-    <script type="text/javascript" src="{{ EXTERNAL_URL }}underscore/underscore-min.js"></script>
     <script type="text/javascript" src="{{ EXTERNAL_URL }}klass/klass.min.js"></script>
-	<script type="text/javascript" src="{{ EXTERNAL_URL }}datatables/media/js/jquery.dataTables.min.js"></script>
-    
     <script type="text/javascript" src="{{ EXTERNAL_URL }}jwplayer/jwplayer.js"></script>
+ 	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/packem.js"></script>
+ 	<script type="text/javascript" src="{{ EXTERNAL_URL }}jquery-form/jquery.form.js" ></script>
     <script type="text/javascript">
         jwplayer.key="{{ settings.JWPLAYER_KEY }}";
         STATIC_URL='{{ STATIC_URL }}';
@@ -15,12 +12,9 @@
 		var videoStillViewerUrl = "{% url 'videoStillViewer' %}";
         var isLive = false;
     </script>
-    <script src="{{STATIC_URL}}xgds_video/js/video_size_utils.js" type="text/javascript" ></script>
+    <script type="text/javascript" src="{{STATIC_URL}}xgds_video/js/video_size_utils.js"  ></script>
  	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoSlider.js"></script>
  	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoUtils.js"></script>
  	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoPlayer.js"></script>
- 	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/packem.js"></script>
- 	<script src="{{ EXTERNAL_URL }}jquery-form/jquery.form.js" type="text/javascript" ></script>
- 	{% if INCLUDE_NOTE_INPUT %}
- 	<script src="{{STATIC_URL}}xgds_video/js/video_notes_form.js" type="text/javascript" ></script>
- 	{% endif %}
+ 	<script type="text/javascript" src='{{STATIC_URL}}xgds_video/js/note_input_form_video.js'></script>
+ 	

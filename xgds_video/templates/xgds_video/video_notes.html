@@ -1,26 +1,28 @@
 {% with form=data %}
 {% if user.is_authenticated %}
 <button id="add_note_button" class="mybutton toprow-right small float_button">Add Note</button>
-<div class="notediv" id="notes_input" hidden>
-	<form id="create_note{{ form.index }}" class="create_note_form" action="" method="POST">
-		<input type="hidden" id="id_event_time" >
-		<input type="hidden" id="id_event_timezone" >
-		<input type="hidden" id="id_app_label" value="{{form.app_label.value}}" >
-		<input type="hidden" id="id_model_type" value="{{form.model_type.value}}" >
-		<input type="hidden" id="id_object_id" value="{{form.object_id.value}}" >
-		<input type="hidden" id="source" value="{{ source }}" >
-		<input type="hidden" id="id_position_id" >
-		{{ form.extras }}
-		<div id="error_div" class="noteerrordiv">
-			<span id="error_icon{{ form.index }}">&nbsp;</span>
-			<span id="error_content{{ form.index }}"></span>
-		</div>
-		<div class="notecontainer" >
-			<textarea class="noteinput"  id="id_content{{form.index}}" type="text" name="content" maxlength="500" style="height:50px;" placeholder="Enter notes here"></textarea>
-	        <input class="taginput"  id="id_tags{{form.index}}" placeholder="Choose tags" type="text" />
-	        <input id="save_note{{form.index}}" type="submit" value="Save" class="mybutton noteSubmit small">
-        </div>
-  </form>
+<div id="notes_content" class="tab-content active notes_content">
+	<div class="notediv" id="notes_input" hidden>
+		<form id="create_note{{ form.index }}" class="create_note_form" action="" method="POST">
+			<input type="hidden" id="id_event_time" >
+			<input type="hidden" id="id_event_timezone" >
+			<input type="hidden" id="id_app_label" value="{{form.app_label.value}}" >
+			<input type="hidden" id="id_model_type" value="{{form.model_type.value}}" >
+			<input type="hidden" id="id_object_id" value="{{form.object_id.value}}" >
+			<input type="hidden" id="source" value="{{ source }}" >
+			<input type="hidden" id="id_position_id" >
+			{{ form.extras }}
+			<div id="error_div" class="noteerrordiv">
+				<span id="error_icon{{ form.index }}">&nbsp;</span>
+				<span id="error_content{{ form.index }}"></span>
+			</div>
+			<div class="notecontainer" >
+				<textarea class="noteinput"  id="id_content{{form.index}}" type="text" name="content" maxlength="500" style="height:50px;" placeholder="Enter notes here"></textarea>
+		        <input class="taginput"  id="id_tags{{form.index}}" placeholder="Choose tags" type="text" />
+		        <input id="save_note{{form.index}}" type="submit" value="Save" class="mybutton noteSubmit small">
+	        </div>
+	  </form>
+	</div>
 </div>
 {% endif %}
 {% endwith %}
