@@ -173,7 +173,8 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
         clips = baseFile.read().split('#EXTINF:')
         baseFile.close()
         header = clips.pop(0)
-#        clips.pop(0)  # badFirstClip
+        clips.pop(0)  # badFirstClip
+        clips.pop(0)  # badSecondClip
         processedClips = '#EXTINF:'.join([header] + clips)
         lineList = processedClips.split("\n")
         maxLineNum = len(lineList) - videoDelayInLines
