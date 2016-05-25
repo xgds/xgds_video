@@ -448,7 +448,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     if flightName:
         GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
         episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
-        if (episode == activeepisode):
+        if (episode != None and episode == activeepisode):
             active = True
 
     # this happens when user looks for live recorded

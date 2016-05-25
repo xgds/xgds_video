@@ -70,11 +70,15 @@
 	   		</div>
    		</div>
 
+ 		{% endblock topStuff %}
+ 		
+ 		{% block ribbonSlider %}
  		<fieldset id="videoFieldset">
  			  <div id="ribbon"></div>
 		 	  <div id="masterSlider" class="masterSlider" ><br/></div>
  		</fieldset>
- 		{% endblock topStuff %}
+ 		{% endblock ribbonSlider %}
+ 		
 
 		{% block packery %}
         <div id="container"> 
@@ -138,9 +142,9 @@ var indexFileUrl = null;
 
 {% block initSegments %}
 {% if segmentsJson %}
+	{% block xgds_video_options %}
 	var xgds_video = xgds_video || {};
-    var xgds_video_options = { masterSlider: '',
-                       		   playFlag: false,
+    var xgds_video_options = { playFlag: false,
                        		   seekFlag: false,
 		                       initialState: false,
 		                       seekOffsetList: {},
@@ -159,6 +163,7 @@ var indexFileUrl = null;
 			                   timeZone: '{{ flightTZ }}',
         					   hasMasterSlider:true
 		                     };
+	{% endblock xgds_video_options %}
 
     {% if episode %}
     	xgds_video.convertJSONtoJavascriptDateTime(xgds_video_options.episode);
@@ -202,7 +207,7 @@ var indexFileUrl = null;
     if (xgds_video.options.hasMasterSlider){
     	xgds_video.setupSlider();
     }
-    xgds_video.setupJWplayer({"mute":true}, false, "100%");
+    xgds_video.setupJWplayer({"mute":true}, "100%");
     xgds_notes.setupNotesUI();
     {% endif %}
     {% endblock hookControls %}
@@ -216,7 +221,7 @@ var indexFileUrl = null;
 		var recordedNotesURL = "{% url 'xgds_map_server_objectsJson_force' 'XGDS_NOTES_NOTE_MODEL' filter %}";
 	{% endwith %}
 	{% else %}
-	{% with filter="flight__group__episode__shortName"|add:":"|add:episode.shortName %}
+	{% with filter="flight__group__name"|add:":"|add:episode.shortName %}
 		var thefilter = '{{filter}}';
 		var recordedNotesURL = "{% url 'xgds_map_server_objectsJson_force' 'XGDS_NOTES_NOTE_MODEL' filter %}";
 	 {% endwith %}

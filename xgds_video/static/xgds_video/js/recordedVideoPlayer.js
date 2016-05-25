@@ -88,13 +88,13 @@ $.extend(xgds_video,{
 					return;
 				}
 
-				if (!xgds_video.playFlag) {
+				if (!xgds_video.options.playFlag) {
 					this.pause(true);
 					return;
 				}
 
 				// update test site time (all sources that are 'PLAYING')
-				if (!xgds_video.seekFlag && !xgds_video.movingSlider) {
+				if (!xgds_video.options.seekFlag && !xgds_video.movingSlider) {
 					var testSiteTime = xgds_video.getPlayerVideoTime(this.id);
 					xgds_video.setPlayerTimeLabel(testSiteTime, this.id);
 
@@ -296,13 +296,10 @@ $.extend(xgds_video,{
 	},
 
 
-	setupJWplayer: function(jwplayerOptions, autoStart, width) {
+	setupJWplayer: function(jwplayerOptions, width) {
 		/**
 		 * Initialize jw player and call update values
 		 */
-		if (autoStart){
-			xgds_video.options.playFlag = true;
-		}
 		xgds_video.presizeVideoDivs();
 
 		for (var source in xgds_video.options.displaySegments) {
@@ -322,7 +319,7 @@ $.extend(xgds_video,{
 				flightName = xgds_video.options.episode + '_' + xgds_video.options.sourceVehicle[source]; //TODO: TEST THIS!
 			}
 			var videoPaths = xgds_video.getFilePaths(flightName, source, segments);
-			var thePlayerOptions = xgds_video.buildOptions(jwplayerOptions, videoPaths[0], autoStart, width);
+			var thePlayerOptions = xgds_video.buildOptions(jwplayerOptions, videoPaths[0], xgds_video.options.playFlag, width);
 			var thePlayer = jwplayer(source).setup(thePlayerOptions);
 
 		}
@@ -374,10 +371,10 @@ $.extend(xgds_video,{
 	},
 
 	playButtonCallback: function() {
-		if (xgds_video.playFlag){
+		if (xgds_video.options.playFlag){
 			return;
 		}
-		xgds_video.playFlag = true;
+		xgds_video.options.playFlag = true;
 		$('#playbutton').addClass("active");
 		$('#pausebutton').removeClass("active");
 		if (xgds_video.options.hasMasterSlider){
@@ -408,10 +405,10 @@ $.extend(xgds_video,{
 	},
 
 	pauseButtonCallback: function() {
-		if (!xgds_video.playFlag){
+		if (!xgds_video.options.playFlag){
 			return;
 		}
-		xgds_video.playFlag = false;
+		xgds_video.options.playFlag = false;
 		$('#pausebutton').addClass("active");
 		$('#playbutton').removeClass("active");
 		for (var source in xgds_video.options.displaySegments) {

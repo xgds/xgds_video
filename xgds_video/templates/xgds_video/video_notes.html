@@ -1,6 +1,6 @@
 {% with form=data %}
 {% if user.is_authenticated %}
-<button id="add_note_button" class="mybutton toprow-right small float_button">Add Note</button>
+<button id="add_note_button" class="mybutton toprow-right small float_button add_note_button">Add Note</button>
 <div id="notes_content" class="tab-content active notes_content">
 	<div class="notediv" id="notes_input" hidden>
 		<form id="create_note{{ form.index }}" class="create_note_form" action="" method="POST">

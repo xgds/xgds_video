@@ -123,9 +123,7 @@ $.extend(xgds_video,{
 		 */
 		//update slider time label on top
 		xgds_video.options.movingSlider = true;
-		//var sliderTime = new Date(ui.value * 1000);
-		//xgds_video.setSliderTimeLabel(sliderTime);
-		xgds_video.setSliderTimeLabel(moment(ui.value*1000));
+		xgds_video.setSliderTimeLabel(moment.unix(ui.value));
 	},
 
 	uponSliderStopCallBack: function(event, ui) {
@@ -151,9 +149,6 @@ $.extend(xgds_video,{
 		/**
 		 * initialize master slider with range (episode start time->episode end time)
 		 */
-		uponSliderStopCallBack = xgds_video.uponSliderStopCallBack;
-		uponSliderMoveCallBack = xgds_video.uponSliderMoveCallBack;
-		
 		if (Object.keys(xgds_video.options.displaySegments).length == 0){
 			return;
 		}
@@ -170,7 +165,7 @@ $.extend(xgds_video,{
 				slide: xgds_video.uponSliderMoveCallBack,
 				range: 'min'
 			});
-			xgds_video.setSliderTimeLabel(startMoment); //xgds_video.options.episode.startTime);
+			xgds_video.setSliderTimeLabel(startMoment);
 			xgds_video.createSliderLegend(false);
 		} else {
 			alert('The end time of video segment not available.' +

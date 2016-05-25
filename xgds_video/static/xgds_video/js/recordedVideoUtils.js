@@ -14,12 +14,6 @@
 //specific language governing permissions and limitations under the License.
 //__END_LICENSE__
 
-//TODO better to have the server provide
-//moment.tz.add([
-//'America/Los_Angeles|PST PDT|80 70|0101|1Lzm0 1zb0 Op0',
-//'America/New_York|EST EDT|50 40|0101|1Lz50 1zb0 Op0'
-//]);
-
 jQuery(function($) {
 	var windowWidth = $(window).width();
 	$(window).resize(function()  {
@@ -122,16 +116,7 @@ $.extend(xgds_video,{
 		}
 	},
 
-//	getLocalTimeString: function(datetime){
-//		getLocalTimeString(datetime, xgds_video.options.timeZone, xgds_video.defaultTimeFormat);
-//		var utctime = moment(datetime);
-//		var localtime = utctime.tz(xgds_video.options.timeZone)
-//		var time = localtime.format("HH:mm:ss z")
-//		return time;
-//	},
-
 	setSliderTimeLabel:function(datetimeMoment) {
-//		var time = datetime.toTimeString().replace('GMT-0700', '');
 		var timeString = getLocalTimeString(datetimeMoment, xgds_video.options.timeZone, xgds_video.defaultTimeFormat);
 		$('#sliderTimeLabel').text(timeString);
 	},
