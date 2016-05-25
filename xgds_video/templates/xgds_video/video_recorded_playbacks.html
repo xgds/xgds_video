@@ -246,5 +246,8 @@ var indexFileUrl = null;
 	
 	{% block lastJsInit %}
 	initializePackery();
+	$(function() {
+		xgds_video.startPlayers();
+	});
 	{% endblock lastJsInit %}
  {% endblock jsInit %}
