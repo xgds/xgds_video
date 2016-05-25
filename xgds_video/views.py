@@ -13,7 +13,6 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
-
 from __future__ import division
 import json
 import stat
@@ -499,18 +498,14 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
 #         util.setSegmentEndTimes(segments.all(), episode, source)  # this passes back segments for this source.
         segmentsDict[source.shortName] = [seg.getDict() for seg in sourceSegments]
         form = buildNoteForm([episode], source, request, {'index':index})
-
-#         form = NoteForm()
-#         form.index = index
-#         form.fields["index"] = index
-#         form.source = source
-#         form.fields["source"] = source
-#         form.fields["extras"].initial = callGetNoteExtras([episode], form.source, request, form)
         source.form = form
         index = index + 1
 
     if flightName:
-        fullFlightName = flightName + "_" + sources[0].shortName
+        if flightName.find('_') == -1:
+            fullFlightName = flightName + "_" + sources[0].shortName
+        else:
+            fullFlightName = flightName
         GET_TIMEZONE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_TIMEZONE_FROM_NAME)
         flightTimezone = GET_TIMEZONE_FROM_NAME_METHOD(str(fullFlightName))
     else:
