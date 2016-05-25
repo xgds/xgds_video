@@ -1,16 +1,11 @@
 {% extends "xgds_video/video_recorded_playbacks.html" %}
 
 {% block myscripts %} 
-	{% if SSE %}
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_notes/js/liveNotesTable.js'></script>
-	{% endif %}
+	{{block.super}}
 	<script type="text/javascript">
-        var hasSliderTimeLabel = false;
-        var hasMasterSlider = false;
         var isLive = true;
     </script>
 {% endblock myscripts %}
-
 
     {% block topStuff %}
     {% if segmentsJson %}
@@ -19,10 +14,10 @@
     			<div id="controllers" > 
     			<br/>
     			<div class="controller_div">
-	          	<a class="btn btn-info" id="playbuttonLink" href="#" onclick="playButtonCallback()">
+	          	<a class="btn btn-info" id="playbuttonLink" href="#" onclick="xgds_video.playButtonCallback()">
 	              <i id="playbutton" class="icon-play active"></i>
 	              </a>
-	            <a class="btn btn-info" id="pausebuttonLink" href="#" onclick="pauseButtonCallback()">
+	            <a class="btn btn-info" id="pausebuttonLink" href="#" onclick="xgds_video.pauseButtonCallback()">
 	              <i id="pausebutton" class="icon-pause"></i>
 	              </a>
 	             </div>
@@ -47,7 +42,6 @@
 
         
         {% block otherPackery %}
-        {% if SSE %}
         {% if segmentsJson %}
        	<div class="item {% if sources|length > 1 %}w2{% endif %} freeAspect" id="notesDiv" style="background-color:#F9FADE;">
        	<div id="messageDiv">
@@ -56,40 +50,43 @@
 		</table>
        	</div>
        	{% endif %}
-       	{% endif %}
         {% endblock otherPackery %}
 
 {% block myNotesSetup %}
-{% if SSE %}
 {% if sources|length = 1 %}
 {% with filter="flight__name"|add:":"|add:episode.shortName|add:"_"|add:sources.0.shortName%}
-var thefilter = '{{filter}}';
-var liveNotesController = new liveNotes.LiveNotesController({
-           liveNotesURL: " {% url 'xgds_notes_liveNotes' %}" +  thefilter,
-           liveNotesStreamURL: "{% url 'xgds_notes_liveNotes_stream'  %}" +  thefilter
-       });
+	var thefilter = '{{filter}}';
+	var recordedNotesURL = "{% url 'xgds_map_server_objectsJson_force' 'XGDS_NOTES_NOTE_MODEL' filter %}";
 {% endwith %}
 {% else %}
 {% with filter="flight__group__episode__shortName"|add:":"|add:episode.shortName %}
-var thefilter = '{{filter}}';
-var liveNotesController = new liveNotes.LiveNotesController({
-           liveNotesStreamURL: "{% url 'xgds_notes_liveNotes_stream' %}"  + thefilter,
-           liveNotesURL: " {% url 'xgds_notes_liveNotes'  %}"  + thefilter
-       });
+	var thefilter = '{{filter}}';
+	var recordedNotesURL = "{% url 'xgds_map_server_objectsJson_force' 'XGDS_NOTES_NOTE_MODEL' filter %}";
  {% endwith %}
 {% endif %}
+	var minHeight = 200;
+	var recordedNotesOptions = {
+					           recordedNotesURL: recordedNotesURL,
+							   columns: {{ settings.XGDS_NOTES_TABLE_DEFAULT_COLUMNS|safe }},
+						       ordering: "desc",
+						       divHeight: minHeight,
+						       editable: {% if settings.GEOCAM_UTIL_DATATABLES_EDITOR %}true{% else %} false {% endif %}
+					       };
+{% if SSE %}
+					       	recordedNotesOptions['SSE'] = true;
+							recordedNotesOptions['liveNotesStreamURL'] = "{% url 'xgds_notes_liveNotes_stream'  %}" +  thefilter;
 {% endif %}
+	var recordedNotesController = new recordedNotes.RecordedNotesController(recordedNotesOptions);
+
 {% endblock myNotesSetup %}
 
 	{% block hookControls %}
 	{% if segmentsJson %}
-    presizeVideoDivs();
+    xgds_video.presizeVideoDivs();
 
     //set up the player
-    var jwplayerOptions = {
-            mute: true
-            };
-    setupJWplayer({"mute":true}, hasMasterSlider, false, "100%");
+    xgds_video.initialize(xgds_video_options);
+    xgds_video.setupJWplayer({"mute":true}, false, "100%");
     xgds_notes.setupNotesUI();
     {% endif %}
     {% endblock hookControls %}

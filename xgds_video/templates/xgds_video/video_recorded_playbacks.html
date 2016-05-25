@@ -1,43 +1,30 @@
 {% extends "base.html" %}
 {% load nav %}
 {% block siteSection %}Video{% endblock %}
-    {% block nav %}
-    {% nav "xgds_video_flights" %}
-    {{ block.super }}
-    {% endblock %}
 
-    {% block sitemenu-content-secondary %}
-   		{% include "xgds_video/video_subnav.html" %}
-    {% endblock %}
+{% block nav %}
+    {% nav "xgds_video_recorded" %}
+    {{ block.super }}
+{% endblock %}
 
  {% block cssExtras %}
  {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.min.css" ></link>
     {% include "xgds_notes2/NoteCSS.html" %}
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_video/css/xgds_video.css"></link>
+    {% include "xgds_video/VideoCSS.html" %}
  {% endblock cssExtras %}
 
 {% block scripts %}
 {{block.super}}
-	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js"></script>
 	{% include "xgds_notes2/NoteJS.html" %}
-	{% include "xgds_video/VideoJS.html" with INCLUDE_NOTE_INPUT=INCLUDE_NOTE_INPUT JWPLAYER_KEY=settings.JWPLAYER_KEY STATIC_URL=STATIC_URL %}
+	{% include "xgds_video/VideoJS.html" with JWPLAYER_KEY=settings.JWPLAYER_KEY STATIC_URL=STATIC_URL %}
 	
 	{% block myscripts %}
-	{% if SSE %}
-	<script type="text/javascript" src='{{STATIC_URL}}xgds_notes2/js/liveNotesTable.js'></script>
-	{% else %}
 	<script type="text/javascript" src='{{STATIC_URL}}xgds_notes2/js/recordedNotesTable.js'></script>
-	{% endif %}
-	
-	<script type="text/javascript">
-        var hasSliderTimeLabel = true;
-        var hasMasterSlider = true;
-    </script>
     {% endblock myscripts %}
 {% endblock %}
  
 {% block contents %}
+    		
 	{% block errorMessages %}
 	{% if messages %}
 	    <ul class="messages" id="errorMessage" style="color:red;">
@@ -54,10 +41,10 @@
     		<div id="controllers" > 
     			<br/>
     			<div class="controller_div">
-	          	<a class="btn btn-info" id="playbuttonLink" href="#" onclick="playButtonCallback()">
+	          	<a class="btn btn-info" id="playbuttonLink" href="#" onclick="xgds_video.playButtonCallback()">
 	              <i id="playbutton" class="icon-play"></i>
 	              </a>
-	            <a class="btn btn-info" id="pausebuttonLink" href="#" onclick="pauseButtonCallback()">
+	            <a class="btn btn-info" id="pausebuttonLink" href="#" onclick="xgds_video.pauseButtonCallback()">
 	              <i id="pausebutton" class="icon-pause active"></i>
 	              </a>
 	             </div>
@@ -79,13 +66,13 @@
 	   		<div id="seekTimeBox" >
 				<label for="seekTime">Jump to:</label>
 	   			<input  id="seekTime" type="text" name="text-input" placeholder="HH:MM:SS" class="stylish"/>
-	   			<button type="submit" class="mybutton small" id="seekButton" onclick=seekCallBack()> Go </button>
+	   			<button type="submit" class="mybutton small" id="seekButton" onclick='xgds_video.seekCallBack()'> Go </button>
 	   		</div>
    		</div>
 
  		<fieldset id="videoFieldset">
  			  <div id="ribbon"></div>
-		 	  <div id="masterSlider" class="masterSlider"></div>
+		 	  <div id="masterSlider" class="masterSlider" ><br/></div>
  		</fieldset>
  		{% endblock topStuff %}
 
@@ -140,12 +127,6 @@
 {% endblock contents %}
 
 {% block jsInit %}
-{% block notesSetup %}
-{% if INCLUDE_NOTE_INPUT %}
-{% include "xgds_video/init_notes.js" %}
-{% endif %}
-{% endblock notesSetup %}
-
 
 {% block setupIndexUrl %}
 var indexFileUrl = null;
@@ -157,54 +138,55 @@ var indexFileUrl = null;
 
 {% block initSegments %}
 {% if segmentsJson %}
-    //globals
-    var xgds_video = { masterSlider: '',
-                       playFlag: false,
-                       seekFlag: false,
-                       initialState: false,
-                       seekOffsetList: {},
-                       baseUrl: "{{ baseUrl }}",
-                       episode: {{ episodeJson|safe }},
-                       displaySegments: {{ segmentsJson|safe }},
-                       firstSegment: null,
-                       lastSegment: null,
-                       onTimePlayer: "{{ sources.0.shortName }}",
-                       movingSlider: false, //if slider is moving, turn off onTime call
-                       seekOffsetList: {}, //needed for seeking vid in flash mode,
-                       indexFileUrl: indexFileUrl,
-	                   noteTimeStamp: toJsDateTime({{ noteTimeStamp|safe }}),
-	                   flightName: {% if flightName %} "{{ flightName }}" {% else %} null {% endif %},
-	                   sourceVehicle: {{ sourceVehicle|safe }},
-	                   flightTZ: '{{ flightTZ }}'
-                     };
+	var xgds_video = xgds_video || {};
+    var xgds_video_options = { masterSlider: '',
+                       		   playFlag: false,
+                       		   seekFlag: false,
+		                       initialState: false,
+		                       seekOffsetList: {},
+		                       baseUrl: "{{ baseUrl }}",
+		                       episode: {{ episodeJson|safe }},
+		                       displaySegments: {{ segmentsJson|safe }},
+		                       firstSegment: null,
+		                       lastSegment: null,
+		                       onTimePlayer: "{{ sources.0.shortName }}",
+		                       movingSlider: false, //if slider is moving, turn off onTime call
+		                       seekOffsetList: {}, //needed for seeking vid in flash mode,
+		                       indexFileUrl: indexFileUrl,
+			                   noteTimeStamp: xgds_video.toJsDateTime({{ noteTimeStamp|safe }}),
+			                   flightName: {% if flightName %} "{{ flightName }}" {% else %} null {% endif %},
+			                   sourceVehicle: {{ sourceVehicle|safe }},
+			                   timeZone: '{{ flightTZ }}',
+        					   hasMasterSlider:true
+		                     };
 
     {% if episode %}
-    	convertJSONtoJavascriptDateTime(xgds_video.episode);
+    	xgds_video.convertJSONtoJavascriptDateTime(xgds_video_options.episode);
 	{% endif %}
 
     {% for source in sources %}
-        var segments = xgds_video.displaySegments["{{ source.shortName }}"];
+        var segments = xgds_video_options.displaySegments["{{ source.shortName }}"];
         if ((segments != undefined) && (segments.length > 0)) {
             $.each(segments, function(id) {
                 var segment = segments[id];
-                segment.startTime = toJsDateTime(segment.startTime);
-                segment.endTime = toJsDateTime(segment.endTime);
+                segment.startTime = xgds_video.toJsDateTime(segment.startTime);
+                segment.endTime = xgds_video.toJsDateTime(segment.endTime);
 
-                if(xgds_video.firstSegment == null) {
-                    xgds_video.firstSegment = segment;
+                if(xgds_video_options.firstSegment == null) {
+                    xgds_video_options.firstSegment = segment;
                 }
-                if (xgds_video.lastSegment == null) {
-                    xgds_video.lastSegment = segment;
+                if (xgds_video_options.lastSegment == null) {
+                    xgds_video_options.lastSegment = segment;
                 }
 
                 if (segment.startTime) {
-                    if(segment.startTime < xgds_video.firstSegment.startTime) {
-                        xgds_video.firstSegment = segment;
+                    if(segment.startTime < xgds_video_options.firstSegment.startTime) {
+                        xgds_video_options.firstSegment = segment;
                     }
                 }
                 if (segment.endTime) {
-                    if (segment.endTime > xgds_video.lastSegment.endTime) {
-                        xgds_video.lastSegment = segment;
+                    if (segment.endTime > xgds_video_options.lastSegment.endTime) {
+                        xgds_video_options.lastSegment = segment;
                     }
                 }
             });
@@ -215,46 +197,46 @@ var indexFileUrl = null;
 
 	{% block hookControls %}
 	{% if segmentsJson %}
+	xgds_video.initialize(xgds_video_options);
     //set up the slider and the player
-    if (hasMasterSlider){
-    	setupSlider();
+    if (xgds_video.options.hasMasterSlider){
+    	xgds_video.setupSlider();
     }
-    setupJWplayer({"mute":true}, hasMasterSlider, false, "100%");
+    xgds_video.setupJWplayer({"mute":true}, false, "100%");
     xgds_notes.setupNotesUI();
     {% endif %}
     {% endblock hookControls %}
     
     {% block myNotesSetup %}
-    var minHeight = 100;
+    var minHeight = 200;
 	{% if segmentsJson %}
 	{% if sources|length = 1 %}
 	{% with filter="flight__name"|add:":"|add:episode.shortName|add:"_"|add:sources.0.shortName%}
-	var thefilter = '{{filter}}';
-	var recordedNotesController = new recordedNotes.RecordedNotesController({
-	           recordedNotesURL: "{% url 'xgds_map_server_objectsJson' 'XGDS_NOTES_NOTE_MODEL' filter %}",
-	//	           recordedNotesURL: "/notes/notesJson/"  + thefilter + "/0",
-			   columns: {{ settings.XGDS_NOTES_TABLE_DEFAULT_COLUMNS|safe }},
-		       ordering: "desc",
-		       divHeight: minHeight,
-		       editable: {% if settings.GEOCAM_UTIL_DATATABLES_EDITOR %}true{% else %} false {% endif %},
-	           xgds_video: xgds_video 
-	       });
+		var thefilter = '{{filter}}';
+		var recordedNotesURL = "{% url 'xgds_map_server_objectsJson_force' 'XGDS_NOTES_NOTE_MODEL' filter %}";
 	{% endwith %}
 	{% else %}
 	{% with filter="flight__group__episode__shortName"|add:":"|add:episode.shortName %}
-	var thefilter = '{{filter}}';
-	var recordedNotesController = new recordedNotes.RecordedNotesController({
-			   recordedNotesURL: "{% url 'xgds_map_server_objectsJson' 'XGDS_NOTES_NOTE_MODEL' filter %}",
-	//	           recordedNotesURL: "/notes/notesJson/"  + thefilter + "/0",
-			   columns: {{ settings.XGDS_NOTES_TABLE_DEFAULT_COLUMNS|safe }},
-		       ordering: "desc",
-		       divHeight: minHeight,
-		       editable: {% if settings.GEOCAM_UTIL_DATATABLES_EDITOR %}true{% else %} false {% endif %},
-	           xgds_video: xgds_video 
-	       });
+		var thefilter = '{{filter}}';
+		var recordedNotesURL = "{% url 'xgds_map_server_objectsJson_force' 'XGDS_NOTES_NOTE_MODEL' filter %}";
 	 {% endwith %}
 	{% endif %}
+	
+	var recordedNotesOptions = {
+					           recordedNotesURL: recordedNotesURL,
+							   columns: {{ settings.XGDS_NOTES_TABLE_DEFAULT_COLUMNS|safe }},
+						       ordering: "desc",
+						       divHeight: minHeight,
+						       editable: {% if settings.GEOCAM_UTIL_DATATABLES_EDITOR %}true{% else %} false {% endif %}
+					       };
+	{% if SSE %}
+	recordedNotesOptions['SSE'] = true;
+	recordedNotesOptions['liveNotesStreamURL'] = "{% url 'xgds_notes_liveNotes_stream'  %}" +  thefilter;
+	{% endif %}					       
+	var recordedNotesController = new recordedNotes.RecordedNotesController(recordedNotesOptions);
+	
 	{% endif %}
+		
 	{% endblock myNotesSetup %}
 	
 	{% block lastJsInit %}

@@ -92,8 +92,7 @@ def liveImageStream(request):
 
     return render_to_response("xgds_video/LiveImageStream.html",
                               {'zmqURL': json.dumps(socketUrl),
-                               'sources': sources,
-                               'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT},
+                               'sources': sources},
                               context_instance=RequestContext(request))
 
 
@@ -151,8 +150,7 @@ def liveVideoFeed(request, feedName):
 
     return render_to_response("xgds_video/video_feeds.html",
                               {'videoFeedData': feedData,
-                               'currentEpisodes': currentEpisodes,
-                               'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT},
+                               'currentEpisodes': currentEpisodes},
                               context_instance=RequestContext(request))
 
 
@@ -317,8 +315,7 @@ def showStillViewerWindow(request, flightName=None, time=None):
                                'position': locationInfo,
                                'formattedTime': formattedTime,
                                'timeKey': time,
-                               'event_timestring': event_timestring,
-                               'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT},
+                               'event_timestring': event_timestring},
                               context_instance=RequestContext(request))
 
 
@@ -534,8 +531,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         'flightName': flightName,
         'flightTZ': flightTimezone,
         'sourceVehicle': json.dumps(sourceVehicle),
-        'SSE': settings.XGDS_SSE,
-        'INCLUDE_NOTE_INPUT': settings.XGDS_VIDEO_INCLUDE_NOTE_INPUT
+        'SSE': settings.XGDS_SSE
     }
 
     if settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT:

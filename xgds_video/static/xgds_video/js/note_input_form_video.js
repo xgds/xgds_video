@@ -24,7 +24,7 @@ $.extend(xgds_notes,{
         var iso_string = '';
         if (isLive == false) {
         	var source = parent.find('input#source').val();
-            var event_time = getPlayerVideoTime(source);
+            var event_time = xgds_video.getPlayerVideoTime(source);
             iso_string = event_time.toISOString();
             iso_string = iso_string.replace('T', ' ');
             iso_string = iso_string.substring(0, 19);

@@ -27,47 +27,6 @@ controller_div div {
 	display:inline-block;
 }
 
-.tags ul{
-    list-style: none;
-    padding: 0px;
-    color: #66AA66;
-}
-
-div.id_tags_addTag {
-	height: 20px;
-}
-
-input.id_tags_tag { 
-	height: 18px;
-}
-
-div.tagsinput {
-    padding-top: 0px;
-    margin-left: 5px;
-    display: inline-block;
-    -webkit-appearance: textfield;
-	padding: 1px;
-	background-color: white;
-	border: 2px inset;
-	border-image-source: initial;
-	border-image-slice: initial;
-	border-image-width: initial;
-	border-image-outset: initial;
-	border-image-repeat: initial;
-	-webkit-rtl-ordering: logical;
-	-webkit-user-select: text;
-	cursor: auto;
-	display: inline-block;
-	vertical-align: top;
-	height: 24px !important;
-	width: 150px !important;
-}
-
-div.tagsinput[style]{
-    width: 150px !important;
-    height: 24px !important;
-}
-    
 #sliderGroup {
     width: 90%;
     padding:8px;
@@ -169,14 +128,6 @@ div.ui-slider-range.ui-widget-header {
 .stylish {
     font-family: FontAwesome;
 }
-
-/*.item {
-    background:#CACACA; 
-    padding-bottom:30px; 
-    margin-bottom:20px; 
-    border-width:2px; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-}*/
 
 .item { width: 100%; 
 		padding-left:10px;
