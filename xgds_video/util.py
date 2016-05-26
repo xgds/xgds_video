@@ -13,7 +13,6 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
-
 import pytz
 import re
 import datetime
@@ -53,12 +52,12 @@ def pythonDatetimeToJSON(pyDateTime):
         return ""
 
 
-def processLine(videoDirUrl, line):
-    line = line.rstrip("\n")
-    if line.endswith(".ts"):
-        return videoDirUrl + "/" + line
-    else:
-        return line
+# def processLine(videoDirUrl, line):
+#     line = line.rstrip("\n")
+#     if line.endswith(".ts"):
+#         return videoDirUrl + "/" + line
+#     else:
+#         return line
 
 
 def setSegmentEndTimes(segments, episode, source):
@@ -156,40 +155,50 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
     indexFilePath = settings.DATA_ROOT + indexFileSuffix
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
     try:
-        DELAY_METHOD = getClassByName(settings.XGDS_VIDEO_DELAY_AMOUNT_METHOD)
-        videoDelayInSecs = DELAY_METHOD(flightName) #indexFileSuffix.split('/')[0])
+        videoDelayInSecs = getClassByName(settings.XGDS_VIDEO_DELAY_AMOUNT_METHOD)(flightName)
         if videoDelayInSecs > 0:
             (videoDelayInSegments, m3u8_index) = getSegmentsFromEndForDelay(videoDelayInSecs-30,
                                                               indexFilePath)
-            videoDelayInLines = 2 * videoDelayInSegments + 1
+#             videoDelayInLines = 2 * videoDelayInSegments + 1
         else:
             m3u8_index = m3u8.load(indexFilePath)
             videoDelayInSegments = 0
-            videoDelayInLines = 1
+#             videoDelayInLines = 1
+        
+        segments = m3u8_index.segments
+        if len(segments) > 0:
+            if segments[0].duration > 100:
+                del segments[0]
+            if videoDelayInSegments > 0 and len(segments) > videoDelayInSegments:
+                del segments[-videoDelayInSegments:]
+        
+        for s in segments:
+            s.uri = str(segmentDirectoryUrl) + '/' + s.uri
+        return m3u8_index.dumps()
         
         #  edit the index file
-        baseFile = open(indexFilePath)
-        clips = baseFile.read().split('#EXTINF:')
-        baseFile.close()
-        header = clips.pop(0)
-        clips.pop(0)  # badFirstClip
-        clips.pop(0)  # badSecondClip
-        processedClips = '#EXTINF:'.join([header] + clips)
-        lineList = processedClips.split("\n")
-        maxLineNum = len(lineList) - videoDelayInLines
-        processedIndex = []
-        if maxLineNum <= 0:
-            processedIndex.append(header)
-        else:
-            for idx, line in enumerate(lineList):
-                if idx < maxLineNum:
-                    processedIndex.append(processLine(segmentDirectoryUrl, line))
-#         if False:
-#             if not any([findEndMarker(item) for item in processedIndex]):
-#                 processedIndex.append("#EXT-X-ENDLIST")
+#         baseFile = open(indexFilePath)
+#         clips = baseFile.read().split('#EXTINF:')
+#         baseFile.close()
+#         header = clips.pop(0)
+#         clips.pop(0)  # badFirstClip
+#         clips.pop(0)  # badSecondClip
+#         processedClips = '#EXTINF:'.join([header] + clips)
+#         lineList = processedClips.split("\n")
+#         maxLineNum = len(lineList) - videoDelayInLines
+#         processedIndex = []
+#         if maxLineNum <= 0:
+#             processedIndex.append(header)
 #         else:
-#             print "Video delay %d - NOT adding any extra end tag" % videoDelayInSecs
-        return "\n".join(processedIndex) + "\n"
+#             for idx, line in enumerate(lineList):
+#                 if idx < maxLineNum:
+#                     processedIndex.append(processLine(segmentDirectoryUrl, line))
+# #         if False:
+# #             if not any([findEndMarker(item) for item in processedIndex]):
+# #                 processedIndex.append("#EXT-X-ENDLIST")
+# #         else:
+# #             print "Video delay %d - NOT adding any extra end tag" % videoDelayInSecs
+#         return "\n".join(processedIndex) + "\n"
     except:
         traceback.print_exc()
         traceback.print_stack()
