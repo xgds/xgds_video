@@ -17,18 +17,24 @@ import logging
 import os
 import stat
 
+from django.utils import timezone
 from django.conf import settings
+from django.contrib import messages 
+from django.shortcuts import redirect
+from django.core.urlresolvers import reverse
 
 from django.db.models.aggregates import Max
 
 from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfRunning
 
 from geocamUtil.loader import LazyGetModelByName, getClassByName
+from scipy.stats.morestats import fligner
 
 
 SETTINGS_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
-
+EPISODE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
+VIDEO_SOURCE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 
 def makedirsIfNeeded(path):
     """
@@ -43,7 +49,61 @@ def emptySegmentDir(recordedVideoDir):
     if not os.listdir(recordedVideoDir):
         return True
     return False
-    
+
+def getVideoSource(sourceName):
+    videoSource = VIDEO_SOURCE_MODEL.get().objects.get(shortName=sourceName)
+    return videoSource
+
+def splitFlightName(flightName):
+    #this assumes flight name of episodeName_sourceName
+    splits = flightName.split('_')
+    episodeName = splits[0]
+    sourceName = splits[1]
+    return (episodeName, sourceName)
+
+def startFlightRecording(request, flightName):
+    (episodeName, sourceName) = splitFlightName(flightName)
+    startTime=timezone.now()
+    try:
+        videoEpisode = EPISODE_MODEL.get().objects.get(shortName=episodeName)
+        if videoEpisode.endTime:
+            videoEpisode.endTime = None
+            videoEpisode.save()
+            messages.info(request, 'Cleared end time for episode ' + episodeName)
+    except:
+        videoEpisode = EPISODE_MODEL.get()(shortName=episodeName, startTime=startTime)
+        videoEpisode.save()
+        messages.info(request, 'Created video episode ' + episodeName)
+
+    recordingDir = getRecordedVideoDir(flightName)
+    recordingUrl = getRecordedVideoUrl(flightName)
+    videoSource = getVideoSource(sourceName)
+    commands = startRecording(videoSource, recordingDir,
+                              recordingUrl, startTime,
+                              settings.XGDS_VIDEO_MAX_EPISODE_DURATION_MINUTES,
+                              episode=videoEpisode)
+    messages.info(request, commands)
+    return redirect(reverse('error'))
+
+def stopFlightRecording(request, flightName):
+    (episodeName, sourceName) = splitFlightName(flightName)
+    stopTime = timezone.now()
+    commands = stopRecording(getVideoSource(sourceName), stopTime)
+    videoEpisode = EPISODE_MODEL.get().objects.get(shortName=episodeName)
+
+    done = True
+    #TODO this only will work if videosegment is the model
+    for segment in videoEpisode.videosegment_set.all():
+        if not segment.endTime:
+            done = False
+            break
+    if done:
+        videoEpisode.endTime = stopTime
+        videoEpisode.save()
+        commands = commands + ' & set episode end time ' + str(stopTime)
+    messages.info(request, commands)
+    return redirect(reverse('error'))
+            
 def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDuration, episode):
     if not source.videofeed_set.all():
         logging.info("video feeds set is empty")
@@ -61,16 +121,6 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
         segmentNumber = 0
         recordedVideoDir = os.path.join(recordingDir, 'Segment%03d' % segmentNumber)
     
-#     recordedVideoDir = None
-#     segmentNumber = None
-#     for i in xrange(1000):
-#         trySegDir = os.path.join(recordingDir, 'Segment%03d' % i)
-#         if not os.path.exists(trySegDir) or not os.listdir(trySegDir):
-#             recordedVideoDir = trySegDir
-#             segmentNumber = i
-#             break
-#     assert segmentNumber is not None
-
     makedirsIfNeeded(recordedVideoDir)
     try:
         videoSettingses = SETTINGS_MODEL.get().objects.filter(width=videoFeed.settings.width,
@@ -113,7 +163,8 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
         'maxFlightDuration': maxFlightDuration,
     }
     segmenterCmd = segmenterCmdTemplate % segmenterCmdCtx
-    print vlcCmd + "|" + segmenterCmd
+    bothCmds =  vlcCmd + "|" + segmenterCmd
+    print bothCmds
     if settings.PYRAPTORD_SERVICE is True:
         (pyraptord, vlcSvc)
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
@@ -124,7 +175,8 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
                                        'cwd': recordedVideoDir})
         pyraptord.restart(vlcSvc)
         pyraptord.restart(segmenterSvc)
-
+        return bothCmds
+    return 'NO PYRAPTORD: ' + bothCmds
 
 def stopRecording(source, endTime):
     if settings.PYRAPTORD_SERVICE is True:
@@ -132,16 +184,19 @@ def stopRecording(source, endTime):
     assetName = source.shortName  # flight.assetRole.name
     vlcSvc = '%s_vlc' % assetName
     segmenterSvc = '%s_segmenter' % assetName
+    result = vlcSvc + ' ' + segmenterSvc
 
     # we need to set the endtime
     unended_segments = source.videosegment_set.filter(endTime=None)
     for segment in unended_segments:
         segment.endTime = endTime
         segment.save()
-
+    
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
         stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
+        return 'STOPPED PYCRORAPTOR SERVICES: ' + result
+    return 'NO PYRAPTORD: ' + result
 
 
 def getRecordedVideoDir(name):

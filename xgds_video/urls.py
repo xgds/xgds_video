@@ -17,7 +17,7 @@
 from django.conf.urls import url
 from django.views.generic.base import RedirectView
 
-from xgds_video import views
+from xgds_video import views, recordingUtil
 
 urlpatterns = [
     url(r'liveVideoFeed/(?P<feedName>\w+)$', views.liveVideoFeed, {'loginRequired': False}, 'xgds_video_live'),
@@ -38,4 +38,6 @@ urlpatterns = [
     url(r'^test/$', views.test, {}, 'test'),  # debug only
     url(r'^recorded/(?P<flightName>\w+).json$', views.getEpisodeSegmentsJson, {'loginRequired': False}, 'xgds_video_recorded_json'),  # active recorded video json
     url(r'^recorded/(?P<flightName>\w+)/(?P<sourceShortName>\w+).json$', views.getEpisodeSegmentsJson, {'loginRequired': False}, 'xgds_video_recorded_json'),  # active recorded video json
+    url(r'^stopRecording/(?P<flightName>\w+)', recordingUtil.stopFlightRecording, {'loginRequired': False}, 'xgds_video_stop_recording'), 
+    url(r'^startRecording/(?P<flightName>\w+)', recordingUtil.startFlightRecording, {'loginRequired': False}, 'xgds_video_start_recording'), 
     ]

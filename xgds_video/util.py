@@ -138,7 +138,7 @@ def getSegmentsFromEndForDelay(delayTime, indexPath):
         segCount += 1
         if totalTime >= delayTime:
             break
-    return segCount
+    return segCount, index
 
 
 def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
@@ -156,20 +156,19 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
     indexFilePath = settings.DATA_ROOT + indexFileSuffix
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
     try:
-        baseFile = open(indexFilePath)
         DELAY_METHOD = getClassByName(settings.XGDS_VIDEO_DELAY_AMOUNT_METHOD)
-        videoDelayInSecs = DELAY_METHOD(indexFileSuffix.split('/')[0])
-        if videoDelayInSecs < 0:
-            videoDelayInSecs = 0
-#        videoDelayInSegments = int(round(videoDelayInSecs / settings.XGDS_VIDEO_SEGMENT_SEC))
+        videoDelayInSecs = DELAY_METHOD(flightName) #indexFileSuffix.split('/')[0])
         if videoDelayInSecs > 0:
-            videoDelayInSegments = getSegmentsFromEndForDelay(videoDelayInSecs-30,
+            (videoDelayInSegments, m3u8_index) = getSegmentsFromEndForDelay(videoDelayInSecs-30,
                                                               indexFilePath)
+            videoDelayInLines = 2 * videoDelayInSegments + 1
         else:
+            m3u8_index = m3u8.load(indexFilePath)
             videoDelayInSegments = 0
-        videoDelayInLines = 2 * videoDelayInSegments + 1
-
+            videoDelayInLines = 1
+        
         #  edit the index file
+        baseFile = open(indexFilePath)
         clips = baseFile.read().split('#EXTINF:')
         baseFile.close()
         header = clips.pop(0)
@@ -185,9 +184,9 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
             for idx, line in enumerate(lineList):
                 if idx < maxLineNum:
                     processedIndex.append(processLine(segmentDirectoryUrl, line))
-        if False:
-            if not any([findEndMarker(item) for item in processedIndex]):
-                processedIndex.append("#EXT-X-ENDLIST")
+#         if False:
+#             if not any([findEndMarker(item) for item in processedIndex]):
+#                 processedIndex.append("#EXT-X-ENDLIST")
 #         else:
 #             print "Video delay %d - NOT adding any extra end tag" % videoDelayInSecs
         return "\n".join(processedIndex) + "\n"
