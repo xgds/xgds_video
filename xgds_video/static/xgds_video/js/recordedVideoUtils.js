@@ -33,8 +33,15 @@ $.extend(xgds_video,{
 		if ((jsonDateTime) && (jsonDateTime != 'None') && (jsonDateTime != '') && (jsonDateTime != undefined)) {
 			//need to subtract one from month since Javascript datetime indexes month  0 to 11.
 			jsonDateTime.month = jsonDateTime.month - 1;
-			return new Date(Date.UTC(jsonDateTime.year, jsonDateTime.month, jsonDateTime.day,
-					jsonDateTime.hour, jsonDateTime.min, jsonDateTime.seconds, 0));
+			var utcDate = Date.UTC(jsonDateTime.year, 
+									 jsonDateTime.month, 
+									 jsonDateTime.day,
+									 jsonDateTime.hour, 
+									 jsonDateTime.min, 
+									 jsonDateTime.seconds, 
+									 0);
+			var result = new Date(utcDate);
+			return result;
 		}
 		return null;
 	},

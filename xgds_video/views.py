@@ -495,7 +495,6 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         sources.append(source)
         sourceVehicle[source.shortName] = source.vehicleName
         sourceSegments = segments.filter(source=source)
-#         util.setSegmentEndTimes(segments.all(), episode, source)  # this passes back segments for this source.
         segmentsDict[source.shortName] = [seg.getDict() for seg in sourceSegments]
         form = buildNoteForm([episode], source, request, {'index':index})
         source.form = form
