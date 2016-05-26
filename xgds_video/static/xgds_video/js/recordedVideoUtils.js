@@ -300,7 +300,7 @@ $.extend(xgds_video,{
 		xgds_video.awakenIdlePlayers(time, player.id);
 		xgds_video.onTimeController(player);
 		// if all other players are paused, go the the next available segment and play.
-		if (allPaused()) {
+		if (xgds_video.allPaused()) {
 			var time = xgds_video.getPlayerVideoTime(player.id);
 			var seekTime = xgds_video.getNextAvailableSegment(time);
 //			console.log('on segment complete next available: ', JSON.stringify(seekTime));
@@ -315,7 +315,7 @@ $.extend(xgds_video,{
 
 		var allPaused = true;
 		for (var source in xgds_video.options.displaySegments) {
-			var segments = xgds_video.options.displaySegments[key];
+			var segments = xgds_video.options.displaySegments[source];
 			var state = jwplayer(source).getState();
 			if ((state != 'PAUSED') && (state != 'IDLE')) {
 				allPaused = false;

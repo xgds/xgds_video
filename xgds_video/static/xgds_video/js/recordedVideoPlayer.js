@@ -84,7 +84,7 @@ $.extend(xgds_video,{
 					return;
 				}
 				// need this. otherwise slider jumps around while moving.
-				if (xgds_video.movingSlider == true) {
+				if (xgds_video.options.movingSlider == true) {
 					return;
 				}
 
@@ -94,7 +94,7 @@ $.extend(xgds_video,{
 				}
 
 				// update test site time (all sources that are 'PLAYING')
-				if (!xgds_video.options.seekFlag && !xgds_video.movingSlider) {
+				if (!xgds_video.options.seekFlag && !xgds_video.options.movingSlider) {
 					var testSiteTime = xgds_video.getPlayerVideoTime(this.id);
 					xgds_video.setPlayerTimeLabel(testSiteTime, this.id);
 
