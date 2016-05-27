@@ -22,7 +22,6 @@ import m3u8
 
 from django.conf import settings
 from geocamUtil.loader import getClassByName
-# from plrpExplorer.views import getVideoDelay # FIX-ME: should be abstracted better from video
 from django.conf import settings
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
@@ -50,14 +49,6 @@ def pythonDatetimeToJSON(pyDateTime):
                 "hour": pyDateTime.hour, "min": pyDateTime.minute, "seconds": pyDateTime.second}
     else:
         return ""
-
-
-# def processLine(videoDirUrl, line):
-#     line = line.rstrip("\n")
-#     if line.endswith(".ts"):
-#         return videoDirUrl + "/" + line
-#     else:
-#         return line
 
 
 def setSegmentEndTimes(segments, episode, source):
@@ -144,14 +135,6 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
     """ This is truncating the last n rows from the m3u8 file and reappending the end and the metadata at the top.
     This fakes our delay
     """
-    """ TODO flightName is really groupName"""
-    """
-    search and replace in file
-    pattern: regex pattern for searching
-    subst: string you want to replace with.
-    """
-    # foundEndMarker = False
-    # open the file
     indexFilePath = settings.DATA_ROOT + indexFileSuffix
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
     try:
@@ -159,11 +142,9 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
         if videoDelayInSecs > 0:
             (videoDelayInSegments, m3u8_index) = getSegmentsFromEndForDelay(videoDelayInSecs-30,
                                                               indexFilePath)
-#             videoDelayInLines = 2 * videoDelayInSegments + 1
         else:
             m3u8_index = m3u8.load(indexFilePath)
             videoDelayInSegments = 0
-#             videoDelayInLines = 1
         
         segments = m3u8_index.segments
         if len(segments) > 0:
@@ -176,29 +157,6 @@ def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
             s.uri = str(segmentDirectoryUrl) + '/' + s.uri
         return m3u8_index.dumps()
         
-        #  edit the index file
-#         baseFile = open(indexFilePath)
-#         clips = baseFile.read().split('#EXTINF:')
-#         baseFile.close()
-#         header = clips.pop(0)
-#         clips.pop(0)  # badFirstClip
-#         clips.pop(0)  # badSecondClip
-#         processedClips = '#EXTINF:'.join([header] + clips)
-#         lineList = processedClips.split("\n")
-#         maxLineNum = len(lineList) - videoDelayInLines
-#         processedIndex = []
-#         if maxLineNum <= 0:
-#             processedIndex.append(header)
-#         else:
-#             for idx, line in enumerate(lineList):
-#                 if idx < maxLineNum:
-#                     processedIndex.append(processLine(segmentDirectoryUrl, line))
-# #         if False:
-# #             if not any([findEndMarker(item) for item in processedIndex]):
-# #                 processedIndex.append("#EXT-X-ENDLIST")
-# #         else:
-# #             print "Video delay %d - NOT adding any extra end tag" % videoDelayInSecs
-#         return "\n".join(processedIndex) + "\n"
     except:
         traceback.print_exc()
         traceback.print_stack()
