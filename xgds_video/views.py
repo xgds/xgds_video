@@ -15,7 +15,6 @@
 #__END_LICENSE__
 from __future__ import division
 import json
-import stat
 import logging
 import os
 import datetime
