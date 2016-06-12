@@ -15,11 +15,12 @@
 #__END_LICENSE__
 
 from django.conf.urls import url
-from django.views.generic.base import RedirectView
+from django.views.generic.base import RedirectView, TemplateView
 
 from xgds_video import views, recordingUtil
 
 urlpatterns = [
+    url(r'liveTest$', TemplateView.as_view(template_name='xgds_video/video_live_playbacks.html'), {}, 'xgds_video_live_test'),
     url(r'liveVideoFeed/(?P<feedName>\w+)$', views.liveVideoFeed, {'loginRequired': False}, 'xgds_video_live'),
     url(r'videoIndexFile/(?P<flightName>[^/]+)/(?P<sourceShortName>[^/]+)/(?P<segmentNumber>[^/]+)/prog_index.m3u8', views.videoIndexFile, {'loginRequired': False}, 'xgds_video_index_file'),
     url(r'^noteVideo/(?P<flightName>\w+)/(?P<time>[^/]+)/$', views.displayRecordedVideo, {}, 'xgds_video_recorded_time'),  # recorded video for one note

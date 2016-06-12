@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load nav %}
+{% block siteSection %}Video{% endblock %}
+
+{% block nav %}
+    {% nav "xgds_video_recorded" %}
+    {{ block.super }}
+{% endblock %}
+
+{% block content %}
+<p><strong>Live Video</strong></p>
+<div id="player" class="player" width=960 height=540></div>
+{% endblock content %}
+ 
+{% block cssExtras %}
+<style type="text/css">
+      #player {
+        width: 960px;
+        height: 540px;
+      }
+    </style>
+{% endblock cssExtras %}
+
+{% block scripts %}
+{{block.super}}
+<script type="text/javascript" src='{{STATIC_URL}}locomote/dist/locomote.min.js'></script>
+{% endblock scripts %}
+
+{% block jsInit %}
+$(document).ready(function() {
+        /* Load SWF and instantiate Locomote */
+        var locomote = new Locomote('player', '{{STATIC_URL}}locomote/dist/Player.swf');
+
+        /* Set up a listener for when the API is ready to be used */
+        locomote.on('apiReady', function() {
+          console.log('API is ready. `play` can now be called');
+
+          /* Tell Locomote to play the specified media */
+          locomote.play('rtsp://acme.home:8554/proxyStream');
+        });
+
+        /* Start listening for streamStarted event */
+        locomote.on('streamStarted', function() {
+          console.log('stream has started');
+        });
+
+        /* If any error occurs, we should take action */
+        locomote.on('error', function(err) {
+          console.log(err);
+        });
+      });
+{% endblock jsInit %}
