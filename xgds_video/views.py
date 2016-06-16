@@ -114,44 +114,6 @@ def callGetNoteExtras(episodes, source, request):
         return None
 
 
-def liveVideoFeed(request, feedName):
-    feedData = []
-    # get the active episodes
-    currentEpisodes = EPISODE_MODEL.get().objects.filter(endTime=None)
-    if feedName.lower() != 'all':
-        videofeeds = FEED_MODEL.get().objects.filter(shortName=feedName).select_related('source')
-        if videofeeds:
-            form = buildNoteForm(currentEpisodes, videofeeds[0].source, request)
-#             form = NoteForm()
-#             form.index = 0
-#             form.fields["index"] = 0
-#             form.source = videofeeds[0].source
-#             form.fields["source"] = videofeeds[0].source
-#             if form.fields["source"]:
-#                 form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source, request, form)
-        feedData.append((videofeeds[0], form))
-    else:
-        videofeeds = FEED_MODEL.get().objects.filter(active=True)
-        index = 0
-        for feed in videofeeds:
-            form = buildNoteForm(currentEpisodes, feed.source, request, {'index':index})
-# 
-#             form = NoteForm()
-#             form.index = index
-#             form.fields["index"] = index
-#             form.source = feed.source
-#             form.fields["source"] = feed.source
-#             if form.fields["source"]:
-#                 form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source, request, form)
-#             index += 1
-            feedData.append((feed, form))
-
-    return render_to_response("xgds_video/video_feeds.html",
-                              {'videoFeedData': feedData,
-                               'currentEpisodes': currentEpisodes},
-                              context_instance=RequestContext(request))
-
-
 def getSegments(source=None, episode=None):
     """
     Point to site settings to see real implementation of this function
@@ -516,7 +478,6 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
 
     ctx = {
         'segmentsJson': segmentsJson,
-        'baseUrl': settings.RECORDED_VIDEO_URL_BASE,
         'episode': episode,
         'episodeJson': episodeJson,
         'noteTimeStamp': requestedTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
@@ -534,6 +495,51 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     theTemplate = 'xgds_video/video_recorded_playbacks.html'
     if active:
         theTemplate = 'xgds_video/video_active_playbacks.html'
+
+    return render_to_response(theTemplate,
+                              ctx,
+                              context_instance=RequestContext(request))
+
+
+def displayLiveVideo(request, sourceShortName=None):
+    """ Directly display RTSP feeds for the active episode.  
+    This will either include all sources or be for a single source if it is passed in..
+    """
+
+    GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
+    episode = GET_ACTIVE_EPISODE_METHOD()
+    if not episode:
+        messages.add_message(request, messages.ERROR, 'There is no live video.')
+        return redirect(reverse('error'))
+    
+    sources = []
+    noteForms = []
+    if sourceShortName:
+        try:
+            source = SOURCE_MODEL.get().objects.get(shortName=str(sourceShortName))
+            sources.append(source)
+            noteForms.append(buildNoteForm([episode], source, request, {'index':0}))
+        except:
+            pass
+    else:
+        # get sources and get feeds
+        segments = episode.videosegment_set.all()
+        for index,segment in enumerate(segments):
+            sources.append(segment.source)
+            noteForms.append(buildNoteForm([episode], segment.source, request, {'index':index}))
+            #v.source.videofeed_set.all()
+    
+    ctx = {
+        'episode': episode,
+        'zipped': zip(sources, noteForms),
+        'SSE': settings.XGDS_SSE
+    }
+
+    if settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT:
+        extraVideoContextFn = getClassByName(settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT)
+        extraVideoContextFn(ctx)
+
+    theTemplate = 'xgds_video/video_live_playbacks.html'
 
     return render_to_response(theTemplate,
                               ctx,

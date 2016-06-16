@@ -7,46 +7,134 @@
     {{ block.super }}
 {% endblock %}
 
-{% block content %}
+{% block contents %}
 <p><strong>Live Video</strong></p>
-<div id="player" class="player" width=960 height=540></div>
-{% endblock content %}
+	{% block errorMessages %}
+	{% if messages %}
+	    <ul class="messages" id="errorMessage" style="color:red;">
+	    {% for message in messages %}
+	        <li>{% if message.tags %} {{ message.tags }}: {% endif %}  {{ message }}</li>
+	    {% endfor %}
+	    </ul>
+	{% endif %}
+	{% endblock errorMessages %}
+	
+	{% block topStuff %}
+    	<div id="topStuff" >
+	    	<div id="infoTable" >
+	    	<table>
+	    		{% if episode %}
+		   			<tr>
+		   				<td> <b> {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }}: </b> </td>
+		   				<td> {{ episode.shortName }} </td>
+		   			</tr>
+	   			{% endif %}
+	   		</table>
+	   		</div>
+   		</div>
+
+ 		{% endblock topStuff %}
+ 
+ 		{% block packery %}
+        <div id="container"> 
+        
+        {% block videoSources %}
+        {% for source, noteform in zipped %}
+			<div class="item {% if zipped|length > 1 %}w2{% endif %} lockAspect" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
+	            <div class="buttons">
+	                 <div class="toprow-left"><b>{{ source.name }}</b></div>
+	                 <a class="mybutton toprow-right small" href="{% url 'xgds_video_live_source' source.shortName %}" target="{% if zipped|length > 1 %}{{episode.shortName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
+	            </div>
+				<section id="{{source.shortName}}_noteInput">
+             		{% include "xgds_video/video_notes.html" with data=noteform source=source.shortName STATIC_URL=STATIC_URL %}
+             	</section>
+             	<!--embed the video-->
+             	<section>
+              		<div id="player_container" class="row"> <!-- float-left">  -->
+             			<div id="{{ source.shortName }}" class="eleven columns player"></div>
+             		</div> <!--  player-container -->
+             		<div id="{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
+             	</section>
+            </div><!--  item -->
+        {% endfor %}
+        {% endblock videoSources %}
+
+	{% block otherPackery %}
+        <div class="item {% if zipped|length > 1 %}w2{% endif %} freeAspect" id="notesDiv" style="background-color:#F9FADE;">
+        <div id="messageDiv">
+                </div>
+                <table id="notes_list" class="notes_list display">
+                </table>
+        </div>
+        {% endblock otherPackery %}
+        
+        </div> <!--  js packery container -->
+        {% endblock packery %}
+ 
+	
+{% endblock contents %}
  
 {% block cssExtras %}
+{{ block.super }}
+    {% include "xgds_notes2/NoteCSS.html" %}
+    {% include "xgds_video/VideoCSS.html" %}
 <style type="text/css">
-      #player {
+      .player {
         width: 960px;
         height: 540px;
+        background: pink;
+      }
+       .locomote-player {
+        height: 100%;
       }
     </style>
 {% endblock cssExtras %}
 
 {% block scripts %}
 {{block.super}}
-<script type="text/javascript" src='{{STATIC_URL}}locomote/dist/locomote.min.js'></script>
-{% endblock scripts %}
+	{% include "xgds_notes2/NoteJS.html" %}
+	{% include "xgds_video/VideoJS.html" with JWPLAYER_KEY=settings.JWPLAYER_KEY STATIC_URL=STATIC_URL %}
+	<script type="text/javascript" src='{{EXTERNAL_URL}}locomote/dist/locomote.min.js'></script>
+	{% block myscripts %}
+	<script type="text/javascript" src='{{STATIC_URL}}xgds_video/js/liveVideoPlayer.js'></script>
+	<script type="text/javascript" src='{{STATIC_URL}}xgds_notes2/js/recordedNotesTable.js'></script>
+    {% endblock myscripts %}
+{% endblock %}
 
 {% block jsInit %}
 $(document).ready(function() {
-        /* Load SWF and instantiate Locomote */
-        var locomote = new Locomote('player', '{{STATIC_URL}}locomote/dist/Player.swf');
-
-        /* Set up a listener for when the API is ready to be used */
-        locomote.on('apiReady', function() {
-          console.log('API is ready. `play` can now be called');
-
-          /* Tell Locomote to play the specified media */
-          locomote.play('rtsp://acme.home:8554/proxyStream');
-        });
-
-        /* Start listening for streamStarted event */
-        locomote.on('streamStarted', function() {
-          console.log('stream has started');
-        });
-
-        /* If any error occurs, we should take action */
-        locomote.on('error', function(err) {
-          console.log(err);
-        });
+	isLive = true;
+	initializePackery();
+	{% for source, noteForm in zipped %}
+		xgds_video.buildLocomotePlayer('{{source.name}}', '{{source.videofeed_set.first.url}}')
+	{% endfor %}
+	xgds_notes.setupNotesUI();
+	{% block myNotesSetup %}
+    var minHeight = 200;
+	{% if zipped|length = 1 %}
+	{% with filter="flight__name"|add:":"|add:episode.shortName|add:"_"|add:zipped.0.0.shortName%}
+		var thefilter = '{{filter}}';
+		var recordedNotesURL = "{% url 'xgds_map_server_objectsJson_force' 'XGDS_NOTES_NOTE_MODEL' filter %}";
+	{% endwith %}
+	{% else %}
+	{% with filter="flight__group__name"|add:":"|add:episode.shortName %}
+		var thefilter = '{{filter}}';
+		var recordedNotesURL = "{% url 'xgds_map_server_objectsJson_force' 'XGDS_NOTES_NOTE_MODEL' filter %}";
+	 {% endwith %}
+	{% endif %}
+	
+	var recordedNotesOptions = {
+					           recordedNotesURL: recordedNotesURL,
+							   columns: {{ settings.XGDS_NOTES_TABLE_DEFAULT_COLUMNS|safe }},
+						       ordering: "desc",
+						       divHeight: minHeight,
+						       editable: {% if settings.GEOCAM_UTIL_DATATABLES_EDITOR %}true{% else %} false {% endif %}
+					       };
+	{% if SSE %}
+	recordedNotesOptions['SSE'] = true;
+	recordedNotesOptions['liveNotesStreamURL'] = "{% url 'xgds_notes_liveNotes_stream'  %}" +  thefilter;
+	{% endif %}					       
+	var recordedNotesController = new recordedNotes.RecordedNotesController(recordedNotesOptions);
+	{% endblock myNotesSetup %}
       });
 {% endblock jsInit %}
