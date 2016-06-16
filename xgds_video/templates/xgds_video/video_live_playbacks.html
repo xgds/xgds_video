@@ -1,5 +1,7 @@
-{% extends "base.html" %}
+{% extends "dashboard_no_map.html" %}
 {% load nav %}
+{% load multiply %}
+
 {% block siteSection %}Video{% endblock %}
 
 {% block nav %}
@@ -7,8 +9,7 @@
     {{ block.super }}
 {% endblock %}
 
-{% block contents %}
-<p><strong>Live Video</strong></p>
+{% block preDashboard %}
 	{% block errorMessages %}
 	{% if messages %}
 	    <ul class="messages" id="errorMessage" style="color:red;">
@@ -25,7 +26,7 @@
 	    	<table>
 	    		{% if episode %}
 		   			<tr>
-		   				<td> <b> {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }}: </b> </td>
+		   				<td> <b> Live Video for {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }}: </b> </td>
 		   				<td> {{ episode.shortName }} </td>
 		   			</tr>
 	   			{% endif %}
@@ -34,13 +35,16 @@
    		</div>
 
  		{% endblock topStuff %}
+ {% endblock preDashboard %}
  
- 		{% block packery %}
-        <div id="container"> 
+ 		{% block dashboard %}
+	<div id="container" class="grid-stack grid-stack-6"> 
         
-        {% block videoSources %}
         {% for source, noteform in zipped %}
-			<div class="item {% if zipped|length > 1 %}w2{% endif %} lockAspect" id="item{{ forloop.counter }}" style="background-color:{{ source.displayColor }};">
+        <div id="view-gridstack-item-{{source.name}}" class="grid-stack-item" 
+		data-gs-x="{{ forloop.counter0|multiply:3 }}" data-gs-y="0"
+        data-gs-width="3" data-gs-height="2" >
+        <div class="grid-stack-item-content" id="view-gridstack-item-content-{{source.name}}" style="background-color:{{ source.displayColor }};">
 	            <div class="buttons">
 	                 <div class="toprow-left"><b>{{ source.name }}</b></div>
 	                 <a class="mybutton toprow-right small" href="{% url 'xgds_video_live_source' source.shortName %}" target="{% if zipped|length > 1 %}{{episode.shortName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
@@ -50,29 +54,29 @@
              	</section>
              	<!--embed the video-->
              	<section>
-              		<div id="player_container" class="row"> <!-- float-left">  -->
-             			<div id="{{ source.shortName }}" class="eleven columns player"></div>
+              		<div id="player_container" > <!-- float-left">  -->
+             			<div id="{{ source.shortName }}" class="player"></div>
              		</div> <!--  player-container -->
              		<div id="{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
              	</section>
             </div><!--  item -->
-        {% endfor %}
-        {% endblock videoSources %}
-
-	{% block otherPackery %}
-        <div class="item {% if zipped|length > 1 %}w2{% endif %} freeAspect" id="notesDiv" style="background-color:#F9FADE;">
-        <div id="messageDiv">
-                </div>
-                <table id="notes_list" class="notes_list display">
-                </table>
         </div>
-        {% endblock otherPackery %}
+        {% endfor %}
+
+	<div id='item_notes_table'  class="grid-stack-item" 
+		data-gs-x="0" data-gs-y="4"
+        data-gs-width="6" data-gs-height="3">
+        <div class="grid-stack-item-content " id="notesDiv" style="background-color:#F9FADE;">
+        	<div id="messageDiv">
+            </div>
+            <table id="notes_list" class="notes_list display">
+            </table>
+        </div>
+     </div>
         
-        </div> <!--  js packery container -->
-        {% endblock packery %}
+    </div>
+        {% endblock dashboard %}
  
-	
-{% endblock contents %}
  
 {% block cssExtras %}
 {{ block.super }}
@@ -80,9 +84,7 @@
     {% include "xgds_video/VideoCSS.html" %}
 <style type="text/css">
       .player {
-        width: 960px;
-        height: 540px;
-        background: pink;
+        height: 427px;
       }
        .locomote-player {
         height: 100%;
@@ -101,10 +103,8 @@
     {% endblock myscripts %}
 {% endblock %}
 
-{% block jsInit %}
-$(document).ready(function() {
+{% block otherJSInit %}
 	isLive = true;
-	initializePackery();
 	{% for source, noteForm in zipped %}
 		xgds_video.buildLocomotePlayer('{{source.name}}', '{{source.videofeed_set.first.url}}')
 	{% endfor %}
@@ -136,5 +136,4 @@ $(document).ready(function() {
 	{% endif %}					       
 	var recordedNotesController = new recordedNotes.RecordedNotesController(recordedNotesOptions);
 	{% endblock myNotesSetup %}
-      });
-{% endblock jsInit %}
+{% endblock otherJSInit %}

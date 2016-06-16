@@ -200,7 +200,10 @@ def displayVideoStill(request, flightName=None, time=None, thumbnail=False, isDo
     Returns a video still for a given flight at the requested time.  If the still already exists for that time, it is just displayed,
     otherwise a new one is created.
     """
-    requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d_%H-%M-%S")
+    try:
+        requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d_%H-%M-%S")
+    except:
+        requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d %H-%M-%S+00:00")
     thumbnailPath = "%s/%s_%s.thumbnail.jpg" % (settings.IMAGE_CAPTURE_DIR, flightName, time)
     fullSizePath = "%s/%s_%s.jpg" % (settings.IMAGE_CAPTURE_DIR, flightName, time)
     noImagePath = "%s/xgds_video/images/NoImage.png" % settings.STATIC_ROOT
