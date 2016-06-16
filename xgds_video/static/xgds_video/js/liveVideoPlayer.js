@@ -30,6 +30,13 @@ $.extend(xgds_video,{
 		locomote.on('error', function(err) {
 	          console.log(err);
 	        });
+	},
+	disableGridstackResizing: function() {
+		var items = $.find(".grid-stack-item");
+		for (var i=0; i<items.length; i++) {
+			var item = items[i];
+			$(item).resizable('destroy');
+		}
 	}
 
 });

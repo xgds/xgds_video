@@ -202,7 +202,8 @@ div.ui-slider-range.ui-widget-header {
 	float:left; 
 	height:15px;
 	padding-bottom:2px;
-	color: red;
+	color: black;
+	font-weight: bold;
 }
 
 blocky div label input{

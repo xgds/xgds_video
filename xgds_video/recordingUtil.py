@@ -146,37 +146,21 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
     if settings.PYRAPTORD_SERVICE is True:
         pyraptord = getPyraptordClient()
 
-    assetName = source.shortName  # flight.assetRole.name
+    assetName = source.shortName
     vlcSvc = '%s_vlc' % assetName
-    vlcCmd = ('%s %s %s'
+    vlcCmd = ("%s %s --sout='#duplicate{dst=std{access=livehttp{seglen=6,splitanywhere=false,delsegs=false,numsegs=0,index=prog_index.m3u8,index-url=prog_index-#####.ts},mux=ts,dst=prog_index-#####.ts}}'"
               % (settings.XGDS_VIDEO_VLC_PATH,
-                 videoFeed.url,
-                 settings.XGDS_VIDEO_VLC_PARAMETERS))
-    segmenterSvc = '%s_segmenter' % assetName
-    segmenterCmdTemplate = '%s %s' % (settings.XGDS_VIDEO_SEGMENTER_PATH,
-                                      settings.XGDS_VIDEO_SEGMENTER_ARGS)
-
-    segmenterCmdCtx = {
-        'recordingUrl': recordingUrl,
-        'segmentNumber': segmentNumber,
-        'recordedVideoDir': recordedVideoDir,
-        'maxFlightDuration': maxFlightDuration,
-    }
-    segmenterCmd = segmenterCmdTemplate % segmenterCmdCtx
-    bothCmds =  vlcCmd + "|" + segmenterCmd
-    print bothCmds
+                 videoFeed.url))
+#     print vlcCmd
     if settings.PYRAPTORD_SERVICE is True:
         (pyraptord, vlcSvc)
-        stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
+        stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
         pyraptord.updateServiceConfig(vlcSvc,
-                                      {'command': vlcCmd})
-        pyraptord.updateServiceConfig(segmenterSvc,
-                                      {'command': segmenterCmd,
+                                      {'command': vlcCmd,
                                        'cwd': recordedVideoDir})
         pyraptord.restart(vlcSvc)
-        pyraptord.restart(segmenterSvc)
-        return bothCmds
-    return 'NO PYRAPTORD: ' + bothCmds
+        return vlcCmd
+    return 'NO PYRAPTORD: ' + vlcCmd
 
 def stopRecording(source, endTime):
     if settings.PYRAPTORD_SERVICE is True:
