@@ -13,6 +13,7 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
+import time
 import logging
 import os
 import stat
@@ -155,6 +156,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
     if settings.PYRAPTORD_SERVICE is True:
         (pyraptord, vlcSvc)
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
+        time.sleep(5)
         pyraptord.updateServiceConfig(vlcSvc,
                                       {'command': vlcCmd,
                                        'cwd': recordedVideoDir})
@@ -165,10 +167,8 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
 def stopRecording(source, endTime):
     if settings.PYRAPTORD_SERVICE is True:
         pyraptord = getPyraptordClient('pyraptord')
-    assetName = source.shortName  # flight.assetRole.name
+    assetName = source.shortName
     vlcSvc = '%s_vlc' % assetName
-    segmenterSvc = '%s_segmenter' % assetName
-    result = vlcSvc + ' ' + segmenterSvc
 
     # we need to set the endtime
     unended_segments = source.videosegment_set.filter(endTime=None)
@@ -178,9 +178,8 @@ def stopRecording(source, endTime):
     
     if settings.PYRAPTORD_SERVICE is True:
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
-        stopPyraptordServiceIfRunning(pyraptord, segmenterSvc)
-        return 'STOPPED PYCRORAPTOR SERVICES: ' + result
-    return 'NO PYRAPTORD: ' + result
+        return 'STOPPED PYCRORAPTOR SERVICES: ' + vlcSvc
+    return 'NO PYRAPTORD: ' + vlcSvc
 
 
 def getRecordedVideoDir(name):
