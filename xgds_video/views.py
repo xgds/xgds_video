@@ -75,14 +75,6 @@ def liveImageStream(request):
     sources = SOURCE_MODEL.get().objects.all()
     for source in sources:
         source.form = buildNoteForm(currentEpisodes, source, request)
-#         form = NoteForm()
-#         form.index = 0
-#         form.fields["index"] = 0
-#         form.source = source
-#         form.fields["source"] = source
-#         if form.fields["source"]:
-#             form.fields["extras"].initial = callGetNoteExtras(currentEpisodes, form.source, request, form)
-#         source.form = form
     socketUrl = settings.XGDS_ZMQ_WEB_SOCKET_URL
     if request.META['wsgi.url_scheme'] == 'https':
         # must use secure WebSockets if web site is secure
@@ -526,11 +518,9 @@ def displayLiveVideo(request, sourceShortName=None):
             pass
     else:
         # get sources and get feeds
-        segments = episode.videosegment_set.all()
-        for index,segment in enumerate(segments):
-            sources.append(segment.source)
+        sources = SOURCE_MODEL.get().objects.filter(videosegment__episode = episode).distinct()
+        for index,segment in enumerate(sources):
             noteForms.append(buildNoteForm([episode], segment.source, request, {'index':index}))
-            #v.source.videofeed_set.all()
     
     ctx = {
         'episode': episode,
