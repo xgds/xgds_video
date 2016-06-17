@@ -519,8 +519,8 @@ def displayLiveVideo(request, sourceShortName=None):
     else:
         # get sources and get feeds
         sources = SOURCE_MODEL.get().objects.filter(videosegment__episode = episode).distinct()
-        for index,segment in enumerate(sources):
-            noteForms.append(buildNoteForm([episode], segment.source, request, {'index':index}))
+        for index,source in enumerate(sources):
+            noteForms.append(buildNoteForm([episode], source, request, {'index':index}))
     
     ctx = {
         'episode': episode,
