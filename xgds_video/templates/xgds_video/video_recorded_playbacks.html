@@ -57,10 +57,12 @@
 		   				<td> {{ episode.shortName }} </td>
 		   			</tr>
 	   			{% endif %}
+	   			{% if not isLive %}
 	   			<tr>
 	   				<td>Local Time: </td>
 	   				<td> <span id="sliderTimeLabel"></span></td>
 	   			</tr>
+	   			{% endif %}
 	   		</table>
 	   		</div>
 	   		<div id="seekTimeBox" >
@@ -74,7 +76,9 @@
  		
  		{% block ribbonSlider %}
  		<fieldset id="videoFieldset">
+ 			 {% if not isLive %}
  			  <div id="ribbon"></div>
+ 			  {% endif %}
 		 	  <div id="masterSlider" class="masterSlider" ><br/></div>
  		</fieldset>
  		{% endblock ribbonSlider %}
@@ -105,11 +109,13 @@
              		</div> <!--  player-container -->
              		<div id="{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
              	</section>
+             	{% if not isLive %}
              	<section>
              		<div class="float-left">
                  	Local Time: <span id="testSiteTime{{ source.shortName }}">0</span>
              		</div>
              	</section>
+             	{% endif %}
             </div><!--  item -->
         {% endfor %}
         {% endblock videoSources %}

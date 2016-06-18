@@ -471,9 +471,16 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4, cls=DatetimeJsonEncoder)
     episodeJson = json.dumps(episode.getDict())
 
+    isLive = False
+    theTemplate = 'xgds_video/video_recorded_playbacks.html'
+    if active:
+        theTemplate = 'xgds_video/video_active_playbacks.html'
+        isLive = True
+
     ctx = {
         'segmentsJson': segmentsJson,
         'episode': episode,
+        'isLive': isLive,
         'episodeJson': episodeJson,
         'noteTimeStamp': requestedTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
         'sources': sources,
@@ -487,9 +494,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         extraVideoContextFn = getClassByName(settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT)
         extraVideoContextFn(ctx)
 
-    theTemplate = 'xgds_video/video_recorded_playbacks.html'
-    if active:
-        theTemplate = 'xgds_video/video_active_playbacks.html'
+    
 
     return render_to_response(theTemplate,
                               ctx,
