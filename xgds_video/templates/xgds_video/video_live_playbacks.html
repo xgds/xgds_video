@@ -106,7 +106,7 @@
 {% block otherJSInit %}
 	isLive = true;
 	{% for source, noteForm in zipped %}
-		xgds_video.buildLocomotePlayer('{{source.name}}', '{{source.videofeed_set.first.url}}')
+		xgds_video.buildLocomotePlayer('{{source.name}}', '{{source.videofeed_set.first.realtimeUrl}}')
 	{% endfor %}
 	xgds_notes.setupNotesUI();
 	{% block myNotesSetup %}

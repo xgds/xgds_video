@@ -100,6 +100,7 @@ class AbstractVideoFeed(models.Model):
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True)
     # url: the url where you can watch the live video
     url = models.CharField(max_length=512, blank=False)
+    realtimeUrl = models.CharField(max_length=512, blank=True, null=True)
     active = models.BooleanField(default=False)
     settings = 'set to DEFAULT_SETTINGS_FIELD() or similar in derived classes'
     source = 'set to DEFAULT_SOURCE_FIELD() or similar in derived classes'
