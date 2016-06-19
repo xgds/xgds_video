@@ -137,6 +137,8 @@
 	var recordedNotesController = new recordedNotes.RecordedNotesController(recordedNotesOptions);
 	{% endblock myNotesSetup %}
 	
+	{% if zipped.count == 1 %}
 	xgds_video.disableGridstackResizing();  // so we can double click to full screen video
+	{% endif %}
 	
 {% endblock otherJSInit %}

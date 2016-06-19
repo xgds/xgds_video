@@ -22,7 +22,6 @@ import m3u8
 
 from django.conf import settings
 from geocamUtil.loader import getClassByName
-from django.conf import settings
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
 

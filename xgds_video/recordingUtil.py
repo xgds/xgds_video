@@ -113,7 +113,8 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
     
     # figure out next segment number for this source and episode
     try:
-        segmentNumber = SEGMENT_MODEL.get().objects.filter(episode=episode, source=source).aggregate(Max('segNumber'))
+        maxSegmentNumber = SEGMENT_MODEL.get().objects.filter(episode=episode, source=source).aggregate(Max('segNumber'))
+        segmentNumber = maxSegmentNumber['segNumber__max']
         recordedVideoDir = os.path.join(recordingDir, 'Segment%03d' % segmentNumber)
         if not emptySegmentDir(recordedVideoDir):
             segmentNumber = segmentNumber + 1

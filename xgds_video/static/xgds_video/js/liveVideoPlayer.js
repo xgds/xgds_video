@@ -32,6 +32,7 @@ $.extend(xgds_video,{
 	        });
 	},
 	disableGridstackResizing: function() {
+		// This allows you to doubleclick and full screen one.
 		var items = $.find(".grid-stack-item");
 		for (var i=0; i<items.length; i++) {
 			var item = items[i];
