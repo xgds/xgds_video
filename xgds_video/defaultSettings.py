@@ -40,6 +40,9 @@ XGDS_VIDEO_VLC_PARAMETERS = "--intf=dummy --sout='#std{access=file,mux=ts,dst=-}
 
 XGDS_VIDEO_TIME_ZONE = {'name': 'Pacific', 'code': 'America/Los_Angeles'}
 
+# turn on if you can generate stills
+XGDS_VIDEO_STILLS_ENABLED = False
+
 # set this in siteSettings.py. example: 'plrpExplorer.views.getNoteExtras'
 XGDS_VIDEO_NOTE_EXTRAS_FUNCTION = None
 

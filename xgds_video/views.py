@@ -34,6 +34,7 @@ from django.shortcuts import redirect
 from django.template import RequestContext
 # from django.views.generic.list_detail import object_list
 from django.contrib import messages
+from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from geocamUtil import dateparse
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
@@ -192,15 +193,26 @@ def displayVideoStill(request, flightName=None, time=None, thumbnail=False, isDo
     Returns a video still for a given flight at the requested time.  If the still already exists for that time, it is just displayed,
     otherwise a new one is created.
     """
-    try:
-        requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d_%H-%M-%S")
-    except:
-        requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d %H-%M-%S+00:00")
-    thumbnailPath = "%s/%s_%s.thumbnail.jpg" % (settings.IMAGE_CAPTURE_DIR, flightName, time)
-    fullSizePath = "%s/%s_%s.jpg" % (settings.IMAGE_CAPTURE_DIR, flightName, time)
     noImagePath = "%s/xgds_video/images/NoImage.png" % settings.STATIC_ROOT
     noImageThumbnailPath = "%s/xgds_video/images/NoImage.thumbnail.png" % \
                            settings.STATIC_ROOT
+
+    if not settings.XGDS_VIDEO_STILLS_ENABLED:
+        if thumbnail:
+            return buildImageResponse(noImageThumbnailPath, noImageThumbnailPath)
+        else:
+            return buildImageResponse(noImagePath, noImagePath)
+
+    try:
+        requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d_%H-%M-%S")
+    except:
+        try:
+            requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d %H-%M-%S+00:00")
+        except:
+            requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S+00:00")
+
+    thumbnailPath = "%s/%s_%s.thumbnail.jpg" % (settings.IMAGE_CAPTURE_DIR, flightName, time)
+    fullSizePath = "%s/%s_%s.jpg" % (settings.IMAGE_CAPTURE_DIR, flightName, time)
 
     # We generate full image and thumbnail together, so one check for 
     # existence should be OK.  If we don't find it, we generate one and cache it
@@ -209,27 +221,27 @@ def displayVideoStill(request, flightName=None, time=None, thumbnail=False, isDo
 
     # The image should now be there, but just in case, we catch exceptions
     if thumbnail:
-        try:
-            f = open(thumbnailPath, "r")
-            mimeType = "image/jpeg"
-        except IOError:
-            f = open(noImageThumbnailPath, "r")
-            mimeType = "image/jpeg"
+        thePath = thumbnailPath
+        default = noImageThumbnailPath
     else:
-        try:
-            f = open(fullSizePath, "r")
-            mimeType = "image/jpeg"
-        except IOError:
-            f = open(noImagePath, "r")
-            mimeType = "image/png"
-
-    imageBits = f.read()
-    f.close()
-    response = HttpResponse(imageBits, content_type=mimeType)
+        thePath = fullSizePath
+        default = noImagePath
+    response = buildImageResponse(thePath, default)
     if isDownload:
         response['Content-disposition'] = 'attachment; filename=%s' % os.path.basename(fullSizePath)
     return response
 
+def buildImageResponse(thePath, default):
+    # The image should now be there, but just in case, we catch exceptions
+    try:
+        f = open(thePath, "r")
+    except IOError:
+        f = open(default, "r")
+    mimeType = "image/jpeg"
+    imageBits = f.read()
+    f.close()
+    response = HttpResponse(imageBits, content_type=mimeType)
+    return response
 
 def showStillViewerWindow(request, flightName=None, time=None):
     if flightName is None:
