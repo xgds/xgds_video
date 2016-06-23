@@ -157,7 +157,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
     if settings.PYRAPTORD_SERVICE is True:
         (pyraptord, vlcSvc)
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
-        time.sleep(5)
+        time.sleep(2)
         pyraptord.updateServiceConfig(vlcSvc,
                                       {'command': vlcCmd,
                                        'cwd': recordedVideoDir})
