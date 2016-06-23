@@ -112,9 +112,14 @@ def findEndMarker(item):
     if re.match("#EXT-X-ENDLIST", item):
         return True
 
+def getSegmentPath(flightName, sourceName, number):
+    if sourceName:
+        return '%s_%s/Video/Recordings/Segment%03d/' % (flightName, sourceName, int(number))
+    else:
+        return '%s/Video/Recordings/Segment%03d/' % (flightName, int(number))
 
 def getIndexFileSuffix(flightName, sourceShortName, segmentNumber):
-    return '%s/Video/Recordings/Segment%03d/prog_index.m3u8' % (flightName, sourceShortName, int(segmentNumber))
+    return '%s/prog_index.m3u8' % getSegmentPath(flightName, sourceShortName, segmentNumber)
 
 
 def getSegmentsFromEndForDelay(delayTime, indexPath):

@@ -51,6 +51,7 @@ def emptySegmentDir(recordedVideoDir):
         return True
     return False
 
+
 def getVideoSource(sourceName):
     videoSource = VIDEO_SOURCE_MODEL.get().objects.get(shortName=sourceName)
     return videoSource

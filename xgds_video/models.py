@@ -154,6 +154,7 @@ class AbstractVideoSegment(models.Model):
         This is used when restarting video because it died.
         """
         if force or not self.endTime:
+            dir = os.path.join(settings.RECORDED_VIDEO_DIR_BASE, util.getSegmentPath(self.episode.shortName, self.source.name, self.segNumber))
             videoChunks = glob("%s/*.ts" % dir)
             videoChunks = sorted(videoChunks, key = lambda chunk: int(re.sub(".+prog_index-(\d+).ts", "\\1", chunk)))
             if len(videoChunks) > 0:

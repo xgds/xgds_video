@@ -304,9 +304,10 @@ def getChunkfilePathAndOffsetForTime(flightName, time):
     segmentOffset = (time - s.startTime).total_seconds()
     # Build path to m3u8 file
     # e.g. ~/xgds_plrp/data/20140623A_OUT/Video/Recordings
-    chunkIndexPath = "%s/%s/Video/Recordings/Segment%03d/%s" % (
-        settings.RECORDED_VIDEO_DIR_BASE,
-        flightName, s.segNumber, settings.INDEX_FILE_NAME)
+    chunkIndexPath = os.path.join(settings.RECORDED_VIDEO_DIR_BASE, getSegmentPath(flightName, None, s.segNumber), settings.INDEX_FILE_NAME)
+#     chunkIndexPath = "%s/%s/Video/Recordings/Segment%03d/%s" % (
+#         settings.RECORDED_VIDEO_DIR_BASE,
+#         flightName, s.segNumber, settings.INDEX_FILE_NAME)
     try:
         chunkList = m3u8.load(chunkIndexPath).segments
     except IOError:
