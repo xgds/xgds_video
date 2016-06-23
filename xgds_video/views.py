@@ -432,14 +432,12 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         return redirect(reverse('error'))
 
     if episode:
-        # print 'FOUND EPISODE %s' % episode.shortName
         if not flightName:
             flightName = episode.shortName
 
     # get the segments
     segments = episode.videosegment_set.all()
     if not segments:
-        print 'NO SEGMENTS for %s ' %  flightName
         msg = 'Video segments not found '
         if flightName:
             msg = msg + flightName
@@ -483,16 +481,14 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4, cls=DatetimeJsonEncoder)
     episodeJson = json.dumps(episode.getDict())
 
-    isLive = False
     theTemplate = 'xgds_video/video_recorded_playbacks.html'
     if active:
         theTemplate = 'xgds_video/video_active_playbacks.html'
-        isLive = True
 
     ctx = {
         'segmentsJson': segmentsJson,
         'episode': episode,
-        'isLive': isLive,
+        'isLive': active,
         'episodeJson': episodeJson,
         'noteTimeStamp': requestedTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
         'sources': sources,

@@ -194,7 +194,11 @@ $.extend(xgds_video,{
 			//  force an initial seek to buffer data
 			xgds_video.options.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
 			for (var source in xgds_video.options.displaySegments) {
-				jwplayer(source).playlistItem(0).seek(0);
+                       if (xgds_video.options.hasMasterSlider){
+					jwplayer(source).playlistItem(0).seek(0);
+				} else {
+			jwplayer(source).playlistItem(xgds_video.options.displaySegments[source].length - 1);
+	}
 			}
 		}
 
