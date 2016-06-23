@@ -119,6 +119,11 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
         if not emptySegmentDir(recordedVideoDir):
             segmentNumber = segmentNumber + 1
             recordedVideoDir = os.path.join(recordingDir, 'Segment%03d' % segmentNumber)
+
+        # adjust start and end times for all prio segments
+        existingSegments = SEGMENT_MODEL.get().objects.filter(source=source,episode=episode)
+        for segment in existingSegments:
+            segment.adjustSegmentTimes()
     except:
         segmentNumber = 0
         recordedVideoDir = os.path.join(recordingDir, 'Segment%03d' % segmentNumber)
@@ -135,10 +140,6 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
         videoSettings.height = videoFeed.settings.height
         videoSettings.save()
 
-    # adjust start and end times for all prio segments
-    existingSegments = SEGMENT_MODEL.get().objects.filter(source=source,episode=episode)
-    for segment in existingSegments:
-        segment.adjustSegmentTimes()
     videoSegment, created = SEGMENT_MODEL.get().objects.get_or_create(directoryName="Segment",
                                                                       segNumber=segmentNumber,
                                                                       indexFileName="prog_index.m3u8",
