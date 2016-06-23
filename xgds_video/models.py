@@ -14,6 +14,14 @@
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
 
+from glob import glob
+import time
+import os
+import m3u8
+import pytz
+import re
+from datetime import datetime
+
 from django.db import models
 from geocamUtil.models import UuidField
 from django.conf import settings
@@ -139,6 +147,37 @@ class AbstractVideoSegment(models.Model):
     source = 'set to DEFAULT_SOURCE_FIELD() or similar in derived classes'
     episode = 'set to DEFAULT_EPISODE_FIELD() or similar in derived classes'
     uuid = UuidField()
+
+    def adjustSegmentTimes(self, force=False):
+        """ Read through the ts files in this segment's directory
+        and calculate end time.
+        This is used when restarting video because it died.
+        """
+        if force or not self.endTime:
+            videoChunks = glob("%s/*.ts" % dir)
+            videoChunks = sorted(videoChunks, key = lambda chunk: int(re.sub(".+prog_index-(\d+).ts", "\\1", chunk)))
+            if len(videoChunks) > 0:
+                (mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(videoChunks[0])
+                try:
+                    index = m3u8.load('%s/%s' % (dir, self.indexFileName))
+                    m3u8segment = index.segments[0]
+                    duration = m3u8segment.duration
+                except:
+                    #TODO call method to clear out giant file and kill vlc if needed
+                    print "NO INDEX.M3U8 FILE for segment %s %d" % (self.episode.shortName, self.segNumber)
+                    return (self.startTime, self.endTime)
+                
+                startTime = mtime - duration
+                startDT = datetime.fromtimestamp(startTime, pytz.utc)
+                (mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(videoChunks[-1])
+                endTime = mtime
+                endDT = datetime.fromtimestamp(endTime, pytz.utc)
+                print "Segment: Start: %s End: %s" % (startDT, endDT)
+                self.startTime = startDT
+                self.endTime = endDT
+                self.save()
+        return (self.startTime, self.endTime)
+        
 
     def getDict(self):
         return {"directoryName": self.directoryName,
