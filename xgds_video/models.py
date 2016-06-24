@@ -21,11 +21,13 @@ import m3u8
 import pytz
 import re
 from datetime import datetime
+from glob import glob
 
 from django.db import models
 from geocamUtil.models import UuidField
 from django.conf import settings
 from xgds_video import util
+from xgds_video import recordingUtil
 
 #  pylint: disable=C1001,E1101
 
@@ -164,9 +166,9 @@ class AbstractVideoSegment(models.Model):
                     m3u8segment = index.segments[0]
                     duration = m3u8segment.duration
                 except:
-                    #TODO call method to clear out giant file and kill vlc if needed
                     print "NO INDEX.M3U8 FILE for segment %s %d" % (self.episode.shortName, self.segNumber)
-                    return (self.startTime, self.endTime)
+                    recordingUtil.stopRecordingAndCleanSegments(self.source, videoChunks)
+                    return (None, None)
                 
                 startTime = mtime - duration
                 startDT = datetime.fromtimestamp(startTime, pytz.utc)

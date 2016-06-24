@@ -163,7 +163,6 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
     if settings.PYRAPTORD_SERVICE is True:
         (pyraptord, vlcSvc)
         stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
-        time.sleep(2)
         pyraptord.updateServiceConfig(vlcSvc,
                                       {'command': vlcCmd,
                                        'cwd': recordedVideoDir})
@@ -188,6 +187,11 @@ def stopRecording(source, endTime):
         return 'STOPPED PYCRORAPTOR SERVICES: ' + vlcSvc
     return 'NO PYRAPTORD: ' + vlcSvc
 
+def stopRecordingAndCleanSegments(source, videoChunks):
+    # call method to clear out giant file and kill vlc if needed
+    stopRecording(source, datetime.datetime.utcnow())
+    for chunk in videoChunks:
+        os.remove(chunk)
 
 def getRecordedVideoDir(name):
     recordedVideoDir = ("%s/%s/Video/Recordings/" %
