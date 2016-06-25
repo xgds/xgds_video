@@ -194,21 +194,22 @@ $.extend(xgds_video,{
 			//  force an initial seek to buffer data
 			xgds_video.options.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
 			for (var source in xgds_video.options.displaySegments) {
-                       if (xgds_video.options.hasMasterSlider){
+                if (xgds_video.options.hasMasterSlider){
 					jwplayer(source).playlistItem(0).seek(0);
 				} else {
-			jwplayer(source).playlistItem(xgds_video.options.displaySegments[source].length - 1);
-	}
+					jwplayer(source).playlistItem(xgds_video.options.displaySegments[source].length - 1);
+				}	
 			}
 		}
 
 		//find the first segment and play it.
-		var startTime = xgds_video.options.firstSegment.startTime;
-		for (var source in xgds_video.options.displaySegments) {
-			var segments = xgds_video.options.displaySegments[source];
-			if (startTime >= segments[0].startTime) {
-				jwplayer(source).pause(true);
-			} else {
+		if (xgds_video.options.hasMasterSlider){
+			var startTime = xgds_video.options.firstSegment.startTime;
+			for (var source in xgds_video.options.displaySegments) {
+				var segments = xgds_video.options.displaySegments[source];
+				if (startTime >= segments[0].startTime) {
+					jwplayer(source).pause(true);
+				}
 			}
 		}
 	},
