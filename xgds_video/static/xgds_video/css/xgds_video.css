@@ -1,5 +1,18 @@
 /* css for xgds_video */
+.player_container {
+	height: 100%;
+	width: 100%;
+}
 
+.player {
+	height: 100%;
+	width: 100%;
+	min-height: 200px;
+}
+
+.locomote-player {
+        height: 100%;
+      }
 ui-wrapper {
 	padding-bottom: 0px !important;
 }

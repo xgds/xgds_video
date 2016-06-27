@@ -53,12 +53,10 @@
              		{% include "xgds_video/video_notes.html" with data=noteform source=source.shortName STATIC_URL=STATIC_URL %}
              	</section>
              	<!--embed the video-->
-             	<section>
-              		<div id="player_container" > <!-- float-left">  -->
+              		<div class="player_container" > <!-- float-left">  -->
              			<div id="{{ source.shortName }}" class="player"></div>
              		</div> <!--  player-container -->
              		<div id="{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
-             	</section>
             </div><!--  item -->
         </div>
         {% endfor %}
@@ -82,14 +80,6 @@
 {{ block.super }}
     {% include "xgds_notes2/NoteCSS.html" %}
     {% include "xgds_video/VideoCSS.html" %}
-<style type="text/css">
-      .player {
-        height: 427px;
-      }
-       .locomote-player {
-        height: 100%;
-      }
-    </style>
 {% endblock cssExtras %}
 
 {% block scripts %}
