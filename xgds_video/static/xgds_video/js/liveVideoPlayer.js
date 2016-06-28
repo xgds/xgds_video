@@ -15,6 +15,25 @@
 //__END_LICENSE__
 
 var xgds_video = xgds_video || {};
+var locomotePlayers = {};
+
+// Mouse handling callbacks for refresh button to restart player if it gets stuck
+$(".icon-arrows-ccw").mousedown(function(event) {
+    event.target.style.color = "#FF0000";
+})
+
+$(".icon-arrows-ccw").mouseup(function(event) {
+    event.target.style.color = "";
+})
+
+$(".icon-arrows-ccw").click(function() {
+    playerId = event.target.id.split("_")[0];
+    player = locomotePlayers[playerId];
+    streamUrl = player.streamStatus().streamURL
+    player.stop();
+    player.play(streamUrl);
+})
+
 $.extend(xgds_video,{
 	locomotes: [],
 	locomoteConfig: {keepAlive:60, 
@@ -22,6 +41,7 @@ $.extend(xgds_video,{
 					 scaleUp:true},
 	buildLocomotePlayer: function(sourceName, url){
 		var locomote = new Locomote(sourceName, STATIC_URL + 'locomote/dist/Player.swf');
+	        locomotePlayers[sourceName] = locomote;
 		xgds_video.locomotes.push(locomote);
 		locomote.on('apiReady', function() {
 			locomote.config(xgds_video.locomoteConfig);
