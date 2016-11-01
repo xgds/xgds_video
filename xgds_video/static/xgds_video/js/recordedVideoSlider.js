@@ -168,7 +168,7 @@ $.extend(xgds_video,{
 			xgds_video.setSliderTimeLabel(startMoment);
 			xgds_video.createSliderLegend(false);
 		} else {
-			alert('The end time of video segment not available.' +
+			alert('The end time of a video segment is not available.' +
 			'Cannot setup slider');
 		}
 	},
