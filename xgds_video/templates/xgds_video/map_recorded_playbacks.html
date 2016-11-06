@@ -10,6 +10,10 @@
     {{ block.super }}
 {% endblock %}
 
+{% block sitemenu-content-secondary %}
+	{% include "xgds_planner2/planner2_subnav.html" %}
+{% endblock %}
+
  {% block cssExtras %}
  {{ block.super }}
     {% include "xgds_video/VideoCSS.html" %}
@@ -72,11 +76,13 @@
 	   			{% endif %}
 	   		</table>
 	   		</div>
+	   		{% block jumpto %}
 	   		<div id="seekTimeBox" >
 				<label for="seekTime">Jump to:</label>
 	   			<input  id="seekTime" type="text" name="text-input" placeholder="HH:MM:SS" class="stylish"/>
 	   			<button type="submit" class="mybutton small" id="seekButton" onclick='xgds_video.seekCallBack()'> Go </button>
 	   		</div>
+	   		{% endblock jumpto %}
    		</div>
 
  		{% endblock topStuff %}
