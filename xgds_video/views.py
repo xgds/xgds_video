@@ -43,8 +43,10 @@ from xgds_notes2.forms import NoteForm
 
 from geocamUtil.loader import LazyGetModelByName, getClassByName
 from django.conf import settings
+from xgds_core.views import get_handlebars_templates
 from xgds_video import util
 from xgds_video.models import *  # pylint: disable=W0401
+from xgds_map_server.views import getSearchForms
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfRunning
@@ -54,6 +56,8 @@ SETTINGS_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 FEED_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_FEED_MODEL)
 SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
+NOTE_MODEL = LazyGetModelByName(getattr(settings, 'XGDS_NOTES_NOTE_MODEL'))
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -445,6 +449,8 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
             return recordedVideoError(request, msg)
 
     sourceShortName = str(sourceShortName)
+    if sourceShortName == 'None':
+        sourceShortName = None
     if sourceShortName:
         try:
             source = SOURCE_MODEL.get().objects.get(shortName=sourceShortName)
@@ -482,10 +488,13 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4, cls=DatetimeJsonEncoder)
     episodeJson = json.dumps(episode.getDict())
 
-    theTemplate = 'xgds_video/video_recorded_playbacks.html'
+    theTemplate = 'xgds_video/map_recorded_playbacks.html'
     if active:
-        theTemplate = 'xgds_video/video_active_playbacks.html'
+        theTemplate = 'xgds_video/map_active_playbacks.html'
 
+    noteModelName = str(NOTE_MODEL.get().cls_type())
+    noteForm = getClassByName(settings.XGDS_NOTES_BUILD_NOTES_FORM)({'vehicle__name':sourceShortName,
+                                                                     'flight__group_name':flightName})
     ctx = {
         'segmentsJson': segmentsJson,
         'episode': episode,
@@ -496,14 +505,17 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         'flightName': flightName,
         'flightTZ': flightTimezone,
         'sourceVehicle': json.dumps(sourceVehicle),
-        'SSE': settings.XGDS_SSE
+        'SSE': settings.XGDS_SSE,
+        'modelName': noteModelName,
+        'searchModelDict': {noteModelName:settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]},
+        'searchForms': {noteModelName: [noteForm,settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]] },
+        'app': 'xgds_map_server/js/search/mapViewerSearchApp.js',
+        'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
     }
 
     if settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT:
         extraVideoContextFn = getClassByName(settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT)
         extraVideoContextFn(ctx)
-
-    
 
     return render_to_response(theTemplate,
                               ctx,

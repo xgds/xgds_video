@@ -138,6 +138,7 @@ $.extend(xgds_video,{
 		xgds_video.options.seekFlag = true;
 		var currTime = xgds_video.masterSlider.slider('value'); //in seconds
 		currTime = new Date(currTime * 1000); //convert to javascript date
+		console.log('SLIDER STOPPED, go to ' + currTime);
 		for (var source in xgds_video.options.displaySegments) {
 			xgds_video.jumpToPosition(currTime, source); //sourceName);
 			//XXX take care of the case where seek time is not within playable range.

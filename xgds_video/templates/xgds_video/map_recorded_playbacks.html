@@ -1,0 +1,276 @@
+{% extends 'xgds_notes2/map_record_notes.html' %}
+
+{% load nav %}
+{% load siteFrames %}
+{% load xgds_data_extras %}
+{% block siteSection %}Video{% endblock %}
+
+{% block nav %}
+    {% nav "xgds_video_recorded" %}
+    {{ block.super }}
+{% endblock %}
+
+ {% block cssExtras %}
+ {{ block.super }}
+    {% include "xgds_video/VideoCSS.html" %}
+ {% endblock cssExtras %}
+
+ {% block scripts %}
+	{{block.super}}
+	{% include "xgds_video/VideoJS.html" with JWPLAYER_KEY=settings.JWPLAYER_KEY STATIC_URL=STATIC_URL %}
+	{% block videoscripts %}
+	{% endblock videoscripts %}
+{% endblock scripts %}
+ 
+ {% block postscripts %}
+ {% endblock postscripts %}
+ 
+ {% block extraAppOptions %}
+ 	showDetailView:true,
+ {% endblock extraAppOptions %}
+ 
+ {% block preDashboard %}
+ 	{% block errorMessages %}
+	{% if messages %}
+	<div id="errorMessagesDiv">
+	    <ul class="messages" id="errorMessage" style="color:red;">
+	    {% for message in messages %}
+	        <li>{% if message.tags %} {{ message.tags }}: {% endif %}  {{ message }}</li>
+	    {% endfor %}
+	    </ul>
+	</div>
+	{% endif %}
+	{% endblock errorMessages %}
+	
+	{% if segmentsJson %}
+    	{% block topStuff %}
+    	<div id="topStuff" >
+    		<div id="controllers" > 
+    			<br/>
+    			<div class="controller_div">
+	          	<a class="btn btn-info" id="playbuttonLink" href="#" onclick="xgds_video.playButtonCallback()">
+	              <i id="playbutton" class="icon-play"></i>
+	              </a>
+	            <a class="btn btn-info" id="pausebuttonLink" href="#" onclick="xgds_video.pauseButtonCallback()">
+	              <i id="pausebutton" class="icon-pause active"></i>
+	              </a>
+	             </div>
+	          </div>
+	    	<div id="infoTable" >
+	    	<table>
+	    		{% if episode %}
+		   			<tr>
+		   				<td> <b> {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }}: </b> </td>
+		   				<td> {{ episode.shortName }} </td>
+		   			</tr>
+	   			{% endif %}
+	   			{% if not isLive %}
+	   			<tr>
+	   				<td>Local Time: </td>
+	   				<td> <span id="sliderTimeLabel"></span></td>
+	   			</tr>
+	   			{% endif %}
+	   		</table>
+	   		</div>
+	   		<div id="seekTimeBox" >
+				<label for="seekTime">Jump to:</label>
+	   			<input  id="seekTime" type="text" name="text-input" placeholder="HH:MM:SS" class="stylish"/>
+	   			<button type="submit" class="mybutton small" id="seekButton" onclick='xgds_video.seekCallBack()'> Go </button>
+	   		</div>
+   		</div>
+
+ 		{% endblock topStuff %}
+ 		
+ 		{% block ribbonSlider %}
+ 		<fieldset id="videoFieldset">
+ 			 {% if not isLive %}
+ 			  <div id="ribbon"></div>
+ 			  {% endif %}
+		 	  <div id="masterSlider" class="masterSlider" ><br/></div>
+ 		</fieldset>
+ 		{% endblock ribbonSlider %}
+ 	{% endif %}
+{% endblock preDashboard %}
+
+{% block preMap %}
+
+{% if segmentsJson %}
+        {% block videoSources %}
+        {% for source in sources %}
+        <div id="source{{forloop.counter}}-gridstack-item" class="grid-stack-item" 
+			data-gs-x="{% if forloop.counter|modulo:2 == 0 %}3{% else %}0{% endif %}" data-gs-y="0"
+        	data-gs-width="{% if sources|length > 1 %}3{% else %}6{% endif %}" data-gs-height="{% if sources|length > 1 %}2{% else %}4{% endif %}" >
+        	<div class="grid-stack-item-content video-div" id="item{{forloop.counter}}" style="background-color:{{ source.displayColor }};">
+                <i class="icon-lock pinDiv warning"></i>
+				<i class="icon-cancel-circled"></i>
+        
+	            <div class="buttons">
+	                 <div class="toprow-left"><b>{{ source.name }}</b></div>
+	                 <a class="mybutton toprow-right small" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{% if sources|length > 1 %}{{flightName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
+                     <!-- <a class="mybutton toprow-right small" href="#" onClick="showStillViewer('{{flightName}}', '{{source.shortName}}', getUrlFormatPlayerTime('{{source.shortName}}'));">Still</a> -->
+                     {% with feed=source.feed_set.all.0.shortName %}
+	                 {% if feed %}
+	                     <a class="mybutton" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>
+	                 {% endif %}
+	                 {% endwith %}
+	            </div>
+				<section id="{{source.shortName}}_noteInput">
+             		{% include "xgds_video/video_notes.html" with data=source.form source=source.shortName STATIC_URL=STATIC_URL %}
+             	</section>
+             	<!--embed the video-->
+             	<section>
+              		<div id="player_container" class="row"> <!-- float-left">  -->
+             			<div id="{{ source.shortName }}" class="eleven columns"></div>
+             		</div> <!--  player-container -->
+             		<div id="{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
+             	</section>
+             	{% if not isLive %}
+             	<section>
+             		<div class="float-left">
+                 	Local Time: <span id="testSiteTime{{ source.shortName }}">0</span>
+             		</div>
+             	</section>
+             	{% endif %}
+            </div><!--  item -->
+         </div><!--  gridstack item -->
+        {% endfor %}
+        {% endblock videoSources %}
+
+{% endif %}
+
+{% block searchDiv %}
+<div id="search-gridstack-item" class="grid-stack-item" 
+		data-gs-x="4" data-gs-y="12"
+        data-gs-width="3" data-gs-height="2" hidden="true">
+        <div class="grid-stack-item-content" id="search-gridstack-item-content" >
+	        <i class="icon-lock pinDiv warning"></i>
+	    	<i class="icon-cancel-circled"></i>
+			<div id="searchDiv" hidden="true"></div>
+		</div>
+</div>
+{% endblock searchDiv %}
+
+{% block searchResultsDiv %}
+<div id="search-results-gridstack-item" class="grid-stack-item" 
+		data-gs-x="0" data-gs-y="4"
+        data-gs-width="3" data-gs-height="3" >
+        <div class="grid-stack-item-content" id="search-results-gridstack-item-content" >
+        <i class="icon-lock pinDiv warning"></i>
+		<i class="icon-cancel-circled"></i>
+		<i class="icon-arrows-ccw right" title="Reload Latest" id="reloadSearchResults"></i>
+			<div id="searchResultsDiv"></div>
+		</div>
+</div>
+{% endblock searchResultsDiv %}
+
+{% endblock preMap %}
+
+{% block jsInit %}
+{{ block.super }}
+{% block setupIndexUrl %}
+var indexFileUrl = null;
+
+{% if episode %}
+    indexFileUrl = "{% url 'xgds_video_index_file' 'flightName' 'sourceShortName' 'segmentIndex' %}";
+{% endif %}
+{% endblock setupIndexUrl %}
+
+{% block initSegments %}
+{% if segmentsJson %}
+	{% block xgds_video_options %}
+	var xgds_video = xgds_video || {};
+    var xgds_video_options = { playFlag: false,
+                       		   seekFlag: false,
+		                       initialState: false,
+		                       seekOffsetList: {},
+		                       episode: {{ episodeJson|safe }},
+		                       displaySegments: {{ segmentsJson|safe }},
+		                       firstSegment: null,
+		                       lastSegment: null,
+		                       onTimePlayer: "{{ sources.0.shortName }}",
+		                       movingSlider: false, //if slider is moving, turn off onTime call
+		                       seekOffsetList: {}, //needed for seeking vid in flash mode,
+		                       indexFileUrl: indexFileUrl,
+			                   noteTimeStamp: xgds_video.toJsDateTime({{ noteTimeStamp|safe }}),
+			                   flightName: {% if flightName %} "{{ flightName }}" {% else %} null {% endif %},
+			                   sourceVehicle: {{ sourceVehicle|safe }},
+			                   timeZone: '{{ flightTZ }}',
+        					   hasMasterSlider:true
+		                     };
+	{% endblock xgds_video_options %}
+
+    {% if episode %}
+    	xgds_video.convertJSONtoJavascriptDateTime(xgds_video_options.episode);
+	{% endif %}
+
+    {% for source in sources %}
+        var segments = xgds_video_options.displaySegments["{{ source.shortName }}"];
+        if ((segments != undefined) && (segments.length > 0)) {
+            $.each(segments, function(id) {
+                var segment = segments[id];
+                segment.startTime = xgds_video.toJsDateTime(segment.startTime);
+                segment.endTime = xgds_video.toJsDateTime(segment.endTime);
+
+                if(xgds_video_options.firstSegment == null) {
+                    xgds_video_options.firstSegment = segment;
+                }
+                if (xgds_video_options.lastSegment == null) {
+                    xgds_video_options.lastSegment = segment;
+                }
+
+                if (segment.startTime) {
+                    if(segment.startTime < xgds_video_options.firstSegment.startTime) {
+                        xgds_video_options.firstSegment = segment;
+                    }
+                }
+                if (segment.endTime) {
+                    if (segment.endTime > xgds_video_options.lastSegment.endTime) {
+                        xgds_video_options.lastSegment = segment;
+                    }
+                }
+            });
+        }
+    {% endfor %}
+    {% endif %}
+    {% endblock initSegments %}
+
+	{% block hookControls %}
+	{% if segmentsJson %}
+	xgds_video.initialize(xgds_video_options);
+    //set up the slider and the player
+    if (xgds_video.options.hasMasterSlider){
+    	xgds_video.setupSlider();
+    }
+    xgds_video.setupJWplayer({"mute":true}, "100%");
+    {% endif %}
+    {% endblock hookControls %}
+    
+    {% block lastJsInit %}
+    $(function() {
+		xgds_video.startPlayers();
+		var videoContainers = $(".video-div");
+		for (var i=0; i < videoContainers.length; i++){
+				xgds_notes.setupNotesUI($(videoContainers[i]));
+		}
+		
+		//TODO for now we are removing the search from gridstack.  If we want search on this page we will have to add it back.
+		var sgi = $("#search-gridstack-item");
+		xgds_gridstack.THE_GRIDSTACK.removeWidget(sgi);
+	});
+	{% endblock lastJsInit %}
+
+{% endblock jsInit %}
+
+{% block eventTimeFunction %}
+{% endblock eventTimeFunction %}
+
+{% block cleanDataFunction %}
+xgds_notes.cleanData = function(data, containerDiv){
+	var columns = app.options.searchModels.Note.columns;
+	result = [];
+	for (var i=0; i < columns.length; i++) {
+		result.push(data[columns[i]]);
+	}
+	return result;
+}
+{% endblock cleanDataFunction %}
