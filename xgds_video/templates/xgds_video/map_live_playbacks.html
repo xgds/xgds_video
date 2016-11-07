@@ -1,0 +1,70 @@
+{% extends 'xgds_video/map_recorded_playbacks.html' %}
+{% load nav %}
+{% load multiply %}
+
+{% block nav %}
+    {% nav "xgds_video_live" %}
+    {{ block.super }}
+{% endblock %}
+
+	
+	{% block topStuff %}
+    	<div id="topStuff" >
+	    	<div id="infoTable" >
+	    	<table>
+	    		{% if episode %}
+		   			<tr>
+		   				<td> <b> Live Video for {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }}: </b> </td>
+		   				<td> {{ episode.shortName }} </td>
+		   			</tr>
+	   			{% endif %}
+	   		</table>
+	   		</div>
+   		</div>
+
+ {% endblock topStuff %}
+ 
+ 	{% block videodivs %}
+
+        {% for source, noteform in zipped %}
+        <div id="view-gridstack-item-{{source.name}}" class="grid-stack-item" 
+		data-gs-x="{{ forloop.counter0|multiply:3 }}" data-gs-y="0"
+        data-gs-width="{% if zipped|length > 1 %}3{% else %}6{%endif %}" data-gs-height="2" >
+        <div class="grid-stack-item-content" id="view-gridstack-item-content-{{source.name}}" style="background-color:{{ source.displayColor }};">
+        		<i class="{% if zipped|length > 1 %}icon-lock{% else %}icon-lock {% endif %} pinDiv warning"></i>
+			<i class="icon-arrows-ccw right" title="Refresh Video Player" id="{{source.shortName}}_refreshVideoPlayer"></i>
+	            <div class="buttons">
+	                 <div class="toprow-left"><b>{{ source.name }}</b>{% if zipped|length == 1 %}
+             		<span class="hint">Doubleclick on the video to make it full screen.</span>
+             		{% endif %}</div>
+	                 <a class="mybutton toprow-right small" href="{% url 'xgds_video_live_source' source.shortName %}" target="{% if zipped.count > 1 %}{{episode.shortName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
+	            </div>
+				<section id="{{source.shortName}}_noteInput">
+             		{% include "xgds_video/video_notes.html" with data=noteform source=source.shortName STATIC_URL=STATIC_URL %}
+             	</section>
+             	<!--embed the video-->
+              		<div class="player_container" > <!-- float-left">  -->
+             			<div id="{{ source.shortName }}" class="player"></div>
+             		</div> <!--  player-container -->
+             		<div id="{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
+            </div><!--  item -->
+        </div>
+        {% endfor %}
+
+	{% endblock videodivs %}
+ 
+{% block scripts %}
+	{{block.super}}
+	<script type="text/javascript" src='{{EXTERNAL_URL}}locomote/dist/locomote.min.js'></script>
+	{% block videoscripts %}
+	<script type="text/javascript" src='{{STATIC_URL}}xgds_video/js/liveVideoPlayer.js'></script>
+	<script type="text/javascript" src='{{STATIC_URL}}xgds_notes2/js/recordedNotesTable.js'></script>
+    {% endblock videoscripts %}
+{% endblock %}
+
+{% block jsInitVideo %}
+	{% for source, noteForm in zipped %}
+		xgds_video.buildLocomotePlayer('{{source.name}}', '{{source.videofeed_set.first.realtimeUrl}}');
+		xgds_notes.setupNotesUI($("#{{source.name}}_noteInput"));
+	{% endfor %}
+{% endblock jsInitVideo %}

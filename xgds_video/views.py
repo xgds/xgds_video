@@ -526,7 +526,6 @@ def displayLiveVideo(request, sourceShortName=None):
     """ Directly display RTSP feeds for the active episode.  
     This will either include all sources or be for a single source if it is passed in..
     """
-
     GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
     episode = GET_ACTIVE_EPISODE_METHOD()
     if not episode:
@@ -548,17 +547,29 @@ def displayLiveVideo(request, sourceShortName=None):
         for index,source in enumerate(sources):
             noteForms.append(buildNoteForm([episode], source, request, {'index':index}))
     
+    noteModelName = str(NOTE_MODEL.get().cls_type())
+    noteForm = getClassByName(settings.XGDS_NOTES_BUILD_NOTES_FORM)({'vehicle__name':sourceShortName,
+                                                                     'flight__group_name':episode.shortName})
+   
     ctx = {
         'episode': episode,
+        'isLive': True,
         'zipped': zip(sources, noteForms),
-        'SSE': settings.XGDS_SSE
+        'SSE': settings.XGDS_SSE,
+        'modelName': noteModelName,
+        'flightName': episode.shortName,
+        'flightTZ': settings.TIME_ZONE,
+        'searchModelDict': {noteModelName:settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]},
+        'searchForms': {noteModelName: [noteForm,settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]] },
+        'app': 'xgds_map_server/js/search/mapViewerSearchApp.js',
+        'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
     }
 
     if settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT:
         extraVideoContextFn = getClassByName(settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT)
         extraVideoContextFn(ctx)
 
-    theTemplate = 'xgds_video/video_live_playbacks.html'
+    theTemplate = 'xgds_video/map_live_playbacks.html'
 
     return render_to_response(theTemplate,
                               ctx,

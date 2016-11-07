@@ -30,7 +30,7 @@
  {% endblock postscripts %}
  
  {% block extraAppOptions %}
- 	showDetailView:true,
+ 	showDetailView:false,
  {% endblock extraAppOptions %}
  
  {% block preDashboard %}
@@ -100,6 +100,7 @@
 
 {% block preMap %}
 
+{% block videodivs %}
 {% if segmentsJson %}
         {% block videoSources %}
         {% for source in sources %}
@@ -141,8 +142,8 @@
          </div><!--  gridstack item -->
         {% endfor %}
         {% endblock videoSources %}
-
 {% endif %}
+{% endblock videodivs %}
 
 {% block searchDiv %}
 <div id="search-gridstack-item" class="grid-stack-item" 
@@ -173,7 +174,9 @@
 
 {% block jsInit %}
 {{ block.super }}
+{% block jsInitVideo %}
 {% block setupIndexUrl %}
+
 var indexFileUrl = null;
 
 {% if episode %}
@@ -264,6 +267,8 @@ var indexFileUrl = null;
 		xgds_gridstack.THE_GRIDSTACK.removeWidget(sgi);
 	});
 	{% endblock lastJsInit %}
+	
+	{% endblock jsInitVideo %}
 
 {% endblock jsInit %}
 
