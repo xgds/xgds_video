@@ -265,6 +265,9 @@ var indexFileUrl = null;
 		//TODO for now we are removing the search from gridstack.  If we want search on this page we will have to add it back.
 		var sgi = $("#search-gridstack-item");
 		xgds_gridstack.THE_GRIDSTACK.removeWidget(sgi);
+		
+		// clear out the today button for recorded playbacks
+		$("#today").attr('checked', false);
 	});
 	{% endblock lastJsInit %}
 	
