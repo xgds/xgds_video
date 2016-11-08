@@ -350,7 +350,7 @@ def getSegmentForTime(flightName, time):
 
 
 def getTimezoneFromFlightName(flightName):
-    return 'America/Los_Angeles'
+    return settings.TIME_ZONE
 
 
 def getEpisodeSegmentsJson(request, flightName=None, sourceShortName=None):
