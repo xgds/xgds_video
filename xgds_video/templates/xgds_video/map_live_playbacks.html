@@ -31,7 +31,8 @@
 		data-gs-x="{{ forloop.counter0|multiply:3 }}" data-gs-y="0"
         data-gs-width="{% if zipped|length > 1 %}3{% else %}6{%endif %}" data-gs-height="2" >
         <div class="grid-stack-item-content" id="view-gridstack-item-content-{{source.name}}" style="background-color:{{ source.displayColor }};">
-        		<i class="{% if zipped|length > 1 %}icon-lock{% else %}icon-lock {% endif %} pinDiv warning"></i>
+        	<i class="icon-lock pinDiv warning"></i>
+        	<i class="icon-cancel-circled"></i>
 			<i class="icon-arrows-ccw right" title="Refresh Video Player" id="{{source.shortName}}_refreshVideoPlayer"></i>
 	            <div class="buttons">
 	                 <div class="toprow-left"><b>{{ source.name }}</b>{% if zipped|length == 1 %}
