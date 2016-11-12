@@ -41,11 +41,11 @@ $.extend(xgds_video,{
 					 scaleUp:true},
 	buildLocomotePlayer: function(sourceName, url){
 			var locomote = new Locomote(sourceName, STATIC_URL + 'locomote/dist/Player.swf');
-			locomote.muteSpeaker(); // for now, hardcode off
 	        locomotePlayers[sourceName] = locomote;
 		xgds_video.locomotes.push(locomote);
 		locomote.on('apiReady', function() {
 			locomote.config(xgds_video.locomoteConfig);
+			locomote.muteSpeaker();
 			locomote.play(url);
 		});
 		locomote.on('error', function(err) {
