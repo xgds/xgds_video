@@ -41,7 +41,7 @@ $.extend(xgds_video,{
 					 scaleUp:true},
 	buildLocomotePlayer: function(sourceName, url){
 			var locomote = new Locomote(sourceName, STATIC_URL + 'locomote/dist/Player.swf');
-			locomote.muteSpeakers(); // for now, hardcode off
+			locomote.muteSpeaker(); // for now, hardcode off
 	        locomotePlayers[sourceName] = locomote;
 		xgds_video.locomotes.push(locomote);
 		locomote.on('apiReady', function() {
