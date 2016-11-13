@@ -10,6 +10,7 @@ import subprocess
 import sys
 import dateutil.parser
 import glob
+import socket
 
 import django
 django.setup()
@@ -87,24 +88,22 @@ def checkTsFileCount(prevSegNum, segNum, prevTsCount, tsFileCount):
     '''
     Returns true if the ts file count is incrementing. False if count is the same.
     '''
-    incrementing = False
     # check if new ts file was created.
     if prevSegNum == segNum:  # still writing to the same segment. 
-        if tsFileCount - prevTsCount > 0:
-            # new ts file was written
-            incrementing = True
+        if (tsFileCount - prevTsCount) > 0:  # new ts file was written
+            return True
     else:  # new segment dir was created.
-        incrementing = True
-    return incrementing
+        return True
+    return False
 
 
-def setVideoRecorderStatus(subsystemNames):
+def setVideoRecorderStatus(resourceNames):
     refreshRateSeconds = 5
+    location = socket.gethostname()  # either shore or boat
+    
     while True:
-        for subsystemName in subsystemNames: 
+        for resourceName in resourceNames: 
             indexFileExists = False
-            subsystemInfo = subsystemName.split('_')
-            resourceName = subsystemInfo[0]
             # get the flight from resource (resource name is part of subsystem name)
             try: 
                 resource = BasaltResource.objects.get(name=resourceName)
@@ -113,6 +112,7 @@ def setVideoRecorderStatus(subsystemNames):
             except:
                 continue
             
+            subsystemName = resourceName + '_' + location + '_video_recorder'
             try: 
                 subsystemStatus = SubsystemStatus(subsystemName)
             except:
@@ -132,11 +132,12 @@ def setVideoRecorderStatus(subsystemNames):
             segNum = getActiveFlightLatestSegment().segNumber
             
             incrementingTs = checkTsFileCount(prevSegNum, segNum, prevTsCount, tsFileCount)
+            lastUpdatedTime = dateutil.parser.parse(jsonDict['lastUpdated'])
             if incrementingTs: 
-                jsonDict['elapsedTime'] = subsystemStatus.getElapsedTimeString(jsonDict['lastUpdated'])
+                jsonDict['elapsedTime'] = subsystemStatus.getElapsedTimeString(lastUpdatedTime)
                 jsonDict['lastUpdated'] = datetime.datetime.utcnow().isoformat()
                 
-            elapsedTimeSeconds = subsystemStatus.getElapsedTimeSeconds(jsonDict['lastUpdated'])
+            elapsedTimeSeconds = subsystemStatus.getElapsedTimeSeconds(lastUpdatedTime)
             statusColor = getColorLevel(indexFileExists, elapsedTimeSeconds, subsystemStatus)
             
             jsonDict['indexFileExists'] = indexFileExists
@@ -151,12 +152,12 @@ def setVideoRecorderStatus(subsystemNames):
 def main():
     import optparse
     parser = optparse.OptionParser('usage: %prog')
-    parser.add_option('-n', '--subsystemNames',
+    parser.add_option('-n', '--resourceNames',
                       default="",
                       help='name of the subsystem to ping')
     opts, _args = parser.parse_args()
-    subsystemNames = opts.subsystemNames.replace(' ', '').split(',')
-    setVideoRecorderStatus(subsystemNames)
+    resourceNames = opts.resourceNames.replace(' ', '').split(',')
+    setVideoRecorderStatus(resourceNames)
     
 
 if __name__ == '__main__':
