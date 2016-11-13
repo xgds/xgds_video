@@ -1,7 +1,7 @@
 {% with form=data %}
 {% if user.is_authenticated %}
 <button id="add_note_button" class="mybutton toprow-right small float_button add_note_button">Add Note</button>
-<div id="notes_content" class="tab-content active notes_content">
+<div id="notes_content" class="tab-content active notes_content notes_input_container">
 	<div class="notediv" id="notes_input" hidden>
 		<form id="create_note{{ form.index }}" class="create_note_form" action="" method="POST">
 			<input type="hidden" id="id_event_time" >
@@ -19,7 +19,10 @@
 			<div class="notecontainer" >
 				<textarea class="noteinput"  id="id_content{{form.index}}" type="text" name="content" maxlength="500" style="height:50px;" placeholder="Enter notes here"></textarea>
 		        <input class="taginput"  id="id_tags{{form.index}}" placeholder="Choose tags" type="text" />
-		        <input id="save_note{{form.index}}" type="submit" value="Save" class="mybutton noteSubmit small">
+		        <div style="display: inline-block; font-size: .8rem;">
+		        		<input id="save_note{{form.index}}" type="submit" value="Save" class="mybutton noteSubmit small"><br/>
+	        			<input id="id_keep_tags" name="keep_tags" type="checkbox" >Don't clear tags</input>
+	        		</div>
 	        </div>
 	  </form>
 	</div>
