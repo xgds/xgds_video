@@ -220,7 +220,7 @@ class VideoSegment(AbstractVideoSegment):
 
 class AbstractVideoEpisode(models.Model):
     # shortName: a short mnemonic code for the episode, suitable for embedding in a url
-    shortName = models.CharField(max_length=256, null=True, blank=True, help_text="Same as flight_group name. ie, 20130711B", db_index=True)
+    shortName = models.CharField(max_length=32, null=True, blank=True, help_text="Same as flight_group name. ie, 20130711B", db_index=True)
     startTime = models.DateTimeField(null=True, blank=True, help_text="Should be earlier than start times of all video segments associated with this episode. Automatically created when the flight is started.", db_index=True)  # second precision, utc
     endTime = models.DateTimeField(null=True, blank=True, help_text="Should be later than end times of all video segments associated with this episode. If end time is empty, the flight has not stopped.", db_index=True)
     uuid = UuidField(db_index=True)
@@ -273,7 +273,7 @@ class VideoSourceGroup(models.Model):
     A VideoSourceGroup represents an ordered list of VideoSource objects.
     """
     # name: human-readable title
-    name = models.CharField(max_length=128, blank=True, null=True, help_text="human-readable title", db_index=True)
+    name = models.CharField(max_length=64, blank=True, null=True, help_text="human-readable title", db_index=True)
     # shortName: a short mnemonic code suitable to embed in a URL
     shortName = models.CharField(max_length=32, blank=True, null=True, db_index=True, help_text="a short mnemonic code suitable to embed in a URL")
     uuid = UuidField(db_index=True)
@@ -306,11 +306,11 @@ class VideoSourceGroupEntry(AbstractVideoSourceGroupEntry):
 
 class AbstractStillFrame(models.Model):
     event_time = models.DateTimeField(null=True, blank=True, db_index=True)
-    name = models.CharField(max_length=255, null=True, blank=True)
+    name = models.CharField(max_length=128, null=True, blank=True, db_index=True)
     width = models.IntegerField(null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)
-    url = models.CharField(max_length=1024, null=True, blank=True)
-    thumbnailUrl = models.CharField(max_length=1024, null=True, blank=True)
+    url = models.CharField(max_length=512, null=True, blank=True)
+    thumbnailUrl = models.CharField(max_length=512, null=True, blank=True)
 
     @property
     def videoUrl(self):
