@@ -54,7 +54,7 @@ If plugin is missing, download <a href="https://support.google.com/chrome/answer
   		  		<option value="actual" selected="selected">Actual</option>	  
 		  		<option value="full">Full</option>
 			</select>
-	     	<a class="mybutton" href="{% url 'xgds_video_recorded' %}?source={{ feed.source.shortName }}">Recorded</a>
+	     	<a class="btn btn-primary" href="{% url 'xgds_video_recorded' %}?source={{ feed.source.shortName }}">Recorded</a>
 	     	</span>
 	     </div>
 	     {% if INCLUDE_NOTE_INPUT %}

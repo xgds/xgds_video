@@ -38,7 +38,7 @@
 	                 <div class="toprow-left"><b>{{ source.name }}</b>{% if zipped|length == 1 %}
              		<span class="hint">Doubleclick on the video to make it full screen.</span>
              		{% endif %}</div>
-	                 <a class="mybutton toprow-right small" href="{% url 'xgds_video_live_source' source.shortName %}" target="{% if zipped.count > 1 %}{{episode.shortName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
+	                 <a class="btn btn-primary toprow-right small" href="{% url 'xgds_video_live_source' source.shortName %}" target="{% if zipped.count > 1 %}{{episode.shortName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
 	            </div>
 				<section id="{{source.shortName}}_noteInput">
              		{% include "xgds_video/video_notes.html" with data=noteform source=source.shortName STATIC_URL=STATIC_URL %}
