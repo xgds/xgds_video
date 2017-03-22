@@ -1,11 +1,9 @@
 {% block sitemenu-content-secondary %}
 {% load nav %}
 <form id="streamForm">
-<div class="sitemenu-nav-secondary">
-	<ul>
-<!--		<li{% currentnav xgds_video_live %}><a href="{% url 'xgds_video_live' 'all' %}">Live</a></li> -->
-		<li {% currentnav xgds_video_recorded %}><a href="{% url 'xgds_video_recorded' %}">Recorded</a></li>
+	<ul class="nav nav-pills">
+<!--		<li class='nav-item {% currentnav xgds_video_live %}'><a  class='nav-link {% currentnav xgds_video_live %}' href="{% url 'xgds_video_live' 'all' %}">Live</a></li> -->
+		<li class='nav-item  {% currentnav xgds_video_recorded %}'><a class='nav-link  {% currentnav xgds_video_recorded %}' href="{% url 'xgds_video_recorded' %}">Recorded</a></li>
   	</ul>
-</div>
 </form>
 {% endblock %}
