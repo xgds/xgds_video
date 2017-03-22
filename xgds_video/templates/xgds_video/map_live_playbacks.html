@@ -31,9 +31,9 @@
 		data-gs-x="{{ forloop.counter0|multiply:3 }}" data-gs-y="0"
         data-gs-width="{% if zipped|length > 1 %}3{% else %}6{%endif %}" data-gs-height="2" >
         <div class="grid-stack-item-content" id="view-gridstack-item-content-{{source.name}}" style="background-color:{{ source.displayColor }};">
-        	<i class="icon-lock pinDiv warning"></i>
-        	<i class="icon-cancel-circled"></i>
-			<i class="icon-arrows-ccw right" title="Refresh Video Player" id="{{source.shortName}}_refreshVideoPlayer"></i>
+        	<i class="fa fa-lock pinDiv warning"></i>
+        	<i class="fa fa-window-close fa-lg"></i>
+			<i class="fa fa-refresh right" title="Refresh Video Player" id="{{source.shortName}}_refreshVideoPlayer"></i>
 	            <div class="buttons">
 	                 <div class="toprow-left"><b>{{ source.name }}</b>{% if zipped|length == 1 %}
              		<span class="hint">Doubleclick on the video to make it full screen.</span>
