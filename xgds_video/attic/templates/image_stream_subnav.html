@@ -1,11 +1,5 @@
 {% block sitemenu-content-secondary %}
 {% load nav %}
-<form id="streamForm">
-	<nav class="subnav">
-	<ul class="nav nav-pills">
 		<li class='nav-item  {% currentnav live_image_stream %}'><a  class='nav-link  {% currentnav live_image_stream %}' href="{% url 'live_image_stream' %}">Live</a></li>
 		<li class='nav-item  {% currentnav xgds_video_list %}'><a class='nav-link  {% currentnav xgds_video_list %}' href="{% url 'xgds_video_list' %}">Archived</a></li>
-  	</ul>
-  	</nav>
-</form>
 {% endblock %}
