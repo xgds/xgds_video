@@ -111,7 +111,7 @@
                 <i class="fa fa-lock pinDiv warning"></i>
 				<i class="fa fa-window-close fa-lg"></i>
         
-	            <div class="buttons">
+	            <div class="buttons mt-negative-1rem">
 	                 <div class="toprow-left"><b>{{ source.name }}</b></div>
 	                 <a class="btn btn-primary toprow-right small" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{% if sources|length > 1 %}{{flightName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
                      <!-- <a class="btn btn-primary toprow-right small" href="#" onClick="showStillViewer('{{flightName}}', '{{source.shortName}}', getUrlFormatPlayerTime('{{source.shortName}}'));">Still</a> -->
@@ -152,7 +152,7 @@
         <div class="grid-stack-item-content" id="search-gridstack-item-content" >
 	        <i class="fa fa-lock pinDiv warning"></i>
 	    	<i class="fa fa-window-close fa-lg"></i>
-			<div id="searchDiv" hidden="true"></div>
+			<div id="searchDiv mt-negative-1rem" hidden="true"></div>
 		</div>
 </div>
 {% endblock searchDiv %}
@@ -165,7 +165,7 @@
         <i class="fa fa-lock pinDiv warning"></i>
 		<i class="fa fa-window-close fa-lg"></i>
 		<i class="fa fa-refresh right" title="Reload Latest" id="reloadSearchResults"></i>
-			<div id="searchResultsDiv"></div>
+			<div id="searchResultsDiv mt-negative-1rem"></div>
 		</div>
 </div>
 {% endblock searchResultsDiv %}
