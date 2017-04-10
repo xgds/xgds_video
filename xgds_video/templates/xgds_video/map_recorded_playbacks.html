@@ -108,9 +108,10 @@
 			data-gs-x="{% if forloop.counter|modulo:2 == 0 %}3{% else %}0{% endif %}" data-gs-y="0"
         	data-gs-width="{% if sources|length > 1 %}3{% else %}6{% endif %}" data-gs-height="{% if sources|length > 1 %}2{% else %}4{% endif %}" >
         	<div class="grid-stack-item-content video-div" id="item{{forloop.counter}}" style="background-color:{{ source.displayColor }};">
-                <i class="fa fa-lock pinDiv gray-light"></i>
-				<i class="fa fa-window-close gray-light fa-lg"></i>
-        
+        		<ul class="nav justify-content-end ">
+                	<i class="fa fa-lock pinDiv gray-light mr-1"></i>
+					<i class="fa fa-window-close gray-light fa-lg"></i>
+				</ul>
 	            <div class="buttons mt-negative-1rem">
 	                 <div class="toprow-left"><b>{{ source.name }}</b></div>
 	                 <a class="btn btn-primary toprow-right small" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{% if sources|length > 1 %}{{flightName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
@@ -150,8 +151,10 @@
 		data-gs-x="4" data-gs-y="12"
         data-gs-width="3" data-gs-height="2" style="display:none;">
         <div class="grid-stack-item-content" id="search-gridstack-item-content" >
-	        <i class="fa fa-lock pinDiv gray-light"></i>
-	    	<i class="fa fa-window-close gray-light fa-lg"></i>
+        	<ul class="nav justify-content-end ">	
+	        	<i class="fa fa-lock pinDiv gray-light mr-1"></i>
+	    		<i class="fa fa-window-close gray-light fa-lg"></i>
+	    	</ul>
 			<div id="searchDiv mt-negative-1rem" style="display:none;"></div>
 		</div>
 </div>
@@ -162,9 +165,11 @@
 		data-gs-x="0" data-gs-y="4"
         data-gs-width="3" data-gs-height="3" >
         <div class="grid-stack-item-content" id="search-results-gridstack-item-content" >
-        <i class="fa fa-lock pinDiv gray-light"></i>
-		<i class="fa fa-window-close gray-light fa-lg"></i>
-		<i class="fa fa-refresh right" title="Reload Latest" id="reloadSearchResults"></i>
+	        <ul class="nav justify-content-end ">
+	        	<i class="fa fa-refresh right" title="Reload Latest" id="reloadSearchResults"></i>
+				<i class="fa fa-lock pinDiv gray-light mr-2"></i>
+				<i class="fa fa-window-close gray-light fa-lg"></i>
+			</ul>
 			<div id="searchResultsDiv mt-negative-1rem"></div>
 		</div>
 </div>
