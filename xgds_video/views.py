@@ -23,18 +23,12 @@ import re
 import m3u8
 import zmq
 
-try:
-    import zerorpc
-except ImportError:
-    pass  # zerorpc not needed for most views
 
-from django.db.models import Max
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.shortcuts import redirect
 from django.template import RequestContext
 # from django.views.generic.list_detail import object_list
 from django.contrib import messages
-from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from geocamUtil import dateparse
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
@@ -63,9 +57,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def test(request):
-    return render_to_response("xgds_video/test.html",
-                              {},
-                              context_instance=RequestContext(request))
+    return render(request,"xgds_video/test.html")
 
 
 def buildNoteForm(episodes, source, request, initial={}):
@@ -85,10 +77,11 @@ def liveImageStream(request):
         # must use secure WebSockets if web site is secure
         socketUrl = re.sub(r'^ws:', 'wss:', socketUrl)
 
-    return render_to_response("xgds_video/LiveImageStream.html",
-                              {'zmqURL': json.dumps(socketUrl),
-                               'sources': sources},
-                              context_instance=RequestContext(request))
+    return render(request,
+                  "xgds_video/LiveImageStream.html",
+                  {'zmqURL': json.dumps(socketUrl),
+                   'sources': sources},
+                  )
 
 
 # put a setting for the name of the function to call to generate extra text to insert in the form
@@ -146,9 +139,9 @@ def recordedVideoError(request, message):
     # you are doomed.
     messages.add_message(request, messages.ERROR, message)
     ctx = {'episode': None}
-    return render_to_response('xgds_video/video_recorded_playbacks.html',
-                              ctx,
-                              context_instance=RequestContext(request))
+    return render(request,
+                  'xgds_video/video_recorded_playbacks.html',
+                  ctx)
 
 
 def captureStillImage(flightName, timestamp):
@@ -279,15 +272,16 @@ def showStillViewerWindow(request, flightName=None, time=None):
     stillLocationFxn = getClassByName(settings.XGDS_VIDEO_GPS_LOCATION_METHOD)
     locationInfo = stillLocationFxn(flightName, timestamp)
 
-    return render_to_response('xgds_video/video_still_viewer.html',
-                              {'form': form,
-                               'flightName': flightName,
-                               'source': source,
-                               'position': locationInfo,
-                               'formattedTime': formattedTime,
-                               'timeKey': time,
-                               'event_timestring': event_timestring},
-                              context_instance=RequestContext(request))
+    return render(request,
+                  'xgds_video/video_still_viewer.html',
+                  {'form': form,
+                   'flightName': flightName,
+                   'source': source,
+                   'position': locationInfo,
+                   'formattedTime': formattedTime,
+                   'timeKey': time,
+                   'event_timestring': event_timestring},
+                  )
 
 
 def getChunkfilePathAndOffsetForTime(flightName, time):
@@ -517,9 +511,9 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         extraVideoContextFn = getClassByName(settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT)
         extraVideoContextFn(ctx)
 
-    return render_to_response(theTemplate,
-                              ctx,
-                              context_instance=RequestContext(request))
+    return render(request,
+                  theTemplate,
+                  ctx)
 
 
 def displayLiveVideo(request, sourceShortName=None):
@@ -571,9 +565,9 @@ def displayLiveVideo(request, sourceShortName=None):
 
     theTemplate = 'xgds_video/map_live_playbacks.html'
 
-    return render_to_response(theTemplate,
-                              ctx,
-                              context_instance=RequestContext(request))
+    return render(request,
+                  theTemplate,
+                  ctx)
 
 
 def extraVideoContext(ctx):
