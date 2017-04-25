@@ -1,6 +1,7 @@
 {% extends 'xgds_video/map_recorded_playbacks.html' %}
 {% load nav %}
 {% load multiply %}
+{% load static %}
 
 {% block nav %}
     {% nav "xgds_video_live" %}
@@ -43,7 +44,7 @@
 	                 <a class="btn btn-primary toprow-right small" href="{% url 'xgds_video_live_source' source.shortName %}" target="{% if zipped.count > 1 %}{{episode.shortName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
 	            </div>
 				<section id="{{source.shortName}}_noteInput">
-             		{% include "xgds_video/video_notes.html" with data=noteform source=source.shortName STATIC_URL=STATIC_URL %}
+             		{% include "xgds_video/video_notes.html" with data=noteform source=source.shortName %}
              	</section>
              	<!--embed the video-->
               		<div class="player_container" > <!-- float-left">  -->
@@ -60,8 +61,8 @@
 	{{block.super}}
 	<script type="text/javascript" src='{{EXTERNAL_URL}}locomote/dist/locomote.min.js'></script>
 	{% block videoscripts %}
-	<script type="text/javascript" src='{{STATIC_URL}}xgds_video/js/liveVideoPlayer.js'></script>
-	<script type="text/javascript" src='{{STATIC_URL}}xgds_notes2/js/recordedNotesTable.js'></script>
+	<script type="text/javascript" src="{% static 'xgds_video/js/liveVideoPlayer.js' %}"></script>
+	<script type="text/javascript" src="{% static 'xgds_notes2/js/recordedNotesTable.js' %}"></script>
     {% endblock videoscripts %}
 {% endblock %}
 

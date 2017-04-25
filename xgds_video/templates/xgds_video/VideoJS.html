@@ -1,4 +1,5 @@
-     <script type="text/javascript" src="{{ EXTERNAL_URL }}packery/dist/packery.pkgd.min.js" ></script> -->
+{% load static %}
+    <script type="text/javascript" src="{{ EXTERNAL_URL }}packery/dist/packery.pkgd.min.js" ></script> -->
     <script type="text/javascript" src="{{ EXTERNAL_URL }}klass/klass.min.js"></script>
     <script type="text/javascript" src="{{ EXTERNAL_URL }}jwplayer/jwplayer.js"></script>
  	<!--  <script type="text/javascript" src="{{ EXTERNAL_URL }}jquery-form/jquery.form.js" ></script> -->
@@ -9,9 +10,9 @@
 		var videoStillViewerUrl = "{% url 'videoStillViewer' %}";
         var isLive = {% if isLive %} true {% else %} false {% endif %};
     </script>
-    <script type="text/javascript" src="{{STATIC_URL}}xgds_video/js/video_size_utils.js"  ></script>
- 	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoSlider.js"></script>
- 	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoUtils.js"></script>
- 	<script type="text/javascript" src="{{ STATIC_URL }}xgds_video/js/recordedVideoPlayer.js"></script>
- 	<script type="text/javascript" src='{{STATIC_URL}}xgds_video/js/note_input_form_video.js'></script>
+    <script type="text/javascript" src="{% static 'xgds_video/js/video_size_utils.js' %}"  ></script>
+ 	<script type="text/javascript" src="{% static 'xgds_video/js/recordedVideoSlider.js' %}"></script>
+ 	<script type="text/javascript" src="{% static 'xgds_video/js/recordedVideoUtils.js' %}"></script>
+ 	<script type="text/javascript" src="{% static 'xgds_video/js/recordedVideoPlayer.js' %}"></script>
+ 	<script type="text/javascript" src="{% static 'xgds_video/js/note_input_form_video.js' %}"></script>
  	

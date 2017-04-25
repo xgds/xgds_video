@@ -21,7 +21,7 @@
 
  {% block scripts %}
 	{{block.super}}
-	{% include "xgds_video/VideoJS.html" with JWPLAYER_KEY=settings.JWPLAYER_KEY STATIC_URL=STATIC_URL %}
+	{% include "xgds_video/VideoJS.html" with JWPLAYER_KEY=settings.JWPLAYER_KEY %}
 	{% block videoscripts %}
 	{% endblock videoscripts %}
 {% endblock scripts %}
@@ -123,7 +123,7 @@
 	                 {% endwith %}
 	            </div>
 				<section id="{{source.shortName}}_noteInput">
-             		{% include "xgds_video/video_notes.html" with data=source.form source=source.shortName STATIC_URL=STATIC_URL %}
+             		{% include "xgds_video/video_notes.html" with data=source.form source=source.shortName %}
              	</section>
              	<!--embed the video-->
              	<section>
