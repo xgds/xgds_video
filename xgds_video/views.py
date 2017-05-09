@@ -405,7 +405,6 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
             requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
         except:
             requestedTime = dateparse.parse_datetime(time)
-        requestedTime = util.pythonDatetimeToJSON(requestedTime)  # util.convertUtcToLocal(requestedTime))
 
     GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
     activeepisode = GET_ACTIVE_EPISODE_METHOD()
@@ -503,7 +502,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         'modelName': noteModelName,
         'searchModelDict': {noteModelName:settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]},
         'searchForms': {noteModelName: [noteForm,settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]] },
-        'app': 'xgds_map_server/js/search/mapViewerSearchApp.js',
+        'app': 'xgds_video/js/mapVideoApp.js',
         'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
     }
 
@@ -555,7 +554,7 @@ def displayLiveVideo(request, sourceShortName=None):
         'flightTZ': settings.TIME_ZONE,
         'searchModelDict': {noteModelName:settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]},
         'searchForms': {noteModelName: [noteForm,settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]] },
-        'app': 'xgds_map_server/js/search/mapViewerSearchApp.js',
+        'app': 'xgds_video/js/mapVideoApp.js',
         'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
     }
 

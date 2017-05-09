@@ -26,9 +26,6 @@
 	{% endblock videoscripts %}
 {% endblock scripts %}
  
- {% block postscripts %}
- {% endblock postscripts %}
- 
  {% block extraAppOptions %}
  	showDetailView:false,
  {% endblock extraAppOptions %}
@@ -177,7 +174,7 @@
 
 {% endblock preMap %}
 
-{% block jsInit %}
+{% block otherJSInit %}
 {{ block.super }}
 {% block jsInitVideo %}
 {% block setupIndexUrl %}
@@ -192,7 +189,6 @@ var indexFileUrl = null;
 {% block initSegments %}
 {% if segmentsJson %}
 	{% block xgds_video_options %}
-	var xgds_video = xgds_video || {};
     var xgds_video_options = { playFlag: false,
                        		   seekFlag: false,
 		                       initialState: false,
@@ -205,7 +201,7 @@ var indexFileUrl = null;
 		                       movingSlider: false, //if slider is moving, turn off onTime call
 		                       seekOffsetList: {}, //needed for seeking vid in flash mode,
 		                       indexFileUrl: indexFileUrl,
-			                   noteTimeStamp: xgds_video.toJsDateTime({{ noteTimeStamp|safe }}),
+			                   noteTimeStamp: '{{ noteTimeStamp|safe }}',
 			                   flightName: {% if flightName %} "{{ flightName }}" {% else %} null {% endif %},
 			                   sourceVehicle: {{ sourceVehicle|safe }},
 			                   timeZone: '{{ flightTZ }}',
@@ -222,8 +218,8 @@ var indexFileUrl = null;
         if ((segments != undefined) && (segments.length > 0)) {
             $.each(segments, function(id) {
                 var segment = segments[id];
-                segment.startTime = xgds_video.toJsDateTime(segment.startTime);
-                segment.endTime = xgds_video.toJsDateTime(segment.endTime);
+                segment.startTime = moment(segment.startTime);
+                segment.endTime = moment(segment.endTime);
 
                 if(xgds_video_options.firstSegment == null) {
                     xgds_video_options.firstSegment = segment;
@@ -278,7 +274,7 @@ var indexFileUrl = null;
 	
 	{% endblock jsInitVideo %}
 
-{% endblock jsInit %}
+{% endblock otherJSInit %}
 
 {% block eventTimeFunction %}
 {% endblock eventTimeFunction %}

@@ -9,20 +9,7 @@
 {% endblock %}
 
 	
-	{% block preApplication %}
-	
- 	{% block errorMessages %}
-	{% if messages %}
-	<div id="errorMessagesDiv">
-	    <ul class="messages" id="errorMessage" style="color:red;">
-	    {% for message in messages %}
-	        <li>{% if message.tags %} {{ message.tags }}: {% endif %}  {{ message }}</li>
-	    {% endfor %}
-	    </ul>
-	</div>
-	{% endif %}
-	{% endblock errorMessages %}
-	
+	{% block topStuff %}
     	<div id="topStuff" >
 	    	<div id="infoTable" >
 	    	<table>
@@ -36,15 +23,9 @@
 	   		</div>
    		</div>
 
-		{% block ribbonSlider %}
- 		<fieldset id="videoFieldset">
-		 	  <div id="masterSlider" class="masterSlider" ><br/></div>
- 		</fieldset>
- 		{% endblock ribbonSlider %}
- 		
- 		{% block videodivs2 %}
- 	
- 	
+ {% endblock topStuff %}
+ 
+ 	{% block videodivs %}
 
         {% for source, noteform in zipped %}
         <div id="view-gridstack-item-{{source.name}}" class="grid-stack-item" 
@@ -58,7 +39,7 @@
 			</ul>
 	            <div class="buttons mt-negative-1rem">
 	                 <div class="toprow-left"><b>{{ source.name }}</b>{% if zipped|length == 1 %}
-             		<span class="hint">TODO INSERT HELPFUL WORDS HERE.</span>
+             		<span class="hint">Doubleclick on the video to make it full screen.</span>
              		{% endif %}</div>
 	                 <a class="btn btn-primary toprow-right small" href="{% url 'xgds_video_live_source' source.shortName %}" target="{% if zipped.count > 1 %}{{episode.shortName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
 	            </div>
@@ -66,24 +47,19 @@
              		{% include "xgds_video/video_notes.html" with data=noteform source=source.shortName %}
              	</section>
              	<!--embed the video-->
-             	<section>
-              		<div id="player_container" class="row"> <!-- float-left">  -->
-             			<div id="{{ source.shortName }}" class="eleven columns"></div>
+              		<div class="player_container" > <!-- float-left">  -->
+             			<div id="{{ source.shortName }}" class="player"></div>
              		</div> <!--  player-container -->
              		<div id="{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
-             	</section>
             </div><!--  item -->
         </div>
         {% endfor %}
 
-	{% endblock videodivs2 %}
- 		
- {% endblock preApplication %}
- 
- 	
+	{% endblock videodivs %}
  
 {% block scripts %}
 	{{block.super}}
+	<script type="text/javascript" src='{{EXTERNAL_URL}}locomote/dist/locomote.min.js'></script>
 	{% block videoscripts %}
 	<script type="text/javascript" src="{% static 'xgds_video/js/liveVideoPlayer.js' %}"></script>
 	<script type="text/javascript" src="{% static 'xgds_notes2/js/recordedNotesTable.js' %}"></script>
@@ -92,39 +68,7 @@
 
 {% block jsInitVideo %}
 	{% for source, noteForm in zipped %}
-		xgds_video.buildLiveJWPlayer('{{source.name}}', '{{source.videofeed_set.first.realtimeUrl}}');
+		xgds_video.buildLocomotePlayer('{{source.name}}', '{{source.videofeed_set.first.realtimeUrl}}');
 		xgds_notes.setupNotesUI($("#{{source.name}}_noteInput"));
 	{% endfor %}
 {% endblock jsInitVideo %}
-
-
-<!--  FROM DAVE 
-
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>JW Player</title>
-    <script src="/data/jwplayer7/jwplayer.js"></script>
-    <script>jwplayer.key = "rQsqsr2UQLOPJVt9QUrY3ZQLn2miRGlFj7oNEw==";</script>
-</head>
-<body>
-<div id="player"></div>
-
-<script>
-    jwplayer("player").setup({
-        primary: 'flash',
-        sources: [{
-            file: "rtmp://10.10.80.49:1935/live/mp4:stream1_snrf.sdp"
-        }],
-        width:1280,
-        height:720,
-        rtmp: {
-            bufferlength: 1.0
-        }
-    });
-</script>
-
-</body>
-</html>
-
- -->

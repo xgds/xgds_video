@@ -35,22 +35,35 @@ $(".icon-arrows-ccw").click(function() {
 })
 
 $.extend(xgds_video,{
-	locomotes: [],
-	locomoteConfig: {keepAlive:60, 
-					 buffer:1, 
-					 scaleUp:true},
-	buildLocomotePlayer: function(sourceName, url){
-			var locomote = new Locomote(sourceName, STATIC_URL + 'locomote/dist/Player.swf');
-	        locomotePlayers[sourceName] = locomote;
-		xgds_video.locomotes.push(locomote);
-		locomote.on('apiReady', function() {
-			locomote.config(xgds_video.locomoteConfig);
-			locomote.muteSpeaker();
-			locomote.play(url);
-		});
-		locomote.on('error', function(err) {
-	          console.log(err);
-	        });
+//	locomotes: [],
+//	locomoteConfig: {keepAlive:60, 
+//					 buffer:1, 
+//					 scaleUp:true},
+//	buildLocomotePlayer: function(sourceName, url){
+//			var locomote = new Locomote(sourceName, STATIC_URL + 'locomote/dist/Player.swf');
+//	        locomotePlayers[sourceName] = locomote;
+//		xgds_video.locomotes.push(locomote);
+//		locomote.on('apiReady', function() {
+//			locomote.config(xgds_video.locomoteConfig);
+//			locomote.muteSpeaker();
+//			locomote.play(url);
+//		});
+//		locomote.on('error', function(err) {
+//	          console.log(err);
+//	        });
+//	},
+	liveJWPlayer_options: {
+		primary: 'flash',
+        width:1280,
+        height:720,
+        rtmp: {
+            bufferlength: 1.0
+        }
+	},
+	buildLiveJWPlayer: function(sourceName, url){
+		//TODO pass in dimensions
+		var options = Object.assign({}, xgds_video.liveJWPlayer_options, {sources: [{file: url}]});
+		jwplayer(sourceName).setup(options);
 	},
 	disableGridstackResizing: function() {
 		// This allows you to doubleclick and full screen one.

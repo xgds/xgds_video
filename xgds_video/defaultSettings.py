@@ -90,8 +90,10 @@ XGDS_VIDEO_DELAY_AMOUNT_METHOD = 'xgds_video.util.getDelaySeconds'
 JWPLAYER_KEY = None
 
 BOWER_INSTALLED_APPS = getOrCreateArray('BOWER_INSTALLED_APPS')
-BOWER_INSTALLED_APPS += ['jwplayer=https://account.jwplayer.com/static/download/jwplayer-6.12.zip',
+BOWER_INSTALLED_APPS += [#'jwplayer=https://account.jwplayer.com/static/download/jwplayer-6.12.zip',
+                         'jwplayer=https://ssl.p.jwpcdn.com/player/download/jwplayer-7.10.7.zip',
                          'moment',
                          'moment-timezone',
-                         'locomote'
+                         'packery'
+                         #'locomote'
                          ]

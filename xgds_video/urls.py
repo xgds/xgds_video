@@ -40,5 +40,7 @@ urlpatterns = [
     url(r'^recorded/(?P<flightName>\w+).json$', views.getEpisodeSegmentsJson, {'loginRequired': False}, 'xgds_video_recorded_json'),  # active recorded video json
     url(r'^recorded/(?P<flightName>\w+)/(?P<sourceShortName>\w+).json$', views.getEpisodeSegmentsJson, {'loginRequired': False}, 'xgds_video_recorded_json'),  # active recorded video json
     url(r'^stopRecording/(?P<flightName>\w+)', recordingUtil.stopFlightRecording, {'loginRequired': False}, 'xgds_video_stop_recording'), 
-    url(r'^startRecording/(?P<flightName>\w+)', recordingUtil.startFlightRecording, {'loginRequired': False}, 'xgds_video_start_recording'), 
+    url(r'^startRecording/(?P<flightName>\w+)', recordingUtil.startFlightRecording, {'loginRequired': False}, 'xgds_video_start_recording'),
+    url(r'^testHLS$', TemplateView.as_view(template_name='xgds_video/testHLS.html'), {}, 'testHLS'),
+                
     ]

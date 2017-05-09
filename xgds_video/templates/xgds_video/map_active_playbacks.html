@@ -8,7 +8,6 @@
 {% endblock videoscripts %}
 
     {% block xgds_video_options %}
-	var xgds_video = xgds_video || {};
     var xgds_video_options = { playFlag: true,
                        		   seekFlag: false,
 		                       initialState: false,
@@ -21,7 +20,7 @@
 		                       movingSlider: false, //if slider is moving, turn off onTime call
 		                       seekOffsetList: {}, //needed for seeking vid in flash mode,
 		                       indexFileUrl: indexFileUrl,
-			                   noteTimeStamp: xgds_video.toJsDateTime({{ noteTimeStamp|safe }}),
+			                   noteTimeStamp: '{{ noteTimeStamp|safe }}',
 			                   flightName: {% if flightName %} "{{ flightName }}" {% else %} null {% endif %},
 			                   sourceVehicle: {{ sourceVehicle|safe }},
 			                   timeZone: '{{ flightTZ }}',

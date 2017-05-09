@@ -26,25 +26,25 @@ jQuery(function($) {
 var xgds_video = xgds_video || {};
 $.extend(xgds_video,{
 	defaultTimeFormat: "HH:mm:ss z",
-	toJsDateTime: function(jsonDateTime) {
-		/**
-		 * Helper for converting json datetime object to javascript date time
-		 */
-		if ((jsonDateTime) && (jsonDateTime != 'None') && (jsonDateTime != '') && (jsonDateTime != undefined)) {
-			//need to subtract one from month since Javascript datetime indexes month  0 to 11.
-			jsonDateTime.month = jsonDateTime.month - 1;
-			var utcDate = Date.UTC(jsonDateTime.year, 
-									 jsonDateTime.month, 
-									 jsonDateTime.day,
-									 jsonDateTime.hour, 
-									 jsonDateTime.min, 
-									 jsonDateTime.seconds, 
-									 0);
-			var result = new Date(utcDate);
-			return result;
-		}
-		return null;
-	},
+//	toJsDateTime: function(jsonDateTime) {
+//		/**
+//		 * Helper for converting json datetime object to javascript date time
+//		 */
+//		if ((jsonDateTime) && (jsonDateTime != 'None') && (jsonDateTime != '') && (jsonDateTime != undefined)) {
+//			//need to subtract one from month since Javascript datetime indexes month  0 to 11.
+//			jsonDateTime.month = jsonDateTime.month - 1;
+//			var utcDate = Date.UTC(jsonDateTime.year, 
+//									 jsonDateTime.month, 
+//									 jsonDateTime.day,
+//									 jsonDateTime.hour, 
+//									 jsonDateTime.min, 
+//									 jsonDateTime.seconds, 
+//									 0);
+//			var result = new Date(utcDate);
+//			return result;
+//		}
+//		return null;
+//	},
 
 	seekHelper: function(seekTimeStr) {
 		/**
@@ -77,10 +77,10 @@ $.extend(xgds_video,{
 			return;
 		}
 		if (episode.startTime) {
-			episode.startTime = xgds_video.toJsDateTime(episode.startTime);
+			episode.startTime = moment(episode.startTime);
 		}
 		if (episode.endTime) {
-			episode.endTime = xgds_video.toJsDateTime(episode.endTime);
+			episode.endTime = moment(episode.endTime);
 		}
 	},
 

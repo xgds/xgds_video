@@ -20,6 +20,8 @@ $.extend(xgds_video,{
 		xgds_video.options = options;
 	},
 	commonOptions: {
+		preload: 'auto',
+		primary: 'flash',
 		controls: false,
 		analytics: {
 			enabled: false,
@@ -195,11 +197,12 @@ $.extend(xgds_video,{
 		/**
 		 * Only called once onReady. Kickstarts the player with earliest starttime.
 		 */
-		if (xgds_video.options.noteTimeStamp != null) { // noteTimeStamp is in local time (i.e. PDT)
-			var datetime = xgds_video.options.noteTimeStamp;
+		if (!_.isEmpty(xgds_video.options.noteTimeStamp)) { // noteTimeStamp is in local time (i.e. PDT)
+			var datetime = moment(xgds_video.options.noteTimeStamp);
 			//check if datetime is valid
-			if ((datetime != 'Invalid Date') && ((datetime >= xgds_video.options.firstSegment.startTime) &&
-					(datetime < xgds_video.options.lastSegment.endTime))) {
+			if (datetime.isValid() && 
+				datetime.isSameOrAfter(xgds_video.options.firstSegment.startTime) &&
+				datetime.isBefore(xgds_video.options.lastSegment.endTime)) {
 				xgds_video.options.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
 				xgds_video.seekAllPlayersToTime(datetime);
 				return;
