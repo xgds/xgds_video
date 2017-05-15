@@ -43,8 +43,8 @@
 	{% endif %}
 	{% endblock errorMessages %}
 	
+	{% block topStuff %}
 	{% if segmentsJson %}
-    	{% block topStuff %}
     	<div id="topStuff" >
     		<div id="controllers" > 
     			<br/>
@@ -81,18 +81,20 @@
 	   		</div>
 	   		{% endblock jumpto %}
    		</div>
-
+		{% endif %}
  		{% endblock topStuff %}
  		
  		{% block ribbonSlider %}
+ 		{% if segmentsJson %}
  		<fieldset id="videoFieldset">
  			 {% if not isLive %}
  			  <div id="ribbon"></div>
  			  {% endif %}
 		 	  <div id="masterSlider" class="masterSlider" ><br/></div>
  		</fieldset>
+ 		{% endif %}
  		{% endblock ribbonSlider %}
- 	{% endif %}
+ 	
 {% endblock preDashboard %}
 
 {% block preMap %}
@@ -275,6 +277,9 @@ var indexFileUrl = null;
 	{% endblock jsInitVideo %}
 
 {% endblock otherJSInit %}
+
+{% block initializeNotes %}
+{% endblock initializeNotes %}
 
 {% block eventTimeFunction %}
 {% endblock eventTimeFunction %}

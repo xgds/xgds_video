@@ -53,16 +53,20 @@ $.extend(xgds_video,{
 //	        });
 //	},
 	liveJWPlayer_options: {
-		primary: 'flash',
-        width:1280,
-        height:720,
+		//primary: 'flash',
+		autostart:'viewable',
+		width: '100%',
+//        width:1280,
+//        height:720,
+        aspectratio: '16:9',
         rtmp: {
             bufferlength: 1.0
         }
 	},
-	buildLiveJWPlayer: function(sourceName, url){
+	buildLiveJWPlayer: function(sourceName, url, aspectratio){
 		//TODO pass in dimensions
-		var options = Object.assign({}, xgds_video.liveJWPlayer_options, {sources: [{file: url}]});
+		var options = Object.assign({}, xgds_video.liveJWPlayer_options, {'sources': [{'file': url}],
+																		  'aspectratio': aspectratio});
 		jwplayer(sourceName).setup(options);
 	},
 	disableGridstackResizing: function() {
