@@ -541,8 +541,13 @@ def displayLiveVideo(request, sourceShortName=None):
             noteForms.append(buildNoteForm([episode], source, request, {'index':index}))
     
     noteModelName = str(NOTE_MODEL.get().cls_type())
-    noteForm = getClassByName(settings.XGDS_NOTES_BUILD_NOTES_FORM)({'vehicle__name':sourceShortName,
-                                                                     'flight__group_name':episode.shortName})
+#     noteForm = getClassByName(settings.XGDS_NOTES_BUILD_NOTES_FORM)({'vehicle__name':sourceShortName,
+#                                                                      'flight__group_name':episode.shortName})
+    
+    filter = {'flight__group_name':episode.shortName}
+    if sourceShortName:
+        filter['vehicle__name'] = sourceShortName
+    searchForms = getSearchForms(noteModelName, filter)
    
     ctx = {
         'episode': episode,
@@ -553,7 +558,8 @@ def displayLiveVideo(request, sourceShortName=None):
         'flightName': episode.shortName,
         'flightTZ': settings.TIME_ZONE,
         'searchModelDict': {noteModelName:settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]},
-        'searchForms': {noteModelName: [noteForm,settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]] },
+        'searchForms': searchForms,
+#         'searchForms': {noteModelName: [noteForm,settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]] },
         'app': 'xgds_video/js/mapVideoApp.js',
         'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
     }
