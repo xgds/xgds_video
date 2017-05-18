@@ -13,6 +13,7 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
+import datetime
 import time
 import logging
 import os
@@ -155,26 +156,33 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
         pyraptord = getPyraptordClient()
 
     assetName = source.shortName
-    vlcSvc = '%s_vlc' % assetName
-    vlcCmd = ("%s %s --sout='#duplicate{dst=std{access=livehttp{seglen=6,splitanywhere=false,delsegs=false,numsegs=0,index=prog_index.m3u8,index-url=prog_index-#####.ts},mux=ts,dst=prog_index-#####.ts}}'"
-              % (settings.XGDS_VIDEO_VLC_PATH,
-                 videoFeed.url))
-#     print vlcCmd
+    recorderService = '%s_recorder' % assetName
+    recorderCommand = ''
+    if settings.XGDS_VIDEO_RECORDING_METHOD == 'VLC':
+        recorderCommand = ("%s %s --sout='#duplicate{dst=std{access=livehttp{seglen=6,splitanywhere=false,delsegs=false,numsegs=0,index=prog_index.m3u8,index-url=prog_index-#####.ts},mux=ts,dst=prog_index-#####.ts}}'"
+                           % (settings.XGDS_VIDEO_VLC_PATH,
+                              videoFeed.url))
+    elif settings.XGDS_VIDEO_RECORDING_METHOD == 'HLS':
+        scriptPath = os.path.join(settings.PROJ_ROOT, 'apps', 'xgds_video', 'scripts', 'recordHLS.py')
+        recorderCommand = ('%s --sourceUrl=%s --outputDir=%s --recorderId=%s' % (scriptPath, videoFeed.url, recordedVideoDir, assetName))
+    
+    print recorderCommand
     if settings.PYRAPTORD_SERVICE is True:
-        (pyraptord, vlcSvc)
-        stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
-        pyraptord.updateServiceConfig(vlcSvc,
-                                      {'command': vlcCmd,
+        (pyraptord, recorderService)
+        stopPyraptordServiceIfRunning(pyraptord, recorderService)
+        pyraptord.updateServiceConfig(recorderService,
+                                      {'command': recorderCommand,
                                        'cwd': recordedVideoDir})
-        pyraptord.restart(vlcSvc)
-        return vlcCmd
-    return 'NO PYRAPTORD: ' + vlcCmd
+        pyraptord.restart(recorderService)
+        return recorderCommand
+    return 'NO PYRAPTORD: ' + recorderCommand
+
 
 def stopRecording(source, endTime):
     if settings.PYRAPTORD_SERVICE is True:
         pyraptord = getPyraptordClient('pyraptord')
     assetName = source.shortName
-    vlcSvc = '%s_vlc' % assetName
+    recorderService = '%s_recorder' % assetName
 
     # we need to set the endtime
     unended_segments = source.videosegment_set.filter(endTime=None)
@@ -183,12 +191,12 @@ def stopRecording(source, endTime):
         segment.save()
     
     if settings.PYRAPTORD_SERVICE is True:
-        stopPyraptordServiceIfRunning(pyraptord, vlcSvc)
-        return 'STOPPED PYCRORAPTOR SERVICES: ' + vlcSvc
-    return 'NO PYRAPTORD: ' + vlcSvc
+        stopPyraptordServiceIfRunning(pyraptord, recorderService)
+        return 'STOPPED PYCRORAPTOR SERVICES: ' + recorderService
+    return 'NO PYRAPTORD: ' + recorderService
 
 def stopRecordingAndCleanSegments(source, videoChunks):
-    # call method to clear out giant file and kill vlc if needed
+    # call method to clear out giant file and kill recorder if needed
     stopRecording(source, datetime.datetime.utcnow())
     for chunk in videoChunks:
         os.remove(chunk)

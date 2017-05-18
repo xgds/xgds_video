@@ -45,7 +45,7 @@
 				</ul>
 	            <div class="mt-negative-1rem" id="{{source.shortName}}_noteInput">
 	                <strong class="big">{{ source.name }}</strong>
-             		<a href="#" href="{% url 'xgds_video_live_source' source.shortName %}" target="{% if zipped.count > 1 %}{{episode.shortName}}_{{source.shortName}}{% else %}_blank{% endif %}" class="btn btn-primary"><i class="fa fa-window-restore fa-fw mr-1" aria-hidden="true"></i>New Window</a>
+             		<a href="{% url 'xgds_video_live_source' source.shortName %}" target="{% if zipped.count > 1 %}{{episode.shortName}}_{{source.shortName}}{% else %}_blank{% endif %}" class="btn btn-primary"><i class="fa fa-window-restore fa-fw mr-1" aria-hidden="true"></i>New Window</a>
              		<!-- <section id="{{source.shortName}}_noteInput"> -->
              		{% include "xgds_video/video_notes.html" with data=noteform source=source.shortName color=source.displayColor %}
              		<!-- </section> -->
