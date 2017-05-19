@@ -49,8 +49,11 @@ XGDS_VIDEO_NOTE_EXTRAS_FUNCTION = None
 # set this to true if you want to allow note input for logged in users when they are looking at video
 XGDS_VIDEO_INCLUDE_NOTE_INPUT = False
 
-# set this in siteSettings.py. example: 'mvpApp.views.extraVideoContext'
+# override this in siteSettings.py. example: 'mvpApp.views.extraVideoContext'
 XGDS_VIDEO_EXTRA_VIDEO_CONTEXT = 'xgds_video.views.extraVideoContext'
+
+# override this in siteSettings.py
+XGDS_VIDEO_NOTE_FILTER_FUNCTION = 'xgds_video.views.noteFilterFunction'
 
 # support turning off for testing
 XGDS_VIDEO_ON = False

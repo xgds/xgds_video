@@ -544,10 +544,12 @@ def displayLiveVideo(request, sourceShortName=None):
 #     noteForm = getClassByName(settings.XGDS_NOTES_BUILD_NOTES_FORM)({'vehicle__name':sourceShortName,
 #                                                                      'flight__group_name':episode.shortName})
     
-    filter = {'flight__group_name':episode.shortName}
-    if sourceShortName:
-        filter['vehicle__name'] = sourceShortName
-    searchForms = getSearchForms(noteModelName, filter)
+    theFilter = {}
+    if settings.XGDS_VIDEO_NOTE_FILTER_FUNCTION:
+        noteFilterFn = getClassByName(settings.XGDS_VIDEO_NOTE_FILTER_FUNCTION)
+        theFilter = noteFilterFn(episode, sourceShortName)
+    
+    searchForms = getSearchForms(noteModelName, theFilter)
    
     ctx = {
         'episode': episode,
@@ -573,6 +575,14 @@ def displayLiveVideo(request, sourceShortName=None):
     return render(request,
                   theTemplate,
                   ctx)
+
+
+def noteFilterFunction(episode, sourceShortName):
+    #filter = {'flight__group_name':episode.shortName} # this does not work.  Register a function to be able to look up a more useful pk
+    theFilter = {}
+    if sourceShortName:
+        theFilter['vehicle__name'] = sourceShortName
+    return theFilter
 
 
 def extraVideoContext(ctx):
