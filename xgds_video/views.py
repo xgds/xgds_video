@@ -578,11 +578,8 @@ def displayLiveVideo(request, sourceShortName=None):
 
 
 def noteFilterFunction(episode, sourceShortName):
-    #filter = {'flight__group_name':episode.shortName} # this does not work.  Register a function to be able to look up a more useful pk
-    theFilter = {}
-    if sourceShortName:
-        theFilter['vehicle__name'] = sourceShortName
-    return theFilter
+    #TODO implement your own function that interprets episode and sourceShortName to make a useful note filter.
+    return {}
 
 
 def extraVideoContext(ctx):
