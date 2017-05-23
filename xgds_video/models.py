@@ -79,10 +79,16 @@ class AbstractVideoSettings(models.Model):
     height = models.IntegerField()
     compressionRate = models.FloatField(null=True, blank=True)
     playbackDataRate = models.FloatField(null=True, blank=True)
-    uuid = UuidField()
+    aspectRatio = models.CharField(max_length=8, default='16:9')
+
 
     def getDict(self):
-        return {"width": self.width, "height": self.height, "compressionRate": self.compressionRate, "playbackDataRate": self.playbackDataRate}
+        return {"width": self.width, 
+                "height": self.height, 
+                "compressionRate": self.compressionRate, 
+                "playbackDataRate": self.playbackDataRate,
+                "aspectRatio": self.aspectRatio
+                }
 
     class Meta:
         abstract = True

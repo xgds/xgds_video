@@ -49,11 +49,14 @@ XGDS_VIDEO_NOTE_EXTRAS_FUNCTION = None
 # set this to true if you want to allow note input for logged in users when they are looking at video
 XGDS_VIDEO_INCLUDE_NOTE_INPUT = False
 
-# set this in siteSettings.py. example: 'mvpApp.views.extraVideoContext'
+# override this in siteSettings.py. example: 'mvpApp.views.extraVideoContext'
 XGDS_VIDEO_EXTRA_VIDEO_CONTEXT = 'xgds_video.views.extraVideoContext'
 
+# override this in siteSettings.py
+XGDS_VIDEO_NOTE_FILTER_FUNCTION = 'xgds_video.views.noteFilterFunction'
+
 # support turning off for testing
-XGDS_VIDEO_ON = True
+XGDS_VIDEO_ON = False
 
 # Delayed video information
 XGDS_VIDEO_DELAY_MINIMUM_SEC = 20.0
@@ -78,6 +81,9 @@ XGDS_VIDEO_INDEX_FILE_METHOD = 'xgds_video.util.getIndexFileSuffix'
 
 # Method for looking up delay from a flight
 XGDS_VIDEO_DELAY_AMOUNT_METHOD = 'xgds_video.util.getDelaySeconds'
+
+# The old method is VLC
+XGDS_VIDEO_RECORDING_METHOD = 'HLS'
 
 # Override this in your siteSettings to include a key for enterprise JWPLAYER
 """

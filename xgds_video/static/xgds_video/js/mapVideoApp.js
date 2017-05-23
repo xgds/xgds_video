@@ -16,19 +16,23 @@
 
 
 (function( xGDS, $, _, Backbone, Marionette ) {
-
+	
 	xGDS.VideoRootView = xGDS.RootView.extend({
 		regions: {
 			mapRegion: '#map',
 			layersRegion: '#layers',
-			searchRegion: '#searchDiv'
-//			detailRegion: '#map',
+			searchRegion: '#searchDiv',
 		},
 		onRender: function() {
 			app.map = new app.views.OLMapView();
 			this.showChildView('mapRegion', app.map);
 			this.showChildView('layersRegion', new app.views.FancyTreeView());
-			var hideModelChoice = (this.options.modelName !== undefined);
+			var searchView = new app.views.SearchView({template: '#template-mapViewerSearch',
+		         searchResultsRegion: true,
+		         viewRegion: false,
+		         hideModelChoice: true,
+		         selectedModel: app.options.modelName});
+	        this.showChildView('searchRegion', searchView);
 		}
 	});
 	

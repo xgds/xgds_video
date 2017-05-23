@@ -43,8 +43,8 @@
 	{% endif %}
 	{% endblock errorMessages %}
 	
+	{% block topStuff %}
 	{% if segmentsJson %}
-    	{% block topStuff %}
     	<div id="topStuff" >
     		<div id="controllers" > 
     			<br/>
@@ -81,21 +81,23 @@
 	   		</div>
 	   		{% endblock jumpto %}
    		</div>
-
+		{% endif %}
  		{% endblock topStuff %}
  		
  		{% block ribbonSlider %}
+ 		{% if segmentsJson %}
  		<fieldset id="videoFieldset">
  			 {% if not isLive %}
  			  <div id="ribbon"></div>
  			  {% endif %}
 		 	  <div id="masterSlider" class="masterSlider" ><br/></div>
  		</fieldset>
+ 		{% endif %}
  		{% endblock ribbonSlider %}
- 	{% endif %}
+ 	
 {% endblock preDashboard %}
 
-{% block preMap %}
+{% block preSearchDiv %}
 
 {% block videodivs %}
 {% if segmentsJson %}
@@ -142,6 +144,7 @@
         {% endblock videoSources %}
 {% endif %}
 {% endblock videodivs %}
+{% endblock preSearchDiv %}
 
 {% block searchDiv %}
 <div id="search-gridstack-item" class="grid-stack-item" 
@@ -152,7 +155,7 @@
 	        	<i class="fa fa-lock pinDiv gray-light mr-1"></i>
 	    		<i class="fa fa-window-close gray-light fa-lg"></i>
 	    	</ul>
-			<div id="searchDiv mt-negative-1rem" style="display:none;"></div>
+			<div id="searchDiv" class="mt-negative-1rem" style="display:none;"></div>
 		</div>
 </div>
 {% endblock searchDiv %}
@@ -163,16 +166,55 @@
         data-gs-width="3" data-gs-height="3" >
         <div class="grid-stack-item-content" id="search-results-gridstack-item-content" >
 	        <ul class="nav justify-content-end ">
-	        	<i class="fa fa-refresh right" title="Reload Latest" id="reloadSearchResults"></i>
+	        	<i class="fa fa-refresh mr-1" title="Reload Latest" id="reloadSearchResults"></i>
 				<i class="fa fa-lock pinDiv gray-light mr-2"></i>
 				<i class="fa fa-window-close gray-light fa-lg"></i>
 			</ul>
-			<div id="searchResultsDiv mt-negative-1rem"></div>
+			<div id="searchResultsDiv" class="mt-negative-1rem"></div>
+			
 		</div>
 </div>
 {% endblock searchResultsDiv %}
 
-{% endblock preMap %}
+{% block viewDiv %}
+<div id="view-gridstack-item" class="grid-stack-item" 
+		data-gs-x="0" data-gs-y="12"
+        data-gs-width="3" data-gs-height="3" style="display:none;" >
+        <div class="grid-stack-item-content" id="view-gridstack-item-content" >
+        	<ul class="nav justify-content-end">
+				<i class="fa fa-lock pinDiv gray-light mr-1"></i>
+				<i class="fa fa-window-close gray-light fa-lg"></i>
+			</ul>
+			<div class="mt-negative-1rem">
+				<a href="#" id="view-new-window-target" target="_blank" class="btn btn-primary"><i class="fa fa-window-restore fa-fw mr-1" aria-hidden="true"></i>New Window</a>
+				<button class="info btn btn-primary prev-button" id="prev_button"><i class="fa fa-backward"></i></button>
+				<strong id="nameBlock"></strong>
+				<button class="info btn btn-primary next-button" id="next_button"><i class="fa fa-forward"></i></button>
+			</div>
+			<div id="viewDiv">
+			</div>
+			<div id="notesDiv">
+			</div>
+		</div>
+</div> 
+{% endblock viewDiv %}
+
+{% block map %}
+<div id="map-gridstack-item" class="grid-stack-item" 
+	  data-gs-x="3" data-gs-y="4"
+      data-gs-width="2" data-gs-height="2" >
+	<div class="grid-stack-item-content" id="map-gridstack-item-content" >
+		<ul class="nav justify-content-end">
+			<i class="fa fa-lock pinDiv gray-light mr-1"></i>
+			<i class="fa fa-window-close gray-light fa-lg"></i>
+		</ul>
+		
+      		{% siteframe_form %}
+		<div id="map"></div>
+	</div>
+</div>
+{% endblock map %}
+
 
 {% block otherJSInit %}
 {{ block.super }}
@@ -251,7 +293,7 @@ var indexFileUrl = null;
     if (xgds_video.options.hasMasterSlider){
     	xgds_video.setupSlider();
     }
-    xgds_video.setupJWplayer({"mute":true}, "100%");
+    xgds_video.setupJWplayer({"mute":true}, "95%");
     {% endif %}
     {% endblock hookControls %}
     
@@ -275,6 +317,9 @@ var indexFileUrl = null;
 	{% endblock jsInitVideo %}
 
 {% endblock otherJSInit %}
+
+{% block initializeNotes %}
+{% endblock initializeNotes %}
 
 {% block eventTimeFunction %}
 {% endblock eventTimeFunction %}
