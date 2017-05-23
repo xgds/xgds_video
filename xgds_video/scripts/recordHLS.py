@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-
 import requests
 import memcache
 import m3u8
@@ -48,47 +47,65 @@ class HLSRecorder:
     def segmentNumber(self, segmentObj):
         segFileName = os.path.basename(segmentObj.uri)
         name,ext = os.path.splitext(segFileName)
-        baseName,segNum = name.split("-")
+        try:
+            baseName, otherNumber, segNum = name.split("_")
+        except:
+            baseName,segNum = name.split("-")
+            
         return int(segNum)
 
-    def initRecording(self):
-        s = self.httpSession
-        m3u8String = s.get(self.sourceUrl).text
-        self.m3u8Obj = m3u8.loads(m3u8String)
-        f = open(self.m3u8FilePath,"w")
-        f.write(self.m3u8Obj.dumps())
-        f.close()
-
-        for seg in self.m3u8Obj.segments:
-            videoData = s.get("%s/%s" % (os.path.dirname(self.sourceUrl),
-                                         seg.uri))
-            f = open("%s/%s" % (self.m3u8DirPath, seg.uri),"w")
-            f.write(videoData.content)
-            f.close()
-
-        self.maxSegmentNumber = self.segmentNumber(self.m3u8Obj.segments[-1])
-        time.sleep(self.getm3u8TotalTime(self.m3u8Obj) -
-                   self.m3u8Obj.segments[-1].duration)
-
-    def recordNextBlock(self, sleepAfterRecord=True):
-        s = self.httpSession
+    def getM3U8(self):
         try:
-            m3u8String = s.get(self.sourceUrl).text
+            m3u8String = self.httpSession.get(self.sourceUrl).text
+            m3u8Obj = m3u8.loads(m3u8String)
+            if not m3u8Obj.files:
+                # m3u8 must have a playlist which holds the files, read that one.
+                baseUrl = os.path.dirname(self.sourceUrl)
+                for p in m3u8Obj.playlists:
+                    playlistUri = p.uri
+                    m3u8String = self.httpSession.get(os.path.join(baseUrl, playlistUri)).text
+                    m3u8Obj = m3u8.loads(m3u8String)
+            return m3u8Obj
         except:
             time.sleep(0.5)
             print "%s %s %s" % ("recordHLS:",
                                 "*** Warning: Exception polling Source.",
                                 "Trying again... ***")
-            return  # skip and give source a break
-        m3u8Latest = m3u8.loads(m3u8String)
+            return  None # skip and give source a break
+            
+
+    def initRecording(self):
+        self.m3u8Obj = self.getM3U8()
+        if self.m3u8Obj:
+            f = open(self.m3u8FilePath,"w")
+            f.write(self.m3u8Obj.dumps())
+            f.close()
+    
+            for seg in self.m3u8Obj.segments:
+                videoData = self.httpSession.get("%s/%s" % (os.path.dirname(self.sourceUrl),
+                                             seg.uri))
+                f = open("%s/%s" % (self.m3u8DirPath, seg.uri),"w")
+                f.write(videoData.content)
+                f.close()
+    
+            self.maxSegmentNumber = self.segmentNumber(self.m3u8Obj.segments[-1])
+            
+            totalTime = self.getm3u8TotalTime(self.m3u8Obj)
+            lastSegmentDuration = self.m3u8Obj.segments[-1].duration
+            sleepDuration = totalTime - lastSegmentDuration
+            time.sleep(sleepDuration)
+
+    def recordNextBlock(self, sleepAfterRecord=True):
+
+        m3u8Latest = self.getM3U8()
 
         videoDiscontinuity = True
         for seg in m3u8Latest.segments:
             if self.segmentNumber(seg) > self.maxSegmentNumber:
                 if self.segmentNumber(seg) == self.maxSegmentNumber+1:
                     videoDiscontinuity = False
-                videoData = s.get("%s/%s" % (os.path.dirname(self.sourceUrl),
-                                             seg.uri))
+                videoData = self.httpSession.get("%s/%s" % (os.path.dirname(self.sourceUrl),
+                                                            seg.uri))
                 f = open("%s/%s" % (self.m3u8DirPath, seg.uri),"w")
                 f.write(videoData.content)
                 f.close()
@@ -103,8 +120,10 @@ class HLSRecorder:
         self.maxSegmentNumber = self.segmentNumber(m3u8Latest.segments[-1])
         self.updateCachedStatus()
         if sleepAfterRecord:
-            time.sleep(self.getm3u8TotalTime(m3u8Latest) -
-                       m3u8Latest.segments[-1].duration)
+            totalTime = self.getm3u8TotalTime(m3u8Latest)
+            lastSegmentDuration = m3u8Latest.segments[-1].duration
+            sleepDuration = totalTime - lastSegmentDuration
+            time.sleep(sleepDuration)
 
     def runRecordingLoop(self):
         while not self.stopRecording:

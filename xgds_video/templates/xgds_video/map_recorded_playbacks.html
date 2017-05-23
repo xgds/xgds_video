@@ -199,6 +199,23 @@
 </div> 
 {% endblock viewDiv %}
 
+{% block map %}
+<div id="map-gridstack-item" class="grid-stack-item" 
+	  data-gs-x="3" data-gs-y="4"
+      data-gs-width="2" data-gs-height="2" >
+	<div class="grid-stack-item-content" id="map-gridstack-item-content" >
+		<ul class="nav justify-content-end">
+			<i class="fa fa-lock pinDiv gray-light mr-1"></i>
+			<i class="fa fa-window-close gray-light fa-lg"></i>
+		</ul>
+		
+      		{% siteframe_form %}
+		<div id="map"></div>
+	</div>
+</div>
+{% endblock map %}
+
+
 {% block otherJSInit %}
 {{ block.super }}
 {% block jsInitVideo %}
