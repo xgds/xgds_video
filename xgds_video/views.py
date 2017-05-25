@@ -140,7 +140,7 @@ def recordedVideoError(request, message):
     messages.add_message(request, messages.ERROR, message)
     ctx = {'episode': None}
     return render(request,
-                  'xgds_video/video_recorded_playbacks.html',
+                  'xgds_video/map_recorded_playbacks.html',
                   ctx)
 
 

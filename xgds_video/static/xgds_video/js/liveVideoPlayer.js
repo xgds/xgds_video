@@ -37,7 +37,7 @@ $(".icon-arrows-ccw").click(function() {
 $.extend(xgds_video,{
 	liveJWPlayer_options: {
 		autostart:'viewable',
-		width: '85%',
+		width: '95%',
 		stretching: 'uniform',
         aspectratio: '16:9',
         rtmp: {

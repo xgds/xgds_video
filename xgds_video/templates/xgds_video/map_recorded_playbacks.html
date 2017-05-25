@@ -43,46 +43,6 @@
 	{% endif %}
 	{% endblock errorMessages %}
 	
-	{% block topStuff %}
-	{% if segmentsJson %}
-    	<div id="topStuff" >
-    		<div id="controllers" > 
-    			<br/>
-    			<div class="controller_div">
-	          	<a class="btn btn-primary btn btn-primary-info" id="playbuttonLink" href="#" onclick="xgds_video.playButtonCallback()">
-	              <i id="playbutton" class="fa fa-play fa-lg"></i>
-	              </a>
-	            <a class="btn btn-primary btn btn-primary-info" id="pausebuttonLink" href="#" onclick="xgds_video.pauseButtonCallback()">
-	              <i id="pausebutton" class="fa fa-pause fa-lg active"></i>
-	              </a>
-	             </div>
-	          </div>
-	    	<div id="infoTable" >
-	    	<table>
-	    		{% if episode %}
-		   			<tr>
-		   				<td> <b> {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }}: </b> </td>
-		   				<td> {{ episode.shortName }} </td>
-		   			</tr>
-	   			{% endif %}
-	   			{% if not isLive %}
-	   			<tr>
-	   				<td>Local Time: </td>
-	   				<td> <span id="sliderTimeLabel"></span></td>
-	   			</tr>
-	   			{% endif %}
-	   		</table>
-	   		</div>
-	   		{% block jumpto %}
-	   		<div id="seekTimeBox" >
-				<label for="seekTime">Jump to:</label>
-	   			<input  id="seekTime" type="text" name="text-input" placeholder="HH:MM:SS" class="stylish"/>
-	   			<button type="submit" class="btn btn-primary small" id="seekButton" onclick='xgds_video.seekCallBack()'> Go </button>
-	   		</div>
-	   		{% endblock jumpto %}
-   		</div>
-		{% endif %}
- 		{% endblock topStuff %}
  		
  		{% block ribbonSlider %}
  		{% if segmentsJson %}
@@ -96,6 +56,44 @@
  		{% endblock ribbonSlider %}
  	
 {% endblock preDashboard %}
+
+{% block buttonrowLeft %}
+	{% if segmentsJson %}
+    		<div id="controllers" > 
+    			<div class="controller_div">
+	          	<a class="btn btn-primary btn btn-primary-info" id="playbuttonLink" href="#" onclick="xgds_video.playButtonCallback()">
+	              <i id="playbutton" class="fa fa-play fa-lg"></i>
+	              </a>
+	            <a class="btn btn-primary btn btn-primary-info" id="pausebuttonLink" href="#" onclick="xgds_video.pauseButtonCallback()">
+	              <i id="pausebutton" class="fa fa-pause fa-lg active"></i>
+	              </a>
+	             </div>
+	          </div>
+	    	<div id="infoTable" class="h4 mt-1 ml-5">
+	    		{% if episode %}
+		   				<b> {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }}: </b>
+		   				<span> {{ episode.shortName }} </span>
+		   			</tr>
+	   			{% endif %}
+	   			{% if not isLive %}
+	   				<b class="ml-2">Local Time: </b>
+	   				<span id="sliderTimeLabel"></span>
+	   			{% endif %}
+	   		</div>
+	   	{% endif %}
+	   	{% endblock buttonrowLeft %}
+	   	
+	   	{% block buttonrowRight %}
+	   	{% if segmentsJson %}
+	   		{% block jumpto %}
+	   		<div id="seekTimeBox" class="d-flex flex-row align-items-center">
+				<label for="seekTime">Jump to:</label>
+	   			<input  id="seekTime" type="text" name="text-input" placeholder="HH:MM:SS" class="stylish" style="max-width:140px"/>
+	   			<button type="submit" class="btn btn-primary ml-1" id="seekButton" onclick='xgds_video.seekCallBack()'> Go </button>
+	   		</div>
+	   		{% endblock jumpto %}
+		{% endif %}
+ 		{% endblock buttonrowRight %}
 
 {% block preSearchDiv %}
 
@@ -121,19 +119,19 @@
 	                 {% endif %}
 	                 {% endwith %}
 	            </div>
-				<section id="{{source.shortName}}_noteInput">
-             		{% include "xgds_video/video_notes.html" with data=source.form source=source.shortName %}
-             	</section>
+				<!-- <section id="{{source.shortName}}_noteInput"> -->
+					{% include "xgds_video/video_notes.html" with data=source.form source=source.shortName color=source.displayColor %}
+             	<!-- </section>  -->
              	<!--embed the video-->
              	<section>
-              		<div id="player_container" class="row"> <!-- float-left">  -->
-             			<div id="{{ source.shortName }}" class="eleven columns"></div>
+              		<div id="player_container" class="nav justify-content-center"> <!-- float-left">  -->
+             			<div id="{{ source.shortName }}" ></div>
              		</div> <!--  player-container -->
-             		<div id="{{ source.shortName }}Label" style="float:left;text-align:left;font-family:arial,verdana,helvetica"> </div>
+             		<div id="{{ source.shortName }}Label" > </div>
              	</section>
              	{% if not isLive %}
              	<section>
-             		<div class="float-left">
+             		<div >
                  	Local Time: <span id="testSiteTime{{ source.shortName }}">0</span>
              		</div>
              	</section>

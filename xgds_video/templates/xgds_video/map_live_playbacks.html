@@ -9,24 +9,21 @@
 {% endblock %}
 
 	
-	{% block topStuff %}
-    	<div id="topStuff" >
-	    	<div id="infoTable" >
-	    	<table>
+	{% block buttonrowLeft %}
+			<div id="infoTable" class="h4 mt-1">
 	    		{% if episode %}
-		   			<tr>
-		   				<td> <b> Live Video for {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }}: </b> </td>
-		   				<td> {{ episode.shortName }} </td>
+		   				<b> Live Video for {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }}: </b>
+		   				<span> {{ episode.shortName }} </span>
 		   			</tr>
 	   			{% endif %}
-	   		</table>
 	   		</div>
-   		</div>
-
- {% endblock topStuff %}
+ {% endblock buttonrowLeft %}
+ 
+ {% block buttonrowRight %}
+ {% endblock buttonrowRight %}
  
  {% block ribbonSlider %}
- 		<fieldset id="videoFieldset">
+ 		<fieldset id="videoFieldset" style="display:none;">
 		 	  <div id="masterSlider" class="masterSlider" ><br/></div>
  		</fieldset>
  {% endblock ribbonSlider %}
@@ -55,7 +52,7 @@
               		<div id="player_container" class="nav justify-content-center"> 
              			<div id="{{ source.shortName }}" ></div>
              		</div> <!--  player-container -->
-             		<div id="{{ source.shortName }}Label" > </div> <!-- style="float:left;text-align:left;" -->
+             		<div id="{{ source.shortName }}Label" > </div> 
              	</section>
             </div><!--  item -->
         </div>
