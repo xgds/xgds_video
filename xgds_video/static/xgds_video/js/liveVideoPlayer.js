@@ -37,15 +37,22 @@ $(".icon-arrows-ccw").click(function() {
 $.extend(xgds_video,{
 	liveJWPlayer_options: {
 		autostart:'viewable',
-		width: '95%',
+		width: '85%',
+		stretching: 'uniform',
         aspectratio: '16:9',
         rtmp: {
             bufferlength: 1.0
         }
 	},
 	buildLiveJWPlayer: function(sourceName, url, aspectratio){
+		var container = $('#' + sourceName);
+		var size = xgds_video.calculateSizeWithRatio(container, aspectratio);
 		var options = Object.assign({}, xgds_video.liveJWPlayer_options, {'sources': [{'file': url}],
 																		  'aspectratio': aspectratio});
+		if (size.length == 2){
+			options['width'] = size[0];
+			options['height'] = size[1];
+		}
 		jwplayer(sourceName).setup(options);
 	}
 

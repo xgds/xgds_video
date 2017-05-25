@@ -17,6 +17,7 @@
 var xgds_video = xgds_video || {};
 $.extend(xgds_video,{
 	getMaxWidth:function(quantity) {
+		// TODO DELETE this is also not used
 		var width = window.innerWidth ||
 		document.documentElement.clientWidth ||
 		document.body.clientWidth;
@@ -27,6 +28,7 @@ $.extend(xgds_video,{
 		return width;
 	},
 	calculateSize:function(newWidth, defaultHeight, defaultWidth) {
+		// TODO DELETE this is not used
 		var resultHeight = defaultHeight;
 		var resultWidth = newWidth;
 		// the default size of the video is bigger than the new size so we have to scale down.
@@ -40,6 +42,32 @@ $.extend(xgds_video,{
 			resultWidth = defaultWidth;
 		}
 		return [resultWidth, resultHeight];
+	},
+	readAspectRatio:function(aspectRatio){
+		var splits = aspectRatio.split(':');
+		var aspectWidth = parseInt(splits[0]);
+		var aspectHeight = parseInt(splits[1]);
+		return {width:aspectWidth,
+			    height:aspectHeight};
+	},
+	calculateSizeWithRatio:function(container, aspectRatioString) {
+		var aspectRatio = xgds_video.readAspectRatio(aspectRatioString);
+		var containerWidth = $(container).width();
+		var containerHeight = $(container).height();
+		
+		if (containerWidth == 0  || containerHeight == 0) {
+			// default to 95% width
+			return ['95%'];
+		}
+		
+		// first check if width will fit:
+		var calculatedWidth = (aspectRatio.width * containerHeight) / aspectRatio.height;
+		// if it does, go with that.
+		if (calculatedWidth <= containerWidth) {
+			return [calculatedWidth, containerHeight];
+		}
+		var calculatedHeight = (aspectRatio.height * containerWidth) / aspectRatio.width;
+		return [containerWidth, calculatedHeight];
 	}
 
 });

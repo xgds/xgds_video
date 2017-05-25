@@ -36,7 +36,7 @@
  {% for source, noteform in zipped %}
         <div id="view-gridstack-item-{{source.name}}" class="grid-stack-item" 
 		data-gs-x="{{ forloop.counter0|multiply:3 }}" data-gs-y="0"
-        data-gs-width="{% if zipped|length > 1 %}3{% else %}6{%endif %}" data-gs-height="2" >
+        data-gs-width="{% if zipped|length > 1 %}3{% else %}6{%endif %}" data-gs-height="{% if zipped|length > 1 %}2{% else %}4{%endif %}" >
         <div class="grid-stack-item-content" id="view-gridstack-item-content-{{source.name}}" style="background-color:{{ source.displayColor }};">
 	        	<ul class="nav justify-content-end">
 	        		<i class="fa fa-lock pinDiv mr-1"></i>
