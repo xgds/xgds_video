@@ -59,9 +59,9 @@ $.extend(xgds_video,{
 				color = '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
 			}
 
-			var fullWidth = $("#masterSlider").width(); 
-			ribbon.append('<div class="divider" id="' + dividerName + '">' + source.shortName );
-			sourceRibbon = ribbon.find("#divider-" + source.shortName);
+			var fullWidth = $("#masterSlider").width();
+			var sourceRibbon = $('<div class="divider" id="' + dividerName + '"><strong class="">' + source.shortName  + '</strong>');
+			sourceRibbon.appendTo(ribbon)
 
 			if (!singleSource){
 				//handle empty space in front of first segment
