@@ -57,6 +57,10 @@ controller_div div {
 	display: table-cell;
 }
 
+.sourceLabel {
+	margin-right: 3px;
+}
+
 #masterSlider {
 	margin-left: 35px;
 	float: left;
