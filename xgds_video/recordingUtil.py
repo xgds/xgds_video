@@ -83,7 +83,6 @@ def startFlightRecording(request, flightName):
     videoSource = getVideoSource(sourceName)
     commands = startRecording(videoSource, recordingDir,
                               recordingUrl, startTime,
-                              settings.XGDS_VIDEO_MAX_EPISODE_DURATION_MINUTES,
                               episode=videoEpisode)
     messages.info(request, commands)
     return redirect(reverse('error'))
@@ -106,8 +105,9 @@ def stopFlightRecording(request, flightName):
         commands = commands + ' & set episode end time ' + str(stopTime)
     messages.info(request, commands)
     return redirect(reverse('error'))
-            
-def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDuration, episode):
+
+
+def makeNewSegment(source, recordingDir, recordingUrl, startTime, episode):
     if not source.videofeed_set.all():
         logging.info("video feeds set is empty")
         return
@@ -151,6 +151,19 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
                                                                       episode=episode)
     videoSegment.startTime = startTime
     videoSegment.save()
+    
+    return {'videoFeed': videoFeed,
+            'recordedVideoDir': recordedVideoDir}
+
+
+def invokeMakeNewSegment(sourcePK, recordingDir, recordingUrl, startTime, episodePK):
+    ''' call makeNewSegment after we look up the source and episode '''
+    source = VIDEO_SOURCE_MODEL.get().objects.get(pk=sourcePK)
+    episode = EPISODE_MODEL.get().objects.get(pk=episodePK)
+    return makeNewSegment(source, recordingDir, recordingUrl, startTime, episode)
+    
+def startRecording(source, recordingDir, recordingUrl, startTime, episode):
+    segmentInfo = makeNewSegment(source, recordingDir, recordingUrl, startTime, episode)
 
     if settings.PYRAPTORD_SERVICE is True:
         pyraptord = getPyraptordClient()
@@ -161,10 +174,10 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
     if settings.XGDS_VIDEO_RECORDING_METHOD == 'VLC':
         recorderCommand = ("%s %s --sout='#duplicate{dst=std{access=livehttp{seglen=6,splitanywhere=false,delsegs=false,numsegs=0,index=prog_index.m3u8,index-url=prog_index-#####.ts},mux=ts,dst=prog_index-#####.ts}}'"
                            % (settings.XGDS_VIDEO_VLC_PATH,
-                              videoFeed.url))
+                              segmentInfo['videoFeed'].url))
     elif settings.XGDS_VIDEO_RECORDING_METHOD == 'HLS':
         scriptPath = os.path.join(settings.PROJ_ROOT, 'apps', 'xgds_video', 'scripts', 'recordHLS.py')
-        recorderCommand = ('%s --sourceUrl=%s --outputDir=%s --recorderId=%s' % (scriptPath, videoFeed.url, recordedVideoDir, assetName))
+        recorderCommand = ('%s --sourceUrl=%s --outputDir=%s --recorderId=%s --episodePK=%d --sourcePK=%d' % (scriptPath, segmentInfo['videoFeed'].url, segmentInfo['recordedVideoDir'], assetName, episode.pk, source.pk))
     
     print recorderCommand
     if settings.PYRAPTORD_SERVICE is True:
@@ -172,7 +185,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, maxFlightDurat
         stopPyraptordServiceIfRunning(pyraptord, recorderService)
         pyraptord.updateServiceConfig(recorderService,
                                       {'command': recorderCommand,
-                                       'cwd': recordedVideoDir})
+                                       'cwd': segmentInfo['recordedVideoDir']})
         pyraptord.restart(recorderService)
         return recorderCommand
     return 'NO PYRAPTORD: ' + recorderCommand
