@@ -60,7 +60,7 @@ $.extend(xgds_video,{
 			}
 
 			var fullWidth = $("#masterSlider").width();
-			var sourceRibbon = $('<div class="divider" id="' + dividerName + '"><strong class="">' + source.shortName  + '</strong>');
+			var sourceRibbon = $('<div class="divider" id="' + dividerName + '"><strong class="sourceLabel" id="label_' + source.shortName + '" >' + source.shortName  + '</strong>');
 			sourceRibbon.appendTo(ribbon)
 
 			if (!singleSource){
@@ -109,6 +109,21 @@ $.extend(xgds_video,{
 					sourceRibbon.append(htmlNugget2);
 				}
 			});
+			
+		}
+		var leftMargin = 0;
+		var leftPadding = 0;
+		var labels = $(".sourceLabel");
+		for (var i=0; i<labels.length; i++){
+			var l = $(labels[i]);
+			if (l.width() > leftMargin) {
+				leftMargin = l.width();
+				leftPadding = parseInt(l.css('margin-right'));
+			}
+		}
+		if (leftMargin > 0){
+			var value = leftMargin + leftPadding;
+			$("#masterSlider").css("margin-left", value + 'px');
 		}
 	},
 
