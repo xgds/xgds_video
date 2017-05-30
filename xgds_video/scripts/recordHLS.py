@@ -82,6 +82,10 @@ class HLSRecorder:
                     totalTime = totalTime + seg.duration
                     lastGoodSegment = seg
                     lastSegmentNumber = segNumber
+            elif segNumber == self.maxSegmentNumber:
+                print 'segNumber equals max segment number '
+                lastSegmentNumber = segNumber
+                lastGoodSegment = seg
 
         result = {'lastSegment':lastGoodSegment,
                 'lastSegmentNumber': lastSegmentNumber,
