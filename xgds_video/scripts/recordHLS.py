@@ -10,17 +10,10 @@ import os
 from xgds_video.recordingUtil import invokeMakeNewSegment
 
 class HLSRecorder:
-    sourceUrl = None
-    m3u8DirPath = None
-    m3u8FilePath = None
-    recorderId = None
-    m3u8Obj = None
-    stopRecording = False
-    maxSegmentNumber = -1
-    httpSession = None
-    cache = None
-
     def __init__(self, sourceUrl, m3u8DirPath, recorderId, episodePK, sourcePK):
+        self.stopRecording = False
+        self.m3u8Obj = None
+        self.maxSegmentNumber = -1
         self.sourceUrl = sourceUrl
         self.m3u8DirPath = m3u8DirPath
         self.recorderId = recorderId
