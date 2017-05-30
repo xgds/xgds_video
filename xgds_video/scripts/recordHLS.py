@@ -35,7 +35,7 @@ class HLSRecorder:
                   "lastUpdate":datetime.datetime.utcnow().isoformat()}
         self.cache.set(myKey, json.dumps(status))
 
-    def analyzeM3U8Segments(self, m3u8Obj, contiguous=False):
+    def analyzeM3U8Segments(self, m3u8Obj, contiguous=True):
         totalTime = 0.0
         #TODO this does not handle a gap.
         lastSegmentNumber = None
@@ -47,37 +47,51 @@ class HLSRecorder:
         firstHit = False
         for seg in m3u8Obj.segments:
             segNumber = self.segmentNumber(seg)
+            print "Seg number:", segNumber
+            print "Max segment:", self.maxSegmentNumber
             if segNumber > self.maxSegmentNumber:
-                if not firstHit:
+                if self.maxSegmentNumber >= 0 and not firstHit:
+                    print "if 1"
                     firstHit = True
                     if self.maxSegmentNumber + 1 < segNumber:
+                        print "if 2"
                         discontinuity = True # discontinuity between files
                         nextGoodSegment = seg
                         nextGoodSegmentNumber = segNumber
                 if contiguous:
+                    print "if 3"
                     if not lastSegmentNumber:
+                        print "if 4"
                         lastSegmentNumber = segNumber
                         totalTime = totalTime + seg.duration
                         lastGoodSegment = seg
                     else:
                         if lastSegmentNumber + 1 == segNumber:
+                            print "if 5"
                             totalTime = totalTime + seg.duration
                             lastSegmentNumber = segNumber
                             lastGoodSegment = seg
                         else:
+                            print "if 6"
                             gap = True
                             nextGoodSegment = seg
+                            nextGoodSegmentNumber = segNumber
                             break
                 else:
+                    print "if 7"
                     totalTime = totalTime + seg.duration
                     lastGoodSegment = seg
-        return {'lastSegment':lastGoodSegment,
+                    lastSegmentNumber = segNumber
+
+        result = {'lastSegment':lastGoodSegment,
                 'lastSegmentNumber': lastSegmentNumber,
                 'nextSegment': nextGoodSegment,
                 'nextSegmentNumber': nextGoodSegmentNumber,
                 'totalTime':totalTime,
                 'gap': gap,
                 'discontinuity': discontinuity}
+        print "M3U8 analysis", result
+        return result
 
     def segmentNumber(self, segmentObj):
         segFileName = os.path.basename(segmentObj.uri)
