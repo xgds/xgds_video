@@ -144,7 +144,7 @@ class HLSRecorder:
             self.saveM3U8SegmentsToDisk(analyzedSegments, False)
     
             self.maxSegmentNumber = analyzedSegments['lastSegmentNumber']
-            sleepDuration = analyzedSegments['totalTime'] - analyzedSegments['lastSeg'].duration
+            sleepDuration = analyzedSegments['totalTime'] - analyzedSegments['lastSegment'].duration
             time.sleep(sleepDuration)
 
     def storeVideoUpdateIndex(self, seg):
