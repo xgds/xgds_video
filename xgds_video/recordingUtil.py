@@ -176,7 +176,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, episode):
                            % (settings.XGDS_VIDEO_VLC_PATH,
                               segmentInfo['videoFeed'].url))
     elif settings.XGDS_VIDEO_RECORDING_METHOD == 'HLS':
-        scriptPath = os.path.join(settings.PROJ_ROOT, 'apps', 'xgds_video', 'scripts', 'recordHLS.py')
+        scriptPath = os.path.join(settings.PROJ_ROOT, 'apps', 'xgds_video', 'scripts', 'recordHLS2.py')
         recorderCommand = ('%s --sourceUrl=%s --outputDir=%s --recorderId=%s --episodePK=%d --sourcePK=%d' % (scriptPath, segmentInfo['videoFeed'].url, segmentInfo['recordedVideoDir'], assetName, episode.pk, source.pk))
     
     print recorderCommand

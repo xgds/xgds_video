@@ -44,7 +44,7 @@ class HLSRecorder:
     
     def playlistTotalTime(self, playlist):
         totalTime = 0
-        for seg in playlist:
+        for seg in playlist.segments:
             totalTime += seg.duration
         return totalTime
     
@@ -176,7 +176,7 @@ class HLSRecorder:
             self.m3u8Full = copy.deepcopy(firstm3u8)
             self.m3u8Full.segments = m3u8.model.SegmentList()  # Initialize with empty list          
             #TODO we have never seen gaps here but it is theoretically possible.
-            for chunk in firstm3u8:
+            for chunk in firstm3u8.segments:
                 self.addToSegmentBuffer(chunk)
             sleepDuration = self.playlistTotalTime(firstm3u8) - firstm3u8.segments[-1].duration
             self.flushVideoAndPlaylist()
@@ -235,7 +235,7 @@ class HLSRecorder:
     def recordNextBlock(self, sleepAfterRecord=True):
         m3u8Latest = self.getM3U8()
         
-        for chunk in m3u8Latest:
+        for chunk in m3u8Latest.segments:
             if not self.segmentInBuffer(chunk):
                 self.addToSegmentBuffer(chunk)
 
