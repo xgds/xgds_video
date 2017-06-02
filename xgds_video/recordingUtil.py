@@ -18,6 +18,7 @@ import time
 import logging
 import os
 import stat
+import traceback
 
 from django.utils import timezone
 from django.conf import settings
@@ -124,9 +125,10 @@ def makeNewSegment(source, recordingDir, recordingUrl, startTime, episode):
 
         # adjust start and end times for all prio segments
         existingSegments = SEGMENT_MODEL.get().objects.filter(source=source,episode=episode)
-        for segment in existingSegments:
-            segment.adjustSegmentTimes()
+#         for segment in existingSegments:
+#             segment.adjustSegmentTimes()
     except:
+        traceback.print_exc()
         segmentNumber = 0
         recordedVideoDir = os.path.join(recordingDir, 'Segment%03d' % segmentNumber)
     

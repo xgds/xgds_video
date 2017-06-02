@@ -9,8 +9,10 @@ import pytz
 import copy
 import os
 from collections import deque
+import django
 from xgds_video.recordingUtil import invokeMakeNewSegment
 
+django.setup()
 RECORDER_SEGMENT_BUFFER_SIZE = 6
 
 class HLSRecorder:
@@ -19,6 +21,8 @@ class HLSRecorder:
         self.m3u8Full = None
         self.maxSegmentNumber = None
         self.sourceUrl = sourceUrl
+        self.sleepCycleCounter = 0
+        self.timeout = False
         self.m3u8DirPath = m3u8DirPath
         self.recorderId = recorderId
         self.episodePK = episodePK
@@ -141,7 +145,8 @@ class HLSRecorder:
             return  None # skip and give source a break
             
 
-    def saveM3U8ToFile(self):
+    def saveM3U8ToFile(self, addEndTag = False):
+        self.m3u8Full.is_endlist = addEndTag
         f = open(self.m3u8FilePath,"w")
         f.write(self.m3u8Full.dumps())
         f.close()
@@ -203,9 +208,7 @@ class HLSRecorder:
         f.close()
         self.m3u8Full.add_segment(seg)
         
-        f = open(self.m3u8FilePath,"w")
-        f.write(self.m3u8Full.dumps())
-        f.close()
+        self.saveM3U8ToFile()
 
 
     def makeNewXgdsSegment(self, m3u8Latest=None, seg=None, segNumber=None):
@@ -214,7 +217,7 @@ class HLSRecorder:
         # build the new m3u8 object that has the m3u8 segments we care about
         
         # First be sure existing index file is flushed to disk
-        self.saveM3U8ToFile()
+        self.saveM3U8ToFile(addEndTag=True)
         
         # Now create playlist for new xGDS segment with empty chunk list
         newM3u8Full = copy.deepcopy(self.m3u8Full)
@@ -243,8 +246,15 @@ class HLSRecorder:
 
         if sleepAfterRecord:
             #TODO handle discontinuity better
-            sleepDuration = self.playlistTotalTime(m3u8Latest) - m3u8Latest.segments[-1].duration
-            time.sleep(sleepDuration)
+            if len(m3u8Latest.segments) > 0:
+                sleepDuration = self.playlistTotalTime(m3u8Latest) - m3u8Latest.segments[-1].duration
+                self.timeout = False
+                self.sleepCycleCounter += 1
+                time.sleep(sleepDuration)
+            else:
+                self.sleepCycleCounter += 1
+                self.timeout = True
+                time.sleep(5)     # Something went wrong, wait 5 seconds and try again
 
     def runRecordingLoop(self):
         while not self.stopRecording:
@@ -253,10 +263,7 @@ class HLSRecorder:
                                                 self.recorderId)
 
         # When done write final copy of index with end tag
-        self.m3u8Full.is_endlist = True
-        f = open(self.m3u8FilePath,"w")
-        f.write(self.m3u8Full.dumps())
-        f.close()
+        self.saveM3U8ToFile(addEndTag=True)
 
 
 def main():
