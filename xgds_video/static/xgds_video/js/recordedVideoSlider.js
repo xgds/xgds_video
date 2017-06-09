@@ -190,7 +190,7 @@ $.extend(xgds_video,{
 	},
 	setSliderTime:function(datetime) {
 		//update the slider
-		var seconds = Math.round(datetime.getTime() / 1000);
+		var seconds = Math.round(datetime.unix());
 		$(xgds_video.masterSlider).slider('value', seconds);
 		xgds_video.setSliderTimeLabel(datetime);
 	}

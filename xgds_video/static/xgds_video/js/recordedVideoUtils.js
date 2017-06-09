@@ -117,9 +117,9 @@ $.extend(xgds_video,{
 
 	getSliderTime: function() {
 		if (!_.isUndefined(xgds_video.masterSlider)) {
-			return new Date(xgds_video.masterSlider.slider('value') * 1000);
+			return new moment(xgds_video.masterSlider.slider('value') * 1000);
 		} else {
-			return new Date(); // TODO this is probably not right you may be on delay
+			return new moment(); // TODO this is probably not right you may be on delay
 		}
 	},
 
@@ -309,7 +309,7 @@ $.extend(xgds_video,{
 		var nearestSeg = null;
 		var minDelta = Number.MAX_VALUE;
 		for (var source in xgds_video.options.displaySegments) {
-			if (currentTime >= xgds_video.options.displaySegments[source].startTime && currentTime <= xgds_video.options.displaySegments[source].endTime) {
+			if (currentTime.isSameOrAfter(xgds_video.options.displaySegments[source].startTime) && currentTime.isSameOrBefore(xgds_video.options.displaySegments[source].endTime)) {
 				var segments = xgds_video.options.displaySegments[source];
 				for (var id in segments) {
 					var segment = segments[id];
@@ -394,8 +394,8 @@ $.extend(xgds_video,{
 		var index = player.getPlaylistIndex();
 		var offset = player.getPosition();
 
-		var miliSeconds = segments[index].startTime.getTime() + (offset * 1000);
-		var currentTime = new Date(miliSeconds);
+		var currentTime = moment(segments[index].startTime);
+		currentTime.add(offset, 's');
 		return currentTime;
 	},
 
