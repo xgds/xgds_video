@@ -270,12 +270,12 @@ var indexFileUrl = null;
                 }
 
                 if (segment.startTime) {
-                    if(segment.startTime < xgds_video_options.firstSegment.startTime) {
+                    if(segment.startTime.isBefore(xgds_video_options.firstSegment.startTime)) {
                         xgds_video_options.firstSegment = segment;
                     }
                 }
                 if (segment.endTime) {
-                    if (segment.endTime > xgds_video_options.lastSegment.endTime) {
+                    if (segment.endTime.isAfter(xgds_video_options.lastSegment.endTime)) {
                         xgds_video_options.lastSegment = segment;
                     }
                 }

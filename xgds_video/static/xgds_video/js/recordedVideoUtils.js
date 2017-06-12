@@ -26,25 +26,6 @@ jQuery(function($) {
 var xgds_video = xgds_video || {};
 $.extend(xgds_video,{
 	defaultTimeFormat: "HH:mm:ss z",
-//	toJsDateTime: function(jsonDateTime) {
-//		/**
-//		 * Helper for converting json datetime object to javascript date time
-//		 */
-//		if ((jsonDateTime) && (jsonDateTime != 'None') && (jsonDateTime != '') && (jsonDateTime != undefined)) {
-//			//need to subtract one from month since Javascript datetime indexes month  0 to 11.
-//			jsonDateTime.month = jsonDateTime.month - 1;
-//			var utcDate = Date.UTC(jsonDateTime.year, 
-//									 jsonDateTime.month, 
-//									 jsonDateTime.day,
-//									 jsonDateTime.hour, 
-//									 jsonDateTime.min, 
-//									 jsonDateTime.seconds, 
-//									 0);
-//			var result = new Date(utcDate);
-//			return result;
-//		}
-//		return null;
-//	},
 
 	seekHelper: function(seekTimeStr) {
 		/**
@@ -54,7 +35,7 @@ $.extend(xgds_video,{
 		var seekTime = xgds_video.seekTimeParser(seekTimeStr);
 		var seekDateTime = null;
 		//XXX for now assume seek time's date is same as first segment's end date
-		seekDateTime = new Date(xgds_video.options.firstSegment.endTime);
+		seekDateTime = moment(xgds_video.options.firstSegment.endTime);
 		seekDateTime.setHours(parseInt(seekTime[0]));
 		if (seekTime.length >= 2){
 			seekDateTime.setMinutes(parseInt(seekTime[1]));

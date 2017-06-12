@@ -152,10 +152,10 @@ $.extend(xgds_video,{
 		 */
 		xgds_video.options.seekFlag = true;
 		var currTime = xgds_video.masterSlider.slider('value'); //in seconds
-		currTime = new Date(currTime * 1000); //convert to javascript date
-		console.log('SLIDER STOPPED, go to ' + currTime);
+		currTime = new moment(currTime * 1000).tz(xgds_video.options.timeZone); // why this did not use the default time zone I do not know 
+		console.log('SLIDER STOPPED, go to ' + currTime.format());
 		for (var source in xgds_video.options.displaySegments) {
-			xgds_video.jumpToPosition(currTime, source); //sourceName);
+			xgds_video.jumpToPosition(currTime, source);
 			//XXX take care of the case where seek time is not within playable range.
 			//then go to the nearest available segment and play from there.
 		}

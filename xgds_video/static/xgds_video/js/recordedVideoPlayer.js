@@ -18,6 +18,7 @@ var xgds_video = xgds_video || {};
 $.extend(xgds_video,{
 	initialize: function(options){
 		xgds_video.options = options;
+		moment.tz.setDefault(options.timeZone);
 	},
 	commonOptions: {
 		preload: 'auto',
@@ -234,14 +235,17 @@ $.extend(xgds_video,{
 
 	startPlayer:function(player) {
 		var index = 0;
-		if (xgds_video.options.noteTimeStamp != null) { // noteTimeStamp is in local time (i.e. PDT)
+		if (xgds_video.options.noteTimeStamp != null && !_.isEmpty(xgds_video.options.noteTimeStamp)) { // noteTimeStamp is in local time (i.e. PDT)
 			var datetime = xgds_video.options.noteTimeStamp;
 			//check if datetime is valid
-			if ((datetime != 'Invalid Date') && ((datetime >= xgds_video.options.firstSegment.startTime) &&
-					(datetime < xgds_video.options.lastSegment.endTime))) {
-				xgds_video.options.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
-				xgds_video.seekAllPlayersToTime(datetime);
-				return;
+			if (datetime != 'Invalid Date') {
+				noteDateTime = moment(datetime);
+				if (noteDateTime.isSameOrAfter(xgds_video.options.firstSegment.startTime) &&
+					(noteDateTime.isBefore(xgds_video.options.lastSegment.endTime))) {
+					xgds_video.options.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
+					xgds_video.seekAllPlayersToTime(noteDateTime);
+					return;
+				}
 			}
 		} else {
 			// force an initial seek to buffer data
