@@ -32,24 +32,44 @@ $.extend(xgds_video,{
 		events: {
 			onReady: function() {
 				xgds_video.setupPlaylist(this.id);
-				//if there is a seektime in the url, start videos at that time.
-				if (window.location.hash) {
-					xgds_video.seekFromUrlOffset();
+				//xgds_video.startPlayer(this);
+				//TODO it looks like this was already set up by the time we got here.
+				if (!_.isEmpty(xgds_video.options.noteTimeStamp)) {
+					var theMoment = new moment(xgds_video.options.noteTimeStamp);
+					theMoment.tz(xgds_video.options.timeZone);
+					xgds_video.seekAllPlayersToTime(theMoment);
 				} else {
-					xgds_video.startPlayer(this);
+					try {
+						//if there is a seektime in the url, start videos at that time.
+						var splits = window.location.href.split('/')
+						var theTimeString = splits[splits.length - 2];
+						if (theTimeString.indexOf('%20') > 0) {
+							theTimeString = theTimeString.replace('%20',' ');
+							var theMoment = new moment(theTimeString);
+							theMoment.tz(xgds_video.options.timeZone);
+							xgds_video.seekAllPlayersToTime(theMoment);
+						}
+					} catch (err){
+						// ulp
+					}
 				}
+				xgds_video.startPlayer(this);
 				xgds_video.soundController();
+			},
+			onSeek: function(data) {
+				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
+				console.log('POSITION IS NOW ' + this.getPosition());
 			},
 			onComplete: function() {
 				console.log('onComplete ' + this.id + ' ' + this.getState());
 				//stop until start of the next segment.
-				//console.log(this.getState());
 				// we are already idle no need to pause
 				//this.pause(true);
-//				console.log(this.getState());
-				console.log('45 calling complete');
 				//TODO I am pretty sure we don't need to do this because it is called by onTime
 				xgds_video.onSegmentComplete(this);
+			},
+			onFirstFrame: function(e){
+				console.log(e);
 			},
 			onPlay: function(e) { //gets called per source
 				console.log('onPlay ' + this.id);
@@ -80,7 +100,6 @@ $.extend(xgds_video,{
 				xgds_video.onTimeController(this);
 			},
 			onBuffer: function(e) {
-				console.log('onBuffer ' + this.id);
 				xgds_video.onTimeController(this);
 			},
 			onIdle: function(e) {
@@ -91,9 +110,6 @@ $.extend(xgds_video,{
 					xgds_video.onSegmentComplete(this);
 				}
 				//xgds_video.onTimeController(this);
-			},
-			onSeek: function(e) {
-				//  onTimeController(this);
 			},
 			onTime: function(object) {
 				if (!xgds_video.options.hasMasterSlider){
@@ -138,6 +154,9 @@ $.extend(xgds_video,{
 	},
 
 	buildOptions: function(initial, theFile, autoStart, width){
+		if (autoStart == false){
+			autoStart = 'false';
+		}
 		initial['autostart'] = autoStart;
 		initial['file'] = theFile;
 		initial['width'] = width;
@@ -198,18 +217,20 @@ $.extend(xgds_video,{
 		/**
 		 * Only called once onReady. Kickstarts the player with earliest starttime.
 		 */
-		if (!_.isEmpty(xgds_video.options.noteTimeStamp)) { // noteTimeStamp is in local time (i.e. PDT)
-			var datetime = moment(xgds_video.options.noteTimeStamp);
-			//check if datetime is valid
-			if (datetime.isValid() && 
-				datetime.isSameOrAfter(xgds_video.options.firstSegment.startTime) &&
-				datetime.isBefore(xgds_video.options.lastSegment.endTime)) {
-				xgds_video.options.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
-				xgds_video.seekAllPlayersToTime(datetime);
-				return;
-			}
-		}
-		else {
+		// this happens after the player is ready anyhow.
+//		if (!_.isEmpty(xgds_video.options.noteTimeStamp)) { 
+//			var datetime = moment(xgds_video.options.noteTimeStamp); // noteTimeStamp is in UTC
+//			datetime = getLocalTime(datetime, xgds_video.options.timeZone); // convert it to local time zone
+//			//check if datetime is valid
+//			if (datetime.isValid() && 
+//				datetime.isSameOrAfter(xgds_video.options.firstSegment.startTime) &&
+//				datetime.isBefore(xgds_video.options.lastSegment.endTime)) {
+//				xgds_video.options.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
+//				xgds_video.seekAllPlayersToTime(datetime);
+//				return;
+//			}
+//		}
+//		else {
 			//  force an initial seek to buffer data
 			xgds_video.options.initialState = true; //to prevent onTime from being run right away before player had a chance to seek to init location
 			for (var source in xgds_video.options.displaySegments) {
@@ -219,14 +240,14 @@ $.extend(xgds_video,{
 					jwplayer(source).playlistItem(xgds_video.options.displaySegments[source].length - 1);
 				}	
 			}
-		}
+		//}
 
 		//find the first segment and play it.
 		if (xgds_video.options.hasMasterSlider){
 			var startTime = xgds_video.options.firstSegment.startTime;
 			for (var source in xgds_video.options.displaySegments) {
 				var segments = xgds_video.options.displaySegments[source];
-				if (startTime >= segments[0].startTime) {
+				if (startTime.isSameOrAfter(segments[0].startTime)) {
 					jwplayer(source).pause(true);
 				}
 			}
@@ -273,16 +294,16 @@ $.extend(xgds_video,{
 		}
 	},
 
-	seekFromUrlOffset: function() {
-		/**
-		 * Only called once onReady. Reads offset from URL hash
-		 * (i.e. http://mvp.xgds.snrf/xgds_video/archivedImageStream/2014-06-19#19:00:00)
-		 * and seeks to that time.
-		 */
-
-		var timestr = window.location.hash.substr(1); //i.e. 19:00:00
-		xgds_video.seekHelper(timestr);
-	},
+//	seekFromUrlOffset: function() {
+//		/**
+//		 * Only called once onReady. Reads offset from URL hash
+//		 * (i.e. http://mvp.xgds.snrf/xgds_video/archivedImageStream/2014-06-19#19:00:00)
+//		 * and seeks to that time.
+//		 */
+//
+//		var timestr = window.location.hash.substr(1); //i.e. 19:00:00
+//		xgds_video.seekHelper(timestr);
+//	},
 
 	soundController: function() {
 		/**
@@ -403,7 +424,9 @@ $.extend(xgds_video,{
 		}
 		xgds_video.options.playFlag = true;
 		$('#playbutton').addClass("active");
+		$('#playbuttonLink').addClass("active");
 		$('#pausebutton').removeClass("active");
+		$('#pausebuttonLink').addClass("active");
 		if (xgds_video.options.hasMasterSlider){
 			var currTime = xgds_video.getSliderTime();
 		}
@@ -416,7 +439,7 @@ $.extend(xgds_video,{
 				var currentIndex = jwplayer(source).getPlaylistIndex();
 				if (!(_.isUndefined(currentIndex))) {
 					var segment = segments[currentIndex];
-					if ((segment.startTime <= currTime) && (segment.endTime >= currTime)) {
+					if ((segment.startTime.isSameOrBefore(currTime)) && (segment.endTime.isSameOrAfter(currTime))) {
 						jwplayer(source).play(true);
 					}
 				}
@@ -436,8 +459,11 @@ $.extend(xgds_video,{
 			return;
 		}
 		xgds_video.options.playFlag = false;
-		$('#pausebutton').addClass("active");
 		$('#playbutton').removeClass("active");
+		$('#playbuttonLink').removeClass("active");
+		$('#pausebutton').addClass("active");
+		$('#pausebuttonLink').addClass("active");
+
 		for (var source in xgds_video.options.displaySegments) {
 			jwplayer(source).pause(true);
 		}

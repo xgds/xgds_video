@@ -22,7 +22,7 @@ from xgds_video import views, recordingUtil
 urlpatterns = [
     url(r'^liveVideo/$', views.displayLiveVideo, {'loginRequired': False}, 'xgds_video_live'),  # active live undelayed video
     url(r'^liveVideo/(?P<sourceShortName>[^/]+)/$', views.displayLiveVideo, {'loginRequired': False}, 'xgds_video_live_source'),  # active live undelayed video
-    url(r'videoIndexFile/(?P<flightName>[^/]+)/(?P<sourceShortName>[^/]+)/(?P<segmentNumber>[^/]+)/prog_index.m3u8', views.videoIndexFile, {'loginRequired': False}, 'xgds_video_index_file'),
+    url(r'videoIndexFile/(?P<flightName>[^/]+)/(?P<sourceShortName>[^/]+)/(?P<segmentNumber>[^/]+)/\w*\.m3u8', views.videoIndexFile, {'loginRequired': False}, 'xgds_video_index_file'),
     url(r'^noteVideo/(?P<flightName>\w+)/(?P<time>[^/]+)/$', views.displayRecordedVideo, {}, 'xgds_video_recorded_time'),  # recorded video for one note
     url(r'^noteVideo/(?P<flightName>\w+)/(?P<sourceShortName>[^/]+)/(?P<time>[^/]+)/$', views.displayRecordedVideo, {}, 'xgds_video_recorded_time'),  # recorded video for one note
     # full-size still from video

@@ -21,10 +21,11 @@ import traceback
 import m3u8
 
 from django.conf import settings
-from geocamUtil.loader import getClassByName
+from geocamUtil.loader import LazyGetModelByName, getClassByName
+
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
-
+SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 
 def getDelaySeconds(flightName):
     return settings.XGDS_VIDEO_DELAY_SECONDS
@@ -42,12 +43,12 @@ def convertUtcToLocal(time):
         return ""
 
 
-def pythonDatetimeToJSON(pyDateTime):
-    if pyDateTime:
-        return {"year": pyDateTime.year, "month": pyDateTime.month, "day": pyDateTime.day,
-                "hour": pyDateTime.hour, "min": pyDateTime.minute, "seconds": pyDateTime.second}
-    else:
-        return ""
+# def pythonDatetimeToJSON(pyDateTime):
+#     if pyDateTime:
+#         return {"year": pyDateTime.year, "month": pyDateTime.month, "day": pyDateTime.day,
+#                 "hour": pyDateTime.hour, "min": pyDateTime.minute, "seconds": pyDateTime.second}
+#     else:
+#         return ""
 
 
 def setSegmentEndTimes(segments, episode, source):
@@ -119,7 +120,23 @@ def getSegmentPath(flightName, sourceName, number):
         return '%s/Video/Recordings/Segment%03d/' % (flightName, int(number))
 
 def getIndexFileSuffix(flightName, sourceShortName, segmentNumber):
-    return '%s/prog_index.m3u8' % getSegmentPath(flightName, sourceShortName, segmentNumber)
+    indexFileName = settings.XGDS_VIDEO_INDEX_FILE_NAME
+    splits = flightName.split('_')
+    try:
+        if sourceShortName:
+            if flightName.endswith(sourceShortName):
+                flightName = splits[0]
+            segments = SEGMENT_MODEL.get().objects.filter(episode__shortName=flightName,segNumber=segmentNumber,source__name=sourceShortName)
+        else:
+            # flight name encodes both, split it
+            segments = SEGMENT_MODEL.get().objects.filter(episode__shortName=splits[0],segNumber=segmentNumber,source__name=splits[1])
+            
+        # should only be one
+        indexFileName = segments[0].indexFileName
+    except:
+        pass
+    
+    return '%s/%s' % (getSegmentPath(flightName, sourceShortName, segmentNumber), indexFileName)
 
 
 def getSegmentsFromEndForDelay(delayTime, indexPath):

@@ -126,7 +126,7 @@ def setVideoRecorderStatus(resourceNames):
             prevSegNum = jsonDict['segNumber']
             
             # make sure m3u8 index file exists
-            indexFilePath = settings.DATA_ROOT + getActiveFlightLatestSegmentIndexFilePath() + 'prog_index.m3u8'
+            indexFilePath = settings.DATA_ROOT + getActiveFlightLatestSegmentIndexFilePath() + settings.XGDS_VIDEO_INDEX_FILE_NAME
             indexFileExists = checkIndexFileExists(indexFilePath)
             tsFileCount = getTsFileCount(indexFilePath)
             segNum = getActiveFlightLatestSegment().segNumber

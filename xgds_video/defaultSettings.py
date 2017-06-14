@@ -26,7 +26,7 @@ XGDS_VIDEO_FEED_MODEL = 'xgds_video.VideoFeed'
 XGDS_VIDEO_SEGMENT_MODEL = 'xgds_video.VideoSegment'
 XGDS_VIDEO_EPISODE_MODEL = 'xgds_video.VideoEpisode'
 
-XGDS_VIDEO_INDEX_FILE_NAME = "prog_index.m3u8"
+XGDS_VIDEO_INDEX_FILE_NAME = "playlist.m3u8" # for vlc use prog_index.m3u8"
 XGDS_VIDEO_INDEX_FILE_END_TAG = "#EXT-X-ENDLIST"
 if platform.system() == 'Linux':
     XGDS_VIDEO_VLC_PATH = '/usr/bin/vlc'

@@ -148,7 +148,7 @@ DEFAULT_EPISODE_FIELD = lambda: models.ForeignKey('xgds_video.VideoEpisode', nul
 class AbstractVideoSegment(models.Model):
     directoryName = models.CharField(max_length=256, help_text="ie. Segment")
     segNumber = models.PositiveIntegerField(null=True, blank=True, help_text="ie. 1", db_index=True)
-    indexFileName = models.CharField(max_length=50, help_text="ie. prog_index.m3u8")
+    indexFileName = models.CharField(max_length=50, help_text="ie. prog_index.m3u8", default=settings.XGDS_VIDEO_INDEX_FILE_NAME)
     startTime = models.DateTimeField(null=True, blank=True, help_text="Second precision, utc. Start time needs to be later than episode start time", db_index=True)  # second precision, utc
     endTime = models.DateTimeField(null=True, blank=True, help_text="needs to be earlier than episode end time", db_index=True)
     settings = 'set to DEFAULT_SETTINGS_FIELD() or similar in derived classes'
@@ -193,8 +193,8 @@ class AbstractVideoSegment(models.Model):
                 "segNumber": self.segNumber,
                 "indexFileName": self.indexFileName,
                 "source": self.source.getDict(),
-                "startTime": util.pythonDatetimeToJSON(self.startTime), # util.convertUtcToLocal(self.startTime)),
-                "endTime": util.pythonDatetimeToJSON(self.endTime), # util.convertUtcToLocal(self.endTime)),
+                "startTime": self.startTime, #util.pythonDatetimeToJSON(self.startTime), # util.convertUtcToLocal(self.startTime)),
+                "endTime": self.endTime, # util.pythonDatetimeToJSON(self.endTime), # util.convertUtcToLocal(self.endTime)),
                 "timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'],
                 "settings": self.settings.getDict(),
                 "episode": self.episode.getDict()}
@@ -237,10 +237,10 @@ class AbstractVideoEpisode(models.Model):
         episodeEndTime = None
 
         if self.startTime:
-            episodeStartTime = util.pythonDatetimeToJSON(self.startTime)
+            episodeStartTime = self.startTime #util.pythonDatetimeToJSON(self.startTime)
 
         if self.endTime:  # if endTime is none (when live stream has not ended)
-            episodeEndTime = util.pythonDatetimeToJSON(self.endTime)
+            episodeEndTime = self.endTime # util.pythonDatetimeToJSON(self.endTime)
 
         return {"shortName": self.shortName,
                 "startTime": episodeStartTime,

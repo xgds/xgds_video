@@ -146,7 +146,7 @@ def makeNewSegment(source, recordingDir, recordingUrl, startTime, episode):
 
     videoSegment, created = SEGMENT_MODEL.get().objects.get_or_create(directoryName="Segment",
                                                                       segNumber=segmentNumber,
-                                                                      indexFileName="prog_index.m3u8",
+                                                                      indexFileName=settings.XGDS_VIDEO_INDEX_FILE_NAME, 
                                                                       endTime=None,
                                                                       settings=videoSettings,
                                                                       source=source,

@@ -98,7 +98,9 @@ $.extend(xgds_video,{
 
 	getSliderTime: function() {
 		if (!_.isUndefined(xgds_video.masterSlider)) {
-			return new moment(xgds_video.masterSlider.slider('value') * 1000);
+			var result = new moment(xgds_video.masterSlider.slider('value') * 1000);
+			result.tz(xgds_video.options.timeZone);
+			return result;
 		} else {
 			return new moment(); // TODO this is probably not right you may be on delay
 		}
@@ -182,7 +184,21 @@ $.extend(xgds_video,{
 	addPendingSeekAction: function(source, offset, player) {
 		var actionObj = {action: player.seek,
 						 arg: offset };
-		xgds_video.pendingPlayerActions[source] = [actionObj];
+		if (xgds_video.pendingPlayerActions[source] == undefined){
+			xgds_video.pendingPlayerActions[source] = [actionObj];
+		} else {
+			xgds_video.pendingPlayerActions[source].push(actionObj);
+		} 
+			
+	},
+	addPendingPauseAction: function(source, player) {
+		var actionObj = {action: player.pause,
+						 arg: true };
+		if (xgds_video.pendingPlayerActions[source] == undefined){
+			xgds_video.pendingPlayerActions[source] = [actionObj];
+		} else {
+			xgds_video.pendingPlayerActions[source].push(actionObj);
+		}
 	},
 	setPlaylistAndSeek:function(source, index, offset) {
 		/**
@@ -192,6 +208,7 @@ $.extend(xgds_video,{
 		 */
 		console.log(source + ':' + index + ':' + offset + ' setPlaylistAndSeek');
 		var player = jwplayer(source);
+		var lastState = player.getState();
 		var currentIndex = player.getPlaylistIndex();
 		var currentOffset = 0;
 		var playlistLoaded = false;
@@ -207,10 +224,27 @@ $.extend(xgds_video,{
 		// Queuing in list for handling in onPlay(), below, works better for Flash. Yuck!
 		if (player.getRenderingMode() == 'html5') {
 			if (!playlistLoaded){
-				player.playlistItem(index).seek(offset);
+				player.playlistItem(index);
+				if (lastState !== 'PLAYING'){
+					xgds_video.addPendingSeekAction(source, offset, player);
+					//xgds_video.addPendingPauseAction(source, player);
+					player.play(true);
+				} else {
+					player.seek(offset);
+				}
 			} else {
-				player.seek(offset);
-
+				try {
+					console.log('SEEKING TO ' + offset)
+					if (lastState !== 'PLAYING'){
+						xgds_video.addPendingSeekAction(source, offset, player);
+						//xgds_video.addPendingPauseAction(source, player);
+						player.play(true);
+					} else {
+						player.seek(offset);
+					}
+				} catch (err){
+					console.log(err);
+				}
 			}
 //			console.log("SET SEEK playlist index " + player.getPlaylistIndex());
 		}
@@ -234,7 +268,11 @@ $.extend(xgds_video,{
 				}
 				console.log(player.getState());
 				console.log('238 seeking ' + offset);
-				player.seek(offset);
+				try {
+					player.seek(offset);
+				} catch (err){
+					console.log(err);
+				}
 				var newOffset = Math.round(player.getPosition());
 				if (newOffset == currentOffset){
 					console.log('********* error state, added seek action: ' + player.getState());

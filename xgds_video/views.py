@@ -404,7 +404,10 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         try:
             requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
         except:
-            requestedTime = dateparse.parse_datetime(time)
+            try: 
+                requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S+00:00")
+            except:
+                requestedTime = dateparse.parse_datetime(time)
 
     GET_ACTIVE_EPISODE_METHOD = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)
     activeepisode = GET_ACTIVE_EPISODE_METHOD()
@@ -479,7 +482,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     if not segmentsDict:
         return recordedVideoError(request, "No video segments found " + flightName)
     segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4, cls=DatetimeJsonEncoder)
-    episodeJson = json.dumps(episode.getDict())
+    episodeJson = json.dumps(episode.getDict(), cls=DatetimeJsonEncoder)
 
     theTemplate = 'xgds_video/map_recorded_playbacks.html'
     if active:
@@ -487,7 +490,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
 
     noteModelName = str(NOTE_MODEL.get().cls_type())
     noteForm = getClassByName(settings.XGDS_NOTES_BUILD_NOTES_FORM)({'vehicle__name':sourceShortName,
-                                                                     'flight__group_name':flightName})
+                                                                     'flight__group_name':episode.shortName})  #TODO this assumes the episode short name and group flight name are the same
     ctx = {
         'segmentsJson': segmentsJson,
         'episode': episode,
@@ -597,6 +600,7 @@ def videoIndexFile(request, flightName=None, sourceShortName=None, segmentNumber
     """
     modifies index file of recorded video to the correct host.
     """
+    
     # Look up path to index file
     GET_INDEX_FILE_METHOD = getClassByName(settings.XGDS_VIDEO_INDEX_FILE_METHOD)
     suffix = GET_INDEX_FILE_METHOD(flightName, sourceShortName, segmentNumber)
@@ -605,6 +609,7 @@ def videoIndexFile(request, flightName=None, sourceShortName=None, segmentNumber
     newIndex = util.updateIndexFilePrefix(suffix, settings.SCRIPT_NAME, flightName)
     # return modified file in next line
     response = HttpResponse(newIndex, content_type="application/x-mpegurl")
-    response['Content-Disposition'] = 'filename = "prog_index.m3u8"'
+    content_disposition = 'filename = "%s"' % os.path.basename(suffix)
+    response['Content-Disposition'] = content_disposition
     return response
 
