@@ -202,20 +202,14 @@ $.extend(xgds_video,{
 			}
 		}
 		if (!playlistLoaded){
-			console.log('LOADING PLAYLIST ITEM ' + index);
 			player.playlistItem(index);
 			lastState = player.getState();
-			console.log('NOW INDEX IS LOADED: ' + player.getPlaylistIndex());
-			console.log('STATE IS : ' + player.getState()); //TODO if we are buffering ... then we have to wait
 		}
 		try {
 			if (lastState !== 'playing'){
 				xgds_video.addPendingSeekAction(source, offset, player);
 				//xgds_video.addPendingPauseAction(source, player);
-				//console.log('force play');
-				//player.play(true);
 			} else {
-				console.log('direct seek to offset ' + source + ' ' + offset);
 				player.seek(offset);
 			}
 		} catch (err){
@@ -247,10 +241,7 @@ $.extend(xgds_video,{
 			}
 		} else { //current time is not in the playable range.
 			//pause the player
-			console.log('offset no good for ' + source);
-			console.log('player state is ' + player.getState());
 			if ((player.getState() == 'playing') || (player.getState() == 'idle')) {
-				console.log('pausing player');
 				player.pause(true);
 			}
 		}
