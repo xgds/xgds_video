@@ -88,14 +88,14 @@ $.extend(xgds_video,{
 				xgds_video.startPlayer(this);
 				xgds_video.soundController();
 			},
-			onSeek: function(data) {
-				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
-				console.log('POSITION IS NOW ' + this.getPosition());
-			},
-			onSeeked: function(data) {
-				console.log('ON SEEKED: ' + data.startPosition + " | " + data.offset);
-				console.log('POSITION IS NOW ' + this.getPosition());
-			},
+//			onSeek: function(data) {
+//				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
+//				console.log('POSITION IS NOW ' + this.getPosition());
+//			},
+//			onSeeked: function(data) {
+//				console.log('ON SEEKED: ' + data.startPosition + " | " + data.offset);
+//				console.log('POSITION IS NOW ' + this.getPosition());
+//			},
 			onComplete: function() {
 				console.log('onComplete ' + this.id + ' ' + this.getState());
 				//stop until start of the next segment.
@@ -156,7 +156,7 @@ $.extend(xgds_video,{
 					return;
 				}
 
-				// update test site time (all sources that are 'PLAYING')
+				// update test site time (all sources that are 'playing')
 				if (!xgds_video.options.seekFlag && !xgds_video.options.movingSlider) {
 					var testSiteTime = xgds_video.getPlayerVideoTime(this.id);
 					xgds_video.setPlayerTimeLabel(testSiteTime, this.id);
@@ -209,10 +209,10 @@ $.extend(xgds_video,{
 
 		var switchPlayer = false;
 		if (player.id == xgds_video.options.onTimePlayer) {
-			if (player.getState() != 'PLAYING') {
+			if (player.getState() != 'playing') {
 				switchPlayer = true;
 			}
-		} else if (jwplayer(xgds_video.options.onTimePlayer).getState() != 'PLAYING') {
+		} else if (jwplayer(xgds_video.options.onTimePlayer).getState() != 'playing') {
 			switchPlayer = true;
 		}
 		if (xgds_video.options.hasMasterSlider && switchPlayer) {
@@ -222,7 +222,7 @@ $.extend(xgds_video,{
 	updateSliderFromPlayer: function() {
 		var foundPlayingPlayer = false;
 		for (var source in xgds_video.options.displaySegments) {
-			if (jwplayer(source).getState() == 'PLAYING') {
+			if (jwplayer(source).getState() == 'playing') {
 				xgds_video.options.onTimePlayer = source;
 				foundPlayingPlayer = true;
 				break;
@@ -236,7 +236,7 @@ $.extend(xgds_video,{
 				var time = xgds_video.getSliderTime();
 				var sourceName = xgds_video.getNextAvailableSegment(time)['source'];
 				if (!(_.isUndefined(sourceName)) && !(_.isEmpty(sourceName))) { //there is only one segment for each source and
-					//none of the players are in 'PLAYING' state.
+					//none of the players are in 'playing' state.
 					xgds_video.options.onTimePlayer = sourceName;
 				} //else leave the onTimePlayer as it is.
 			}

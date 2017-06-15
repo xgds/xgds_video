@@ -197,19 +197,15 @@ $.extend(xgds_video,{
 			playlistLoaded = true;
 			var playerPosition = player.getPosition();
 			currentOffset = Math.round(playerPosition);
-			console.log('current offset is ' + currentOffset  +  " rounded from: " + playerPosition);
 			if (currentOffset == offset){
-				console.log('already at offset');
 				return;
 			}
 		}
 		if (!playlistLoaded){
-			console.log('loading playlist item ' + source + index);
 			player.playlistItem(index);
 		}
 		try {
-			if (lastState !== 'PLAYING'){
-				console.log('adding pending seek for offset ' + source + ' ' + offset);
+			if (lastState !== 'playing'){
 				xgds_video.addPendingSeekAction(source, offset, player);
 				//xgds_video.addPendingPauseAction(source, player);
 				//console.log('force play');
@@ -235,8 +231,6 @@ $.extend(xgds_video,{
 		if (_.isUndefined(seekValues)) {
 			seekValues = xgds_video.getPlaylistIdxAndOffset(currentTime, source);
 		}
-		console.log('seek values');
-		console.log(seekValues);
 		var player = jwplayer(source);
 		//currentTime falls in one of the segments.
 		if (!_.isUndefined(seekValues) && seekValues != false) {
@@ -249,7 +243,10 @@ $.extend(xgds_video,{
 			}
 		} else { //current time is not in the playable range.
 			//pause the player
-			if ((player.getState() == 'PLAYING') || (player.getState() == 'IDLE')) {
+			console.log('offset no good for ' + source);
+			console.log('player state is ' + player.getState());
+			if ((player.getState() == 'playing') || (player.getState() == 'idle')) {
+				console.log('pausing player');
 				player.pause(true);
 			}
 		}
@@ -302,7 +299,7 @@ $.extend(xgds_video,{
 		 */
 		for (var source in xgds_video.options.displaySegments) {
 			var state = jwplayer(source).getState();
-			if ((state != 'PAUSED') && (state != 'IDLE')) {
+			if ((state != 'paused') && (state != 'idle')) {
 				return false;
 			}
 		}
@@ -370,7 +367,7 @@ $.extend(xgds_video,{
 		for (var source in xgds_video.options.displaySegments) {
 			if (source != exceptThisPlayer) {
 				var state = jwplayer(source).getState();
-				if ((state == 'IDLE') || (state == 'PAUSED')) {
+				if ((state == 'idle') || (state == 'paused')) {
 					xgds_video.jumpToPosition(datetime, source, undefined);
 				}
 			}
