@@ -250,38 +250,6 @@ var indexFileUrl = null;
 		                     };
 	{% endblock xgds_video_options %}
 
-    {% if episode %}
-    	xgds_video.convertJSONtoJavascriptDateTime(xgds_video_options.episode);
-	{% endif %}
-
-    {% for source in sources %}
-        var segments = xgds_video_options.displaySegments["{{ source.shortName }}"];
-        if ((segments != undefined) && (segments.length > 0)) {
-            $.each(segments, function(id) {
-                var segment = segments[id];
-                segment.startTime = moment(segment.startTime);
-                segment.endTime = moment(segment.endTime);
-
-                if(xgds_video_options.firstSegment == null) {
-                    xgds_video_options.firstSegment = segment;
-                }
-                if (xgds_video_options.lastSegment == null) {
-                    xgds_video_options.lastSegment = segment;
-                }
-
-                if (segment.startTime) {
-                    if(segment.startTime.isBefore(xgds_video_options.firstSegment.startTime)) {
-                        xgds_video_options.firstSegment = segment;
-                    }
-                }
-                if (segment.endTime) {
-                    if (segment.endTime.isAfter(xgds_video_options.lastSegment.endTime)) {
-                        xgds_video_options.lastSegment = segment;
-                    }
-                }
-            });
-        }
-    {% endfor %}
     {% endif %}
     {% endblock initSegments %}
 
@@ -309,7 +277,7 @@ var indexFileUrl = null;
 		xgds_gridstack.THE_GRIDSTACK.removeWidget(sgi);
 		
 		// clear out the today button for recorded playbacks
-		$("#today").attr('checked', false);
+		$("#today").prop('checked', false);
 	});
 	{% endblock lastJsInit %}
 	

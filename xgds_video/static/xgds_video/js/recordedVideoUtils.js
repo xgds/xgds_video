@@ -26,7 +26,6 @@ jQuery(function($) {
 var xgds_video = xgds_video || {};
 $.extend(xgds_video,{
 	defaultTimeFormat: "HH:mm:ss z",
-
 	seekHelper: function(seekTimeStr) {
 		/**
 		 * Used by both seekCallBack and seekFromUrlOffset
@@ -36,21 +35,21 @@ $.extend(xgds_video,{
 		var seekDateTime = null;
 		//XXX for now assume seek time's date is same as first segment's end date
 		seekDateTime = moment(xgds_video.options.firstSegment.endTime);
-		seekDateTime.setHours(parseInt(seekTime[0]));
+		seekDateTime.hours(parseInt(seekTime[0]));
 		if (seekTime.length >= 2){
-			seekDateTime.setMinutes(parseInt(seekTime[1]));
+			seekDateTime.minutes(parseInt(seekTime[1]));
 		} else {
-			seekDateTime.setMinutes(0);
+			seekDateTime.minutes(0);
 		}
 		if (seekTime.length == 3){
-			seekDateTime.setSeconds(parseInt(seekTime[2]));
+			seekDateTime.seconds(parseInt(seekTime[2]));
 		} else {
-			seekDateTime.setSeconds(0);
+			seekDateTime.seconds(0);
 		}
 		xgds_video.seekAllPlayersToTime(seekDateTime);
 	},
 
-	convertJSONtoJavascriptDateTime: function(episode) {
+	initializeEpisodeTimes: function(episode) {
 		/**
 		 * convert episode start/end time to javascript dateTime
 		 */
@@ -58,10 +57,10 @@ $.extend(xgds_video,{
 			return;
 		}
 		if (episode.startTime) {
-			episode.startTime = moment(episode.startTime);
+			episode.startTime = getLocalTime(episode.startTime, xgds_video.options.timeZone); //moment(episode.startTime);
 		}
 		if (episode.endTime) {
-			episode.endTime = moment(episode.endTime);
+			episode.endTime = getLocalTime(episode.endTime, xgds_video.options.timeZone); //moment(episode.endTime);
 		}
 	},
 
@@ -133,23 +132,6 @@ $.extend(xgds_video,{
 		}
 		var playlistIdx = null;
 		var offset = null;
-		var segments = xgds_video.options.displaySegments[source];
-
-//		if (datetime >= xgds_video.options.displaySegments[source].startTime && datetime <= xgds_video.options.displaySegments[source].endTime) {
-//		for (var i = 0; i < segments.length; i++) {
-//		if ((datetime >= segments[i].startTime) &&
-//		(datetime <= segments[i].endTime)) {
-//		playlistIdx = i;
-//		//in seconds
-//		offset = Math.round((datetime - segments[i].startTime) / 1000);
-//		break;
-//		}
-//		}
-//		if ((playlistIdx != null) && (offset != null)) {
-//		return {index: playlistIdx, offset: offset};
-//		} 
-//		}
-
 		var nowMoment = moment(datetime);
 		var segments = xgds_video.options.displaySegments[source];
 		for (var i = 0; i < segments.length; i++ ) { 
@@ -206,7 +188,6 @@ $.extend(xgds_video,{
 		 * html 5 and flash.
 		 * Example: setPlaylistAndSeek('ROV', 1, 120)
 		 */
-		console.log(source + ':' + index + ':' + offset + ' setPlaylistAndSeek');
 		var player = jwplayer(source);
 		var lastState = player.getState();
 		var currentIndex = player.getPlaylistIndex();
@@ -214,73 +195,31 @@ $.extend(xgds_video,{
 		var playlistLoaded = false;
 		if (currentIndex == index){
 			playlistLoaded = true;
-			currentOffset = Math.round(player.getPosition());
+			var playerPosition = player.getPosition();
+			currentOffset = Math.round(playerPosition);
+			console.log('current offset is ' + currentOffset  +  " rounded from: " + playerPosition);
 			if (currentOffset == offset){
+				console.log('already at offset');
 				return;
 			}
-			console.log('current offset:' + currentOffset);
 		}
-		// Calling immediately seems to work better for HTML5,
-		// Queuing in list for handling in onPlay(), below, works better for Flash. Yuck!
-		if (player.getRenderingMode() == 'html5') {
-			if (!playlistLoaded){
-				player.playlistItem(index);
-				if (lastState !== 'PLAYING'){
-					xgds_video.addPendingSeekAction(source, offset, player);
-					//xgds_video.addPendingPauseAction(source, player);
-					player.play(true);
-				} else {
-					player.seek(offset);
-				}
-			} else {
-				try {
-					console.log('SEEKING TO ' + offset)
-					if (lastState !== 'PLAYING'){
-						xgds_video.addPendingSeekAction(source, offset, player);
-						//xgds_video.addPendingPauseAction(source, player);
-						player.play(true);
-					} else {
-						player.seek(offset);
-					}
-				} catch (err){
-					console.log(err);
-				}
-			}
-//			console.log("SET SEEK playlist index " + player.getPlaylistIndex());
+		if (!playlistLoaded){
+			console.log('loading playlist item ' + source + index);
+			player.playlistItem(index);
 		}
-		else {
-			if (!playlistLoaded){
+		try {
+			if (lastState !== 'PLAYING'){
+				console.log('adding pending seek for offset ' + source + ' ' + offset);
 				xgds_video.addPendingSeekAction(source, offset, player);
-				console.log('238 playlistitem' + index);
-				console.log(actionObj);
-				player.playlistItem(index);
-				console.log('new index: ' + player.getPlaylistIndex());
+				//xgds_video.addPendingPauseAction(source, player);
+				//console.log('force play');
+				//player.play(true);
 			} else {
-				//TODO this is where we are having problems; even though the calculated offset is at a good time, the seek is not going to this offset.
-				var pendingActions = xgds_video.pendingPlayerActions[source];
-				if (!(_.isUndefined(pendingActions)) && !(_.isEmpty(pendingActions))) {
-					for (var i = 0; i < pendingActions.length; i++) {
-						if (pendingActions[i].arg == offset){
-							console.log('ALREADY HAVE PENDING ACTION');
-							return;
-						}
-					}
-				}
-				console.log(player.getState());
-				console.log('238 seeking ' + offset);
-				try {
-					player.seek(offset);
-				} catch (err){
-					console.log(err);
-				}
-				var newOffset = Math.round(player.getPosition());
-				if (newOffset == currentOffset){
-					console.log('********* error state, added seek action: ' + player.getState());
-					xgds_video.addPendingSeekAction(source, offset, player);
-				}
-				console.log('new offset ' + newOffset);
-				
+				console.log('direct seek to offset ' + source + ' ' + offset);
+				player.seek(offset);
 			}
+		} catch (err){
+			console.log(err);
 		}
 	},
 	jumpLocks: new Set([]),
@@ -290,35 +229,28 @@ $.extend(xgds_video,{
 		 * find the playlist item and the offset (seconds) and seek to there.
 		 */
 		if (xgds_video.jumpLocks.has(source)) {
-			console.log('*****JUMP LOCKED ' + source);
 			return;
 		}
 		xgds_video.jumpLocks.add(source);
 		if (_.isUndefined(seekValues)) {
 			seekValues = xgds_video.getPlaylistIdxAndOffset(currentTime, source);
 		}
+		console.log('seek values');
+		console.log(seekValues);
 		var player = jwplayer(source);
-		console.log('261 ' + source + ' jump player state ' + player.getState());
-		console.log(currentTime);
 		//currentTime falls in one of the segments.
 		if (!_.isUndefined(seekValues) && seekValues != false) {
 			xgds_video.setPlaylistAndSeek(source, seekValues.index, seekValues.offset);
-			if (xgds_video.options.playFlag) {
-				console.log('259 play');
-				player.play(true);
-				console.log('267 ' + source + ' jump player state ' + player.getState());
-//				console.log("jump to position " + source + " playlist index " + player.getPlaylistIndex());
-			} else {
-				console.log('271 pause');
+			console.log('telling player to play');
+			player.play(true);
+			if (!xgds_video.options.playFlag) {
+				console.log('telling player to pause');
 				player.pause(true);
-				console.log('273 ' + source + ' jump player state ' + player.getState());
 			}
 		} else { //current time is not in the playable range.
 			//pause the player
 			if ((player.getState() == 'PLAYING') || (player.getState() == 'IDLE')) {
-				console.log('278 pause');
 				player.pause(true);
-				console.log('280 ' + source + ' jump player state ' + player.getState());
 			}
 		}
 		xgds_video.jumpLocks.delete(source);
@@ -352,7 +284,6 @@ $.extend(xgds_video,{
 		/**
 		 * When the segment is complete, go to the next available segment.
 		 */
-		console.log('on segment complete ' + player.id);
 		//awaken idle players.
 		var time = xgds_video.getSliderTime();
 		xgds_video.awakenIdlePlayers(time, player.id);
@@ -361,7 +292,6 @@ $.extend(xgds_video,{
 		if (xgds_video.allPaused()) {
 			var time = xgds_video.getPlayerVideoTime(player.id);
 			var seekTime = xgds_video.getNextAvailableSegment(time);
-			console.log('on segment complete next available: ', JSON.stringify(seekTime));
 			xgds_video.seekAllPlayersToTime(seekTime['time']);
 		}
 	},
@@ -420,25 +350,20 @@ $.extend(xgds_video,{
 
 
 	seekAllPlayersToTime: function(datetime) {
-		console.log('seek all players to time' + datetime);
 		for (var source in xgds_video.options.displaySegments) {
-			var segments = xgds_video.options.displaySegments[source];
-
 			var player = jwplayer(source);
 			if (player != undefined) {
 				xgds_video.jumpToPosition(datetime, source, undefined);
 			}
 		}
 		if (datetime != null) {
-			console.log('calling set slider time' + datetime);
 			xgds_video.setSliderTime(datetime);
 		} else {
-			console.log('DATETIME IS NULL?');
+			console.log('Seek all players to time: DATETIME IS NULL?');
 		}
 	},
 
 	awakenIdlePlayers: function(datetime, exceptThisPlayer) {
-		//console.log('awaken idle players');
 		if (_.isUndefined(datetime)) {
 			return;
 		}
@@ -446,7 +371,6 @@ $.extend(xgds_video,{
 			if (source != exceptThisPlayer) {
 				var state = jwplayer(source).getState();
 				if ((state == 'IDLE') || (state == 'PAUSED')) {
-					console.log('about to call jump to position ' + source + ':' + state );
 					xgds_video.jumpToPosition(datetime, source, undefined);
 				}
 			}

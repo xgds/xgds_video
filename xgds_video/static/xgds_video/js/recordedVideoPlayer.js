@@ -19,6 +19,38 @@ $.extend(xgds_video,{
 	initialize: function(options){
 		xgds_video.options = options;
 		moment.tz.setDefault(options.timeZone);
+		xgds_video.initializeSegmentTimes();
+		xgds_video.initializeEpisodeTimes(xgds_video.options.episode);
+	},
+	initializeSegmentTimes: function() {
+		for (var source in xgds_video.options.displaySegments) {
+			var segments = xgds_video.options.displaySegments[source];
+	        if ((segments != undefined) && (segments.length > 0)) {
+	            $.each(segments, function(id) {
+	                var segment = segments[id];
+	                segment.startTime = getLocalTime(segment.startTime, xgds_video.options.timeZone); //moment(segment.startTime);
+	                segment.endTime = getLocalTime(segment.endTime, xgds_video.options.timeZone); //moment(segment.endTime);
+	
+	                if(xgds_video.options.firstSegment == null) {
+	                    xgds_video.options.firstSegment = segment;
+	                }
+	                if (xgds_video.options.lastSegment == null) {
+	                    xgds_video.options.lastSegment = segment;
+	                }
+	
+	                if (segment.startTime) {
+	                    if(segment.startTime.isBefore(xgds_video.options.firstSegment.startTime)) {
+	                        xgds_video.options.firstSegment = segment;
+	                    }
+	                }
+	                if (segment.endTime) {
+	                    if (segment.endTime.isAfter(xgds_video.options.lastSegment.endTime)) {
+	                        xgds_video.options.lastSegment = segment;
+	                    }
+	                }
+	            });
+	        }
+		}
 	},
 	commonOptions: {
 		preload: 'auto',
@@ -60,6 +92,10 @@ $.extend(xgds_video,{
 				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
 				console.log('POSITION IS NOW ' + this.getPosition());
 			},
+			onSeeked: function(data) {
+				console.log('ON SEEKED: ' + data.startPosition + " | " + data.offset);
+				console.log('POSITION IS NOW ' + this.getPosition());
+			},
 			onComplete: function() {
 				console.log('onComplete ' + this.id + ' ' + this.getState());
 				//stop until start of the next segment.
@@ -68,18 +104,16 @@ $.extend(xgds_video,{
 				//TODO I am pretty sure we don't need to do this because it is called by onTime
 				xgds_video.onSegmentComplete(this);
 			},
-			onFirstFrame: function(e){
-				console.log(e);
-			},
+//			onFirstFrame: function(e){
+//				console.log(e);
+//			},
 			onPlay: function(e) { //gets called per source
-				console.log('onPlay ' + this.id);
 				var segments = xgds_video.options.displaySegments[this.id];
 				var segment = segments[this.getPlaylistIndex()];
 				var pendingActions = xgds_video.pendingPlayerActions[this.id];
 				if (!(_.isUndefined(pendingActions)) && !(_.isEmpty(pendingActions))) {
 					xgds_video.pendingPlayerActions[this.id] = [];
 					for (var i = 0; i < pendingActions.length; i++) {
-						console.log('calling pending action ' + this.id + ": "+ pendingActions[i].arg);
 						pendingActions[i].action(pendingActions[i].arg);
 					}
 				}
@@ -95,7 +129,6 @@ $.extend(xgds_video,{
 				xgds_video.onTimeController(this);
 			},
 			onPause: function(e) {
-				console.log('onPause ' + this.id);
 				//just make sure the item does get paused.
 				xgds_video.onTimeController(this);
 			},
@@ -103,10 +136,8 @@ $.extend(xgds_video,{
 				xgds_video.onTimeController(this);
 			},
 			onIdle: function(e) {
-				console.log('onIdle ' + this.id);
 				if (e.position > Math.floor(e.duration)) {
 					//this.pause(true);
-					console.log('83 calling complete');
 					xgds_video.onSegmentComplete(this);
 				}
 				//xgds_video.onTimeController(this);
@@ -136,19 +167,17 @@ $.extend(xgds_video,{
 							// update the slider here.
 							var updateTime = xgds_video.getPlayerVideoTime(this.id);
 							if (!(_.isUndefined(updateTime))) {
-								//console.log('108 calling awaken idle players');
 								xgds_video.awakenIdlePlayers(updateTime, this.id);
 								xgds_video.setSliderTime(updateTime);
 							}
 						}
 					}
 				}
-				//if at the end of the segment, pause.
-				if (object.position > Math.floor(object.duration)) {
-					this.pause(true);
-					console.log('124 calling complete');
-					xgds_video.onSegmentComplete(this);
-				}
+				//if at the end of the segment, pause.  do we even need to do this? won't it stop by itself at the end?
+//				if (object.position > Math.floor(object.duration)) {
+//					this.pause(true);
+//					xgds_video.onSegmentComplete(this);
+//				}
 			}
 		}
 	},
