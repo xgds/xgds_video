@@ -27,7 +27,6 @@ XGDS_VIDEO_SEGMENT_MODEL = 'xgds_video.VideoSegment'
 XGDS_VIDEO_EPISODE_MODEL = 'xgds_video.VideoEpisode'
 
 XGDS_VIDEO_INDEX_FILE_NAME = "playlist.m3u8" # for vlc use prog_index.m3u8"
-XGDS_VIDEO_INDEX_FILE_END_TAG = "#EXT-X-ENDLIST"
 if platform.system() == 'Linux':
     XGDS_VIDEO_VLC_PATH = '/usr/bin/vlc'
     XGDS_VIDEO_SEGMENTER_PATH = '/usr/bin/avconv'
@@ -96,10 +95,8 @@ XGDS_VIDEO_RECORDING_METHOD = 'HLS'
 JWPLAYER_KEY = None
 
 BOWER_INSTALLED_APPS = getOrCreateArray('BOWER_INSTALLED_APPS')
-BOWER_INSTALLED_APPS += [#'jwplayer=https://account.jwplayer.com/static/download/jwplayer-6.12.zip',
-                         'jwplayer=https://ssl.p.jwpcdn.com/player/download/jwplayer-7.10.7.zip',
+BOWER_INSTALLED_APPS += ['jwplayer=https://ssl.p.jwpcdn.com/player/download/jwplayer-7.10.7.zip',
                          'moment',
                          'moment-timezone',
                          'packery'
-                         #'locomote'
                          ]
