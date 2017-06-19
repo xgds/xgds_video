@@ -19,6 +19,7 @@ import logging
 import os
 import stat
 import traceback
+import memcache
 
 from django.utils import timezone
 from django.conf import settings
@@ -194,20 +195,27 @@ def startRecording(source, recordingDir, recordingUrl, startTime, episode):
 
 
 def stopRecording(source, endTime):
-    if settings.PYRAPTORD_SERVICE is True:
-        pyraptord = getPyraptordClient('pyraptord')
     assetName = source.shortName
-    recorderService = '%s_recorder' % assetName
 
-    # we need to set the endtime
-    unended_segments = source.videosegment_set.filter(endTime=None)
-    for segment in unended_segments:
-        segment.endTime = endTime
-        segment.save()
+    if settings.XGDS_VIDEO_RECORDING_METHOD == 'HLS':
+        # set the memcache flag to stop.
+        #TODO make this better
+        theMemcache = memcache.Client(['127.0.0.1:11211'], debug=0)
+        theMemcache.set("recordHLS:%s:stopRecording" % assetName, True)
+        return 'SET MEMCACHE TO STOP HLS RECORDING FOR ' % assetName
+
+    else:
+        # we need to set the endtime
+        unended_segments = source.videosegment_set.filter(endTime=None)
+        for segment in unended_segments:
+            segment.endTime = endTime
+            segment.save()
     
-    if settings.PYRAPTORD_SERVICE is True:
-        stopPyraptordServiceIfRunning(pyraptord, recorderService)
-        return 'STOPPED PYCRORAPTOR SERVICES: ' + recorderService
+        if settings.PYRAPTORD_SERVICE is True:
+            recorderService = '%s_recorder' % assetName
+            pyraptord = getPyraptordClient('pyraptord')
+            stopPyraptordServiceIfRunning(pyraptord, recorderService)
+            return 'STOPPED PYCRORAPTOR SERVICES: ' + recorderService
     return 'NO PYRAPTORD: ' + recorderService
 
 def stopRecordingAndCleanSegments(source, videoChunks):

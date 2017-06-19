@@ -34,6 +34,7 @@ class HLSRecorder:
         self.m3u8FilePath = "%s/%s" % (m3u8DirPath, self.m3u8Filename)
         self.httpSession = requests.Session()
 
+        #TODO use django cache api
         self.cache = memcache.Client(['127.0.0.1:11211'], debug=0)
         self.cache.set("recordHLS:%s:stopRecording" % recorderId,
                        self.stopRecording)
