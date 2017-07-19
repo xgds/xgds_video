@@ -45,8 +45,10 @@ def makedirsIfNeeded(path):
     Helper for displayEpisodeRecordedVideo
     """
     if not os.path.exists(path):
-        os.makedirs(path)
-        os.chmod(path, (stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU))
+        currentUmask = os.umask(0)  # Save current umask and set to 0 so we can control permissions
+        os.makedirs(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IROTH | stat.S_IXOTH)
+        os.umask(currentUmask)  # Restore process umask
+#        os.chmod(path, (stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU))
 
 
 def emptySegmentDir(recordedVideoDir):

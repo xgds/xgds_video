@@ -155,9 +155,9 @@ class HLSRecorder:
     def saveM3U8SegmentsToDisk(self, analyzedSegments, addSegmentsToList=True):
         for seg in self.m3u8Full.segments:
             videoData = self.httpSession.get("%s/%s" % (os.path.dirname(self.sourceUrl),
-                                         seg.uri))
+                                         seg.uri)).content
             f = open("%s/%s" % (self.m3u8DirPath, seg.uri),"w")
-            f.write(videoData.content)
+            f.write(videoData)
             f.close()
             if addSegmentsToList:
                 self.m3u8Full.add_segment(seg)
@@ -203,9 +203,9 @@ class HLSRecorder:
                 
     def storeVideoUpdateIndex(self, seg):
         videoData = self.httpSession.get("%s/%s" % (os.path.dirname(self.sourceUrl),
-                                                    seg.uri))
+                                                    seg.uri)).content
         f = open("%s/%s" % (self.m3u8DirPath, seg.uri),"w")
-        f.write(videoData.content)
+        f.write(videoData)
         f.close()
         self.m3u8Full.add_segment(seg)
         
@@ -247,6 +247,7 @@ class HLSRecorder:
 
         if sleepAfterRecord:
             #TODO handle discontinuity better
+            self.httpSession.close()  # Close out session before sleep to avoid having too many open
             if len(m3u8Latest.segments) > 0:
                 sleepDuration = self.playlistTotalTime(m3u8Latest) - m3u8Latest.segments[-1].duration
                 self.timeout = False
