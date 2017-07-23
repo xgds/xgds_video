@@ -121,6 +121,8 @@ def makeNewSegment(source, recordingDir, recordingUrl, startTime, episode):
     try:
         maxSegmentNumber = SEGMENT_MODEL.get().objects.filter(episode=episode, source=source).aggregate(Max('segNumber'))
         segmentNumber = maxSegmentNumber['segNumber__max']
+        if not segmentNumber:
+            segmentNumber = 0
         recordedVideoDir = os.path.join(recordingDir, 'Segment%03d' % segmentNumber)
         if not emptySegmentDir(recordedVideoDir):
             segmentNumber = segmentNumber + 1
