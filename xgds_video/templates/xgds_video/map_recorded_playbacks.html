@@ -301,3 +301,17 @@ xgds_notes.cleanData = function(data, containerDiv){
 	return result;
 }
 {% endblock cleanDataFunction %}
+
+{% block layers %}
+<div id="layers-gridstack-item" class="grid-stack-item" 
+	  data-gs-x="5" data-gs-y="4"
+      data-gs-width="1" data-gs-height="2" >
+	<div class="grid-stack-item-content" id="layers-gridstack-item-content">
+	<ul class="nav justify-content-end ">
+		<i class="fa fa-lock pinDiv gray-light mr-1"></i>
+		<i class="fa fa-window-close fa-lg gray-light"></i>
+	</ul>
+	<div id="layers" class="mt-negative-1rem"></div>
+	</div>
+</div>
+{% endblock layers %}
