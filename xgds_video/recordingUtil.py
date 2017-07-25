@@ -206,7 +206,7 @@ def stopRecording(source, endTime):
         #TODO make this better
         theMemcache = memcache.Client(['127.0.0.1:11211'], debug=0)
         theMemcache.set("recordHLS:%s:stopRecording" % assetName, True)
-        return 'SET MEMCACHE TO STOP HLS RECORDING FOR ' % assetName
+        return 'SET MEMCACHE TO STOP HLS RECORDING FOR %s' % (assetName)
 
     else:
         # we need to set the endtime
