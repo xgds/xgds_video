@@ -109,7 +109,12 @@ class HLSRecorder:
 
     def getM3U8(self):
         try:
-            m3u8String = self.httpSession.get(self.sourceUrl).text
+            m3u8Response = self.httpSession.get(self.sourceUrl)
+            if m3u8Response.status_code != requests.codes.ok:
+                print "RecordHLS: BAD STATUS on m3u8 request: %s (%d)" % (m3u8Response.reason, m3u8Response.status_code)
+                time.sleep(0.5)
+                return None
+            m3u8String = m3u8Response.text
             m3u8Obj = m3u8.loads(m3u8String)
             if not m3u8Obj.files:
                 # m3u8 must have a playlist which holds the files, read that one.
@@ -202,7 +207,10 @@ class HLSRecorder:
     def recordNextBlock(self, sleepAfterRecord=True):
 
         m3u8Latest = self.getM3U8()
-        videoNewData = (len(m3u8Latest.segments) > 0)
+        if m3u8Latest:
+            videoNewData = (len(m3u8Latest.segments) > 0)
+        else:
+            videoNewData = False
         
         if videoNewData:
             analyzedSegments = self.analyzeM3U8Segments(m3u8Latest)
