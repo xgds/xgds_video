@@ -13,6 +13,7 @@ import glob
 import socket
 
 import django
+from apps.geocamUtil.loader import LazyGetModelByName
 django.setup()
 
 from django.conf import settings
@@ -59,17 +60,24 @@ def getTsFileCount(segmentDir):
     return len(glob.glob1(segmentDir,"*.ts"))
 
 
-def resetVideoRecorderCache(flightName, subsystemStatus):
-    """
-    If it's a new active flight, reset the cache entry for video recorder.
-    """
-    status = subsystemStatus.getStatus()
-    oldFlightName = status['flight']
-    if oldFlightName != flightName:
-        # flight changed! reset the status.
-        defaultStatus = subsystemStatus.getDefaultStatus()
-        defaultStatus['flight'] = flightName
-        subsystemStatus.setStatus(defaultStatus)
+def setVideoRecorderStatusCache(episodePK, sourcePK):
+    source = LazyGetModelByName(settings.XGDS_VIDEO_SOURCE_MODEL).get().objects.get(pk=sourcePK)
+    episode = LazyGetModelByName(settings.XGDS_VIDEO_EPISODE_MODEL).get().objects.get(pk=episodePK)
+    subsystemName = source.name + '_recorder'
+    subsystemStatus = SubsystemStatus(subsystemName)
+    subsystemStatus.setStatus(getDefaultStatus(subsystemStatus, episode.shortName + '_' + source.name))
+    
+# def resetVideoRecorderCache(flightName, subsystemStatus):
+#     """
+#     If it's a new active flight, reset the cache entry for video recorder.
+#     """
+#     status = subsystemStatus.getStatus()
+#     oldFlightName = status['flight']
+#     if oldFlightName != flightName:
+#         # flight changed! reset the status.
+#         defaultStatus = getDefaultStatus(subsystemStatus)
+#         defaultStatus['flight'] = flightName
+#         subsystemStatus.setStatus(defaultStatus)
 
 
 def getColorLevel(indexFileExists, elapsedTsCreateTime, subsystemStatus):
@@ -96,32 +104,55 @@ def checkTsFileCount(prevSegNum, segNum, prevTsCount, tsFileCount):
         return True
     return False
 
+def getDefaultStatus(subsystemStatus, flightName):
+    return {"name": subsystemStatus.name, 
+            "displayName": subsystemStatus.displayName, 
+            "elapsedTime": "",
+            "statusColor": subsystemStatus.NO_DATA,
+            "indexFileExists": 0,
+            "lastUpdated": "",
+            "segNumber": 0,
+            "tsCount": 0,
+            "flight": flightName 
+          }
 
 def setVideoRecorderStatus(resourceNames):
     refreshRateSeconds = 5
-    location = socket.gethostname()  # either shore or boat
     
-    while True:
-        for resourceName in resourceNames: 
-            indexFileExists = False
-            # get the flight from resource (resource name is part of subsystem name)
+    jsonDicts = {}
+    subsystemStatuses = {}
+    for resourceName in resourceNames:
+        try:
+            subsystemName = resourceName + '_recorder'
+            subsystemStatus = SubsystemStatus(subsystemName)
+            subsystemStatuses[resourceName] = subsystemStatus
+            flightName = ""
             try: 
+                #TODO have the start flight fix what is in memcache, have it call some registered function
+                
                 resource = BasaltResource.objects.get(name=resourceName)
                 activeFlight = BasaltActiveFlight.objects.get(flight__vehicle = resource.vehicle)
                 flightName = activeFlight.flight.name
             except:
                 continue
+            jsonDict = subsystemStatuses[resourceName].getStatus()
+            if 'segNumber' not in jsonDict:
+                jsonDict = getDefaultStatus(subsystemStatus, flightName)
+                subsystemStatus.setStatus(jsonDict)
+                
+            jsonDicts[resourceName] = jsonDict
+        except:
+            logging.error('Error, invalid subsystem name: %s' % resourceName)
+            continue
+         
+    
+    while True:
+        for resourceName in resourceNames: 
+            subsystemStatus = subsystemStatuses[resourceName]
+            jsonDict = subsystemStatus.getStatus() #this gets updated by recordHLS2
+            indexFileExists = False
             
-            subsystemName = resourceName + '_' + location + '_video_recorder'
-            try: 
-                subsystemStatus = SubsystemStatus(subsystemName)
-            except:
-                logging.error('Error, invalid subsystem name: %s' % subsystemName)
-                continue
-            
-            resetVideoRecorderCache(flightName, subsystemStatus)
             # load previous info
-            jsonDict = subsystemStatus.getStatus()
             prevTsCount = jsonDict['tsCount']
             prevSegNum = jsonDict['segNumber']
             
@@ -143,7 +174,6 @@ def setVideoRecorderStatus(resourceNames):
             jsonDict['indexFileExists'] = indexFileExists
             jsonDict['segNumber'] = segNum
             jsonDict['tsCount'] = tsFileCount 
-            jsonDict['flight'] = flightName
             jsonDict['statusColor'] =  statusColor
             subsystemStatus.setStatus(jsonDict)
         time.sleep(refreshRateSeconds)

@@ -11,9 +11,16 @@ import os
 from collections import deque
 import django
 from xgds_video.recordingUtil import invokeMakeNewSegment
+from xgds_video.updateVideoRecorderStatus import setVideoRecorderStatusCache
 
 django.setup()
+
+from django.core.cache import caches  
+
+_cache = caches['default']
+
 RECORDER_SEGMENT_BUFFER_SIZE = 6
+
 
 class HLSRecorder:
     def __init__(self, sourceUrl, m3u8DirPath, recorderId, episodePK, sourcePK):
@@ -34,9 +41,7 @@ class HLSRecorder:
         self.m3u8FilePath = "%s/%s" % (m3u8DirPath, self.m3u8Filename)
         self.httpSession = requests.Session()
 
-        #TODO use django cache api
-        self.cache = memcache.Client(['127.0.0.1:11211'], debug=0)
-        self.cache.set("recordHLS:%s:stopRecording" % recorderId,
+        _cache.set("recordHLS:%s:stopRecording" % recorderId,
                        self.stopRecording)
 
     def updateCachedStatus(self, analyzedSegments):
@@ -44,7 +49,7 @@ class HLSRecorder:
         status = {"currentSegment": analyzedSegments['lastSegmentNumber'],
                   "totalDuration":analyzedSegments['totalTime'],
                   "lastUpdate":datetime.datetime.utcnow().isoformat()}
-        self.cache.set(myKey, json.dumps(status))
+        _cache.set(myKey, json.dumps(status))
 
     
     def playlistTotalTime(self, playlist):
@@ -179,6 +184,7 @@ class HLSRecorder:
     def initXgdsSegmentRecording(self):
         firstm3u8 = self.getM3U8()
         if firstm3u8:
+            setVideoRecorderStatusCache(self.episodePK, self.sourcePK)
             self.m3u8Full = copy.deepcopy(firstm3u8)
             self.m3u8Full.segments = m3u8.model.SegmentList()  # Initialize with empty list          
             #TODO we have never seen gaps here but it is theoretically possible.
@@ -261,7 +267,7 @@ class HLSRecorder:
     def runRecordingLoop(self):
         while not self.stopRecording:
             self.recordNextBlock()
-            self.stopRecording = self.cache.get("recordHLS:%s:stopRecording" %
+            self.stopRecording = _cache.get("recordHLS:%s:stopRecording" %
                                                 self.recorderId)
 
         # When done write final copy of index with end tag
