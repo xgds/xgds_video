@@ -11,7 +11,7 @@ import os
 from collections import deque
 import django
 from xgds_video.recordingUtil import invokeMakeNewSegment
-from xgds_video.updateVideoRecorderStatus import setVideoRecorderStatusCache
+from xgds_video.scripts.updateVideoRecorderStatus import setVideoRecorderStatusCache
 
 django.setup()
 
