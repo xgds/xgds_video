@@ -200,6 +200,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, episode):
 
 def stopRecording(source, endTime):
     assetName = source.shortName
+    recorderService = '%s_recorder' % assetName
 
     if settings.XGDS_VIDEO_RECORDING_METHOD == 'HLS':
         # set the memcache flag to stop.
@@ -216,7 +217,6 @@ def stopRecording(source, endTime):
             segment.save()
     
         if settings.PYRAPTORD_SERVICE is True:
-            recorderService = '%s_recorder' % assetName
             pyraptord = getPyraptordClient('pyraptord')
             stopPyraptordServiceIfRunning(pyraptord, recorderService)
             return 'STOPPED PYCRORAPTOR SERVICES: ' + recorderService
