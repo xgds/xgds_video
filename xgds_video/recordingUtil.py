@@ -91,19 +91,20 @@ def startFlightRecording(request, flightName):
     messages.info(request, commands)
     return redirect(reverse('error'))
 
-def stopFlightRecording(request, flightName):
+def stopFlightRecording(request, flightName, endEpisode = False):
     (episodeName, sourceName) = splitFlightName(flightName)
     stopTime = timezone.now()
     commands = stopRecording(getVideoSource(sourceName), stopTime)
     videoEpisode = EPISODE_MODEL.get().objects.get(shortName=episodeName)
 
-    done = True
-    #TODO this only will work if videosegment is the model
-    for segment in videoEpisode.videosegment_set.all():
-        if not segment.endTime:
-            done = False
-            break
-    if done:
+ #   done = True
+    #TODO this only will work if videosegment is the model -- AND maybe remove if endEposode flag works
+ #   for segment in videoEpisode.videosegment_set.all():
+ #       if not segment.endTime:
+ #           done = False
+ #           break
+    if endEpisode:
+        print "Ending Episode and saving time", stopTime
         videoEpisode.endTime = stopTime
         videoEpisode.save()
         commands = commands + ' & set episode end time ' + str(stopTime)
@@ -160,7 +161,8 @@ def makeNewSegment(source, recordingDir, recordingUrl, startTime, episode):
     videoSegment.save()
     
     return {'videoFeed': videoFeed,
-            'recordedVideoDir': recordedVideoDir}
+            'recordedVideoDir': recordedVideoDir,
+            'segmentObj': videoSegment}
 
 
 def invokeMakeNewSegment(sourcePK, recordingDir, recordingUrl, startTime, episodePK):
@@ -168,7 +170,18 @@ def invokeMakeNewSegment(sourcePK, recordingDir, recordingUrl, startTime, episod
     source = VIDEO_SOURCE_MODEL.get().objects.get(pk=sourcePK)
     episode = EPISODE_MODEL.get().objects.get(pk=episodePK)
     return makeNewSegment(source, recordingDir, recordingUrl, startTime, episode)
-    
+
+
+def getCurrentSegmentForSource(sourcePK, episodePK):
+    ''' Look for latest segment for given source and episode '''
+    source = VIDEO_SOURCE_MODEL.get().objects.get(pk=sourcePK)
+    episode = EPISODE_MODEL.get().objects.get(pk=episodePK)
+    open_segments = source.videosegment_set.filter(episode=episode).filter(endTime=None)
+    if open_segments.count() != 1:
+        print "*** WARNING: there should be exactly one unfinished segment during recording! Found %d for source %s" % (open_segments.count(), source.shortName)
+    return open_segments[0]
+
+
 def startRecording(source, recordingDir, recordingUrl, startTime, episode):
     segmentInfo = makeNewSegment(source, recordingDir, recordingUrl, startTime, episode)
 

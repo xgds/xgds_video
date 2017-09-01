@@ -10,7 +10,7 @@ import copy
 import os
 from collections import deque
 import django
-from xgds_video.recordingUtil import invokeMakeNewSegment
+from xgds_video.recordingUtil import invokeMakeNewSegment, getCurrentSegmentForSource
 from xgds_video.scripts.updateVideoRecorderStatus import setVideoRecorderStatusCache
 
 django.setup()
@@ -36,6 +36,7 @@ class HLSRecorder:
         self.sourcePK = sourcePK
         self.segmentBuffer = deque([], RECORDER_SEGMENT_BUFFER_SIZE)
         self.segmentIDBuffer = deque([], RECORDER_SEGMENT_BUFFER_SIZE)
+        self.xgdsSegment = None
 
         self.m3u8Filename = os.path.basename(sourceUrl)
         self.m3u8FilePath = "%s/%s" % (m3u8DirPath, self.m3u8Filename)
@@ -182,6 +183,7 @@ class HLSRecorder:
     
     
     def initXgdsSegmentRecording(self):
+        self.xgdsSegment = getCurrentSegmentForSource(self.sourcePK, self.episodePK)
         firstm3u8 = self.getM3U8()
         if firstm3u8:
             setVideoRecorderStatusCache(self.episodePK, self.sourcePK)
@@ -226,6 +228,11 @@ class HLSRecorder:
         # First be sure existing index file is flushed to disk
         self.saveM3U8ToFile(addEndTag=True)
         
+        # **TODO** SUPER IMPORTANT read the end time from the ts file of the last m3u8 segment somehow
+        endTime = datetime.datetime.now(pytz.utc)
+        self.xgdsSegment.endTime = endTime
+        self.xgdsSegment.save()
+
         # Now create playlist for new xGDS segment with empty chunk list
         newM3u8Full = copy.deepcopy(self.m3u8Full)
         newM3u8Full.segments = m3u8.model.SegmentList()  # Initialize with empty list
@@ -239,6 +246,7 @@ class HLSRecorder:
         segmentInfo = invokeMakeNewSegment(self.sourcePK, parentDirectory, self.sourceUrl, startTime, self.episodePK)
         self.sourceUrl = segmentInfo['videoFeed'].url
         self.m3u8DirPath = segmentInfo['recordedVideoDir']
+        self.xgdsSegment = segmentInfo['segmentObj']
         self.m3u8FilePath = "%s/%s" % (self.m3u8DirPath, self.m3u8Filename)
 
 
@@ -270,7 +278,11 @@ class HLSRecorder:
             self.stopRecording = _cache.get("recordHLS:%s:stopRecording" %
                                                 self.recorderId)
 
-        # When done write final copy of index with end tag
+        # When done, mark xGDS segment end time and write final copy of index with end tag
+        # **TODO** SUPER IMPORTANT read the end time from the ts file of the last m3u8 segment somehow
+        endTime = datetime.datetime.now(pytz.utc)
+        self.xgdsSegment.endTime = endTime
+        self.xgdsSegment.save()
         self.saveM3U8ToFile(addEndTag=True)
 
 
