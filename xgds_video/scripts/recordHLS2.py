@@ -9,12 +9,12 @@ import pytz
 import copy
 import os
 from collections import deque
-import django
 from xgds_video.recordingUtil import invokeMakeNewSegment, getCurrentSegmentForSource
 from xgds_video.scripts.updateVideoRecorderStatus import setVideoRecorderStatusCache
 
+import django
 django.setup()
-
+from django.conf import settings
 from django.core.cache import caches  
 
 _cache = caches['default']
@@ -283,8 +283,9 @@ class HLSRecorder:
         endTime = datetime.datetime.now(pytz.utc)
         self.xgdsSegment.endTime = endTime
         self.xgdsSegment.save()
+        self.xgdsSegment.broadcast('end')
         self.saveM3U8ToFile(addEndTag=True)
-
+        
 
 def main():
     import optparse

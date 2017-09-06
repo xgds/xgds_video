@@ -20,14 +20,23 @@ import os
 import m3u8
 import pytz
 import re
+import json
 from datetime import datetime
 from glob import glob
+import traceback
 
-from django.db import models
-from geocamUtil.models import UuidField
 from django.conf import settings
+from django.db import models
+
+from geocamUtil.models import UuidField
+from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
+
 from xgds_video import util
 from xgds_video import recordingUtil
+
+if settings.XGDS_CORE_REDIS:
+    from xgds_core.redisUtil import publishRedisSSE
+
 
 #  pylint: disable=C1001,E1101
 
@@ -198,6 +207,21 @@ class AbstractVideoSegment(models.Model):
                 "timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'],
                 "settings": self.settings.getDict(),
                 "episode": self.episode.getDict()}
+    
+    def getSseType(self):
+        return self.__class__.cls_type().lower()
+
+    def broadcast(self, status):
+        # By the time you call this you know that this instance has been newly inserted into the database and needs to broadcast itself
+        try:
+            if settings.XGDS_SSE and settings.XGDS_CORE_REDIS:
+                result = {'status': status,
+                          'data': self.getDict()}
+                json_string = json.dumps(result, cls=DatetimeJsonEncoder)
+                publishRedisSSE(self.source.name, self.getSseType(), json_string)
+                return json_string
+        except:
+            traceback.print_exc()
 
     class Meta:
         abstract = True
@@ -245,6 +269,22 @@ class AbstractVideoEpisode(models.Model):
         return {"shortName": self.shortName,
                 "startTime": episodeStartTime,
                 "endTime": episodeEndTime}
+
+    def getSseType(self):
+        return self.__class__.cls_type().lower()
+
+
+    def broadcast(self, status):
+        # By the time you call this you know that this instance has been newly inserted into the database and needs to broadcast itself
+        try:
+            if settings.XGDS_SSE and settings.XGDS_CORE_REDIS:
+                result = {'status': status,
+                          'data': self.getDict()}
+                json_string = json.dumps(result, cls=DatetimeJsonEncoder)
+                publishRedisSSE('sse', self.getSseType(), json_string)
+                return json_string
+        except:
+            traceback.print_exc()
 
     class Meta:
         abstract = True

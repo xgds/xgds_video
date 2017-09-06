@@ -14,12 +14,13 @@
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
 import datetime
-import time
+#import time
 import logging
 import os
 import stat
 import traceback
 import memcache
+import json
 
 from django.utils import timezone
 from django.conf import settings
@@ -30,15 +31,21 @@ from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Max
 
 from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfRunning
+from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 
 from geocamUtil.loader import LazyGetModelByName, getClassByName
-from scipy.stats.morestats import fligner
+#from scipy.stats.morestats import fligner
+
+if settings.XGDS_CORE_REDIS:
+    from xgds_core.redisUtil import publishRedisSSE
 
 
 SETTINGS_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 VIDEO_SOURCE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
+
+SSE_TYPE = "video"
 
 def makedirsIfNeeded(path):
     """
@@ -81,6 +88,8 @@ def startFlightRecording(request, flightName):
         videoEpisode = EPISODE_MODEL.get()(shortName=episodeName, startTime=startTime)
         videoEpisode.save()
         messages.info(request, 'Created video episode ' + episodeName)
+    
+    videoEpisode.broadcast('start')
 
     recordingDir = getRecordedVideoDir(flightName)
     recordingUrl = getRecordedVideoUrl(flightName)
@@ -107,6 +116,7 @@ def stopFlightRecording(request, flightName, endEpisode = False):
         print "Ending Episode and saving time", stopTime
         videoEpisode.endTime = stopTime
         videoEpisode.save()
+        videoEpisode.broadcast('end')
         commands = commands + ' & set episode end time ' + str(stopTime)
     messages.info(request, commands)
     return redirect(reverse('error'))
@@ -159,6 +169,7 @@ def makeNewSegment(source, recordingDir, recordingUrl, startTime, episode):
                                                                       episode=episode)
     videoSegment.startTime = startTime
     videoSegment.save()
+    videoSegment.broadcast('started')
     
     return {'videoFeed': videoFeed,
             'recordedVideoDir': recordedVideoDir,
@@ -228,6 +239,7 @@ def stopRecording(source, endTime):
         for segment in unended_segments:
             segment.endTime = endTime
             segment.save()
+            segment.broadcast('end')
     
         if settings.PYRAPTORD_SERVICE is True:
             pyraptord = getPyraptordClient('pyraptord')
@@ -254,8 +266,19 @@ def getRecordedVideoUrl(name):
          name)
     return recordedVideoUrl
 
+
 def endActiveEpisode(end_time):
     episode = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)()
     if episode:
         episode.endTime = end_time
         episode.save()
+        episode.broadcast('end')
+
+
+def publishSSE(channel, status, data):
+    if settings.XGDS_SSE and settings.XGDS_CORE_REDIS:
+        result = {'status': status,
+                  'data': data}
+        json_string = json.dumps(result, cls=DatetimeJsonEncoder)
+        publishRedisSSE(channel, SSE_TYPE, json_string)
+        return json_string
