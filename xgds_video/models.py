@@ -209,7 +209,7 @@ class AbstractVideoSegment(models.Model):
                 "episode": self.episode.getDict()}
     
     def getSseType(self):
-        return self.__class__.cls_type().lower()
+        return self.__class__.__name__.lower()
 
     def broadcast(self, status):
         # By the time you call this you know that this instance has been newly inserted into the database and needs to broadcast itself
@@ -271,8 +271,7 @@ class AbstractVideoEpisode(models.Model):
                 "endTime": episodeEndTime}
 
     def getSseType(self):
-        return self.__class__.cls_type().lower()
-
+        return self.__class__.__name__.lower()
 
     def broadcast(self, status):
         # By the time you call this you know that this instance has been newly inserted into the database and needs to broadcast itself

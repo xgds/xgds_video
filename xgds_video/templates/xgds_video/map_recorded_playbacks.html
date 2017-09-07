@@ -230,7 +230,7 @@ var indexFileUrl = null;
 {% block initSegments %}
 {% if segmentsJson %}
 	{% block xgds_video_options %}
-    var xgds_video_options = { playFlag: false,
+    xgds_video_options = { playFlag: false,
                        		   seekFlag: false,
 		                       initialState: false,
 		                       seekOffsetList: {},
@@ -255,7 +255,7 @@ var indexFileUrl = null;
 
 	{% block hookControls %}
 	{% if segmentsJson %}
-	xgds_video.initialize(xgds_video_options);
+	xgds_video_instance = xgds_video.initialize(xgds_video_options);
     //set up the slider and the player
     if (xgds_video.options.hasMasterSlider){
     	xgds_video.setupSlider();

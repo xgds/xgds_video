@@ -16,6 +16,7 @@
 import pytz
 import re
 import datetime
+from django.utils import timezone
 import os
 import traceback
 import m3u8
@@ -26,6 +27,7 @@ from geocamUtil.loader import LazyGetModelByName, getClassByName
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
 SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
+XGDS_VIDEO_CHUNK_FUDGE_FACTOR = settings.XGDS_VIDEO_NUM_BUFFERED_CHUNKS * settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
 
 def getDelaySeconds(flightName):
     return settings.XGDS_VIDEO_DELAY_SECONDS
@@ -68,9 +70,12 @@ def setSegmentEndTimes(segments, episode, source):
     # if last segment has no endTime 
     if (segments[-1].endTime is None) and (episode.endTime is None):
         segment = segments[-1]  # last segment
-        GET_INDEX_FILE_METHOD = getClassByName(settings.XGDS_VIDEO_INDEX_FILE_METHOD)
-        suffix = GET_INDEX_FILE_METHOD(flightName, source.shortName, segment.segNumber)
-        path = settings.DATA_ROOT + suffix
+        
+        #GET_INDEX_FILE_METHOD = getClassByName(settings.XGDS_VIDEO_INDEX_FILE_METHOD)
+        #indexFilePath = GET_INDEX_FILE_METHOD(flightName, source.shortName, segment.segNumber)
+        indexFilePath = '%s/%s' % (getSegmentPath(flightName, source.shortName, segment.segNumber), segment.indexFileName)
+    
+        path = settings.DATA_ROOT + indexFilePath
         segmentDuration = getTotalDuration(path)
         segment.endTime = segment.startTime + datetime.timedelta(seconds=segmentDuration)
         segment.save()
@@ -89,6 +94,7 @@ def find_between(s, first, last):
 
 
 def getTotalDuration(path):
+    #TODO use the m3u8 library to get the duration
     """
     Given path to the index file of a segment, returns the total duration of the
     segment
@@ -119,7 +125,7 @@ def getSegmentPath(flightName, sourceName, number):
     else:
         return '%s/Video/Recordings/Segment%03d/' % (flightName, int(number))
 
-def getIndexFileSuffix(flightName, sourceShortName, segmentNumber):
+def getIndexFilePath(flightName, sourceShortName, segmentNumber):
     indexFileName = settings.XGDS_VIDEO_INDEX_FILE_NAME
     splits = flightName.split('_')
     try:
@@ -136,10 +142,10 @@ def getIndexFileSuffix(flightName, sourceShortName, segmentNumber):
     except:
         pass
     
-    return '%s/%s' % (getSegmentPath(flightName, sourceShortName, segmentNumber), indexFileName)
+    return ('%s/%s' % (getSegmentPath(flightName, sourceShortName, segmentNumber), indexFileName), segments[0])
 
 
-def getSegmentsFromEndForDelay(delayTime, indexPath):
+def getNumChunksFromEndForDelay(delayTime, indexPath):
     index = m3u8.load(indexPath)
     segList = index.segments
     segCount = 0
@@ -152,33 +158,55 @@ def getSegmentsFromEndForDelay(delayTime, indexPath):
     return segCount, index
 
 
-def updateIndexFilePrefix(indexFileSuffix, subst, flightName):
+def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=None):
     """ This is truncating the last n rows from the m3u8 file and reappending the end and the metadata at the top.
     This fakes our delay
     """
+    
+    # Look up path to index file
+    GET_INDEX_FILE_METHOD = getClassByName(settings.XGDS_VIDEO_INDEX_FILE_METHOD)
+    indexFileSuffix, segment = GET_INDEX_FILE_METHOD(flightName, sourceShortName, segmentNumber)
+
     indexFilePath = settings.DATA_ROOT + indexFileSuffix
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
     try:
         videoDelayInSecs = getClassByName(settings.XGDS_VIDEO_DELAY_AMOUNT_METHOD)(flightName)
         if videoDelayInSecs > 0:
-            (videoDelayInSegments, m3u8_index) = getSegmentsFromEndForDelay(videoDelayInSecs-30,
-                                                              indexFilePath)
+            calculatedDelay = videoDelayInSecs
+
+            #if the segment is ended then this may want to be different
+            if segment.endTime:
+                # 1. calculate secondsAgo = nowTime - segment.endTime
+                secondsAgo = (timezone.now() - segment.endTime).total_seconds()
+                # 2. if secondsAgo < delay, calculatedDelay = videoDelayInSecs - secondsAgo
+                calculatedDelay = max(videoDelayInSecs - secondsAgo, 0)
+            if calculatedDelay > 0: 
+                (videoDelayInChunks, m3u8_index) = getNumChunksFromEndForDelay(calculatedDelay - XGDS_VIDEO_CHUNK_FUDGE_FACTOR, indexFilePath)
+                if videoDelayInChunks > 0:
+                    m3u8_index.is_endlist = False
+            else:
+                m3u8_index = m3u8.load(indexFilePath)
+                videoDelayInChunks = 0
         else:
             m3u8_index = m3u8.load(indexFilePath)
-            videoDelayInSegments = 0
+            videoDelayInChunks = 0
         
-        segments = m3u8_index.segments
-        if len(segments) > 0:
-            if segments[0].duration > 100:
-                del segments[0]
-            if videoDelayInSegments > 0 and len(segments) > videoDelayInSegments:
-                del segments[-videoDelayInSegments:]
-        
-        for s in segments:
+        m3u8_chunks = m3u8_index.segments
+        if len(m3u8_chunks) > 0:
+            # this was probably to handle vlc badness
+#             if segments[0].duration > 100:
+#                 del segments[0]
+
+            if videoDelayInChunks > 0: # and len(m3u8_chunks) > videoDelayInChunks:
+                del m3u8_chunks[-videoDelayInChunks:]
+
+        for s in m3u8_chunks:
             s.uri = str(segmentDirectoryUrl) + '/' + s.uri
-        return m3u8_index.dumps()
+    
+        return (m3u8_index.dumps(), indexFilePath)
         
     except:
+        #TODO handle better
         traceback.print_exc()
         traceback.print_stack()
         return segmentDirectoryUrl

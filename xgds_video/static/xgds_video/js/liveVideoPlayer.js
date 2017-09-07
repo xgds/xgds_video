@@ -15,24 +15,24 @@
 //__END_LICENSE__
 
 var xgds_video = xgds_video || {};
-var locomotePlayers = {};
-
-// Mouse handling callbacks for refresh button to restart player if it gets stuck
-$(".icon-arrows-ccw").mousedown(function(event) {
-    event.target.style.color = "#FF0000";
-})
-
-$(".icon-arrows-ccw").mouseup(function(event) {
-    event.target.style.color = "";
-})
-
-$(".icon-arrows-ccw").click(function() {
-    playerId = event.target.id.split("_")[0];
-    player = locomotePlayers[playerId];
-    streamUrl = player.streamStatus().streamURL
-    player.stop();
-    player.play(streamUrl);
-})
+//var locomotePlayers = {};
+//
+//// Mouse handling callbacks for refresh button to restart player if it gets stuck
+//$(".icon-arrows-ccw").mousedown(function(event) {
+//    event.target.style.color = "#FF0000";
+//})
+//
+//$(".icon-arrows-ccw").mouseup(function(event) {
+//    event.target.style.color = "";
+//})
+//
+//$(".icon-arrows-ccw").click(function() {
+//    playerId = event.target.id.split("_")[0];
+//    player = locomotePlayers[playerId];
+//    streamUrl = player.streamStatus().streamURL
+//    player.stop();
+//    player.play(streamUrl);
+//})
 
 $.extend(xgds_video,{
 	liveJWPlayer_options: {

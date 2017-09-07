@@ -601,15 +601,12 @@ def videoIndexFile(request, flightName=None, sourceShortName=None, segmentNumber
     modifies index file of recorded video to the correct host.
     """
     
-    # Look up path to index file
-    GET_INDEX_FILE_METHOD = getClassByName(settings.XGDS_VIDEO_INDEX_FILE_METHOD)
-    suffix = GET_INDEX_FILE_METHOD(flightName, sourceShortName, segmentNumber)
-
     # use regex substitution to replace hostname, etc.
-    newIndex = util.updateIndexFilePrefix(suffix, settings.SCRIPT_NAME, flightName)
+    (indexFileContents, indexFilePath) = util.getIndexFileContents(flightName, sourceShortName, segmentNumber)
+
     # return modified file in next line
-    response = HttpResponse(newIndex, content_type="application/x-mpegurl")
-    content_disposition = 'filename = "%s"' % os.path.basename(suffix)
+    response = HttpResponse(indexFileContents, content_type="application/x-mpegurl")
+    content_disposition = 'filename = "%s"' % os.path.basename(indexFilePath)
     response['Content-Disposition'] = content_disposition
     return response
 

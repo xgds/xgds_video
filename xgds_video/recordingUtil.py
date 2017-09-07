@@ -19,7 +19,6 @@ import logging
 import os
 import stat
 import traceback
-import memcache
 import json
 
 from django.utils import timezone
@@ -34,7 +33,9 @@ from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfR
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 
 from geocamUtil.loader import LazyGetModelByName, getClassByName
-#from scipy.stats.morestats import fligner
+
+from django.core.cache import caches  
+_cache = caches['default']
 
 if settings.XGDS_CORE_REDIS:
     from xgds_core.redisUtil import publishRedisSSE
@@ -169,7 +170,7 @@ def makeNewSegment(source, recordingDir, recordingUrl, startTime, episode):
                                                                       episode=episode)
     videoSegment.startTime = startTime
     videoSegment.save()
-    videoSegment.broadcast('started')
+    videoSegment.broadcast('start')
     
     return {'videoFeed': videoFeed,
             'recordedVideoDir': recordedVideoDir,
@@ -222,6 +223,12 @@ def startRecording(source, recordingDir, recordingUrl, startTime, episode):
     return 'NO PYRAPTORD: ' + recorderCommand
 
 
+def endSegment(segment, endTime):
+    segment.endTime = endTime
+    segment.save()
+    segment.broadcast('end')
+
+
 def stopRecording(source, endTime):
     assetName = source.shortName
     recorderService = '%s_recorder' % assetName
@@ -229,17 +236,14 @@ def stopRecording(source, endTime):
     if settings.XGDS_VIDEO_RECORDING_METHOD == 'HLS':
         # set the memcache flag to stop.
         #TODO make this better
-        theMemcache = memcache.Client(['127.0.0.1:11211'], debug=0)
-        theMemcache.set("recordHLS:%s:stopRecording" % assetName, True)
+        _cache.set("recordHLS:%s:stopRecording" % assetName, True)
         return 'SET MEMCACHE TO STOP HLS RECORDING FOR %s' % (assetName)
 
     else:
         # we need to set the endtime
         unended_segments = source.videosegment_set.filter(endTime=None)
         for segment in unended_segments:
-            segment.endTime = endTime
-            segment.save()
-            segment.broadcast('end')
+            endSegment(segment, endTime)
     
         if settings.PYRAPTORD_SERVICE is True:
             pyraptord = getPyraptordClient('pyraptord')
@@ -249,7 +253,7 @@ def stopRecording(source, endTime):
 
 def stopRecordingAndCleanSegments(source, videoChunks):
     # call method to clear out giant file and kill recorder if needed
-    stopRecording(source, datetime.datetime.utcnow())
+    stopRecording(source, timezone.now())
     for chunk in videoChunks:
         os.remove(chunk)
 

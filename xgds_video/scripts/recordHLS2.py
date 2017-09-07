@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 import requests
-import memcache
 import m3u8
 import time
 import json
@@ -9,14 +8,13 @@ import pytz
 import copy
 import os
 from collections import deque
-from xgds_video.recordingUtil import invokeMakeNewSegment, getCurrentSegmentForSource
+from xgds_video.recordingUtil import invokeMakeNewSegment, getCurrentSegmentForSource, endSegment
 from xgds_video.scripts.updateVideoRecorderStatus import setVideoRecorderStatusCache
 
 import django
 django.setup()
 from django.conf import settings
 from django.core.cache import caches  
-
 _cache = caches['default']
 
 RECORDER_SEGMENT_BUFFER_SIZE = 6
@@ -230,8 +228,7 @@ class HLSRecorder:
         
         # **TODO** SUPER IMPORTANT read the end time from the ts file of the last m3u8 segment somehow
         endTime = datetime.datetime.now(pytz.utc)
-        self.xgdsSegment.endTime = endTime
-        self.xgdsSegment.save()
+        endSegment(self.xgdsSegment, endTime)
 
         # Now create playlist for new xGDS segment with empty chunk list
         newM3u8Full = copy.deepcopy(self.m3u8Full)
@@ -281,10 +278,8 @@ class HLSRecorder:
         # When done, mark xGDS segment end time and write final copy of index with end tag
         # **TODO** SUPER IMPORTANT read the end time from the ts file of the last m3u8 segment somehow
         endTime = datetime.datetime.now(pytz.utc)
-        self.xgdsSegment.endTime = endTime
-        self.xgdsSegment.save()
-        self.xgdsSegment.broadcast('end')
         self.saveM3U8ToFile(addEndTag=True)
+        endSegment(self.xgdsSegment, endTime)
         
 
 def main():

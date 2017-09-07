@@ -76,13 +76,17 @@ RECORDED_VIDEO_URL_BASE = None
 
 
 # Path in data where you will find your video files
-XGDS_VIDEO_INDEX_FILE_METHOD = 'xgds_video.util.getIndexFileSuffix'
+# This returns a tuple of the path to the index file and the segment that corresponds to that index file.
+XGDS_VIDEO_INDEX_FILE_METHOD = 'xgds_video.util.getIndexFilePath'
 
 # Method for looking up delay from a flight
 XGDS_VIDEO_DELAY_AMOUNT_METHOD = 'xgds_video.util.getDelaySeconds'
 
 # The old method is VLC
 XGDS_VIDEO_RECORDING_METHOD = 'HLS'
+
+XGDS_VIDEO_NUM_BUFFERED_CHUNKS = 3
+XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS = 10
 
 # Override this in your siteSettings to include a key for enterprise JWPLAYER
 """

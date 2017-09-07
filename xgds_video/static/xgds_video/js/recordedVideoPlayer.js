@@ -21,6 +21,7 @@ $.extend(xgds_video,{
 		moment.tz.setDefault(options.timeZone);
 		xgds_video.initializeSegmentTimes();
 		xgds_video.initializeEpisodeTimes(xgds_video.options.episode);
+		return this;
 	},
 	initializeSegmentTimes: function() {
 		for (var source in xgds_video.options.displaySegments) {
