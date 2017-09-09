@@ -64,6 +64,7 @@ $.extend(xgds_video,{
 		image: '/static/xgds_video/images/video-image.png',
 		events: {
 			onReady: function() {
+				console.log('ON READY ' + this.id);
 				xgds_video.setupPlaylist(this.id);
 				//xgds_video.startPlayer(this);
 				//TODO it looks like this was already set up by the time we got here.

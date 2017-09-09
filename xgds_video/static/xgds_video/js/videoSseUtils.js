@@ -20,7 +20,7 @@ $.extend(videoSse, {
 	initialize: function() {
 		if (isLive) {
 			videoSse.allChannels(videoSse.subscribeSegment);
-			sse.subscribe('videoEpisode', trackSse.handleEpisodeEvent, channel);
+			sse.subscribe('videoepisode', videoSse.handleEpisodeEvent, 'sse');
 		}
 	},
 	allChannels: function(theFunction){
@@ -33,19 +33,29 @@ $.extend(videoSse, {
 		}
 	},
 	subscribeSegment: function(channel) {
-		sse.subscribe('videoSegment', trackSse.handleSegmentEvent, channel);
+		sse.subscribe('videosegment', videoSse.handleSegmentEvent, channel);
 	},
 	handleSegmentEvent: function(event){
 		var data = JSON.parse(event.data);
-		var status = event.status;
-		var channel = sse.parseEventChannel(event);
+		var status = data.status;
 		if (status == 'start'){
-			//TODO handle start, end and play events
+			xgds_video.addSegment(data.data);
+		} else if (status == 'end') {
+			//noop
+		} else if (status == 'play') {
+			xgds_video.playSegment(data.data);
 		}
 	},
 	handleEpisodeEvent: function(event){
 		var data = JSON.parse(event.data);
-		var status = event.status;
-		//TODO reload the page on start or end .. though we may end an episode and then there is delay ...
+		var status = data.status;
+		if (status == 'start') {
+			xgds_video.startEpisode(data.data);
+		} else if (status == 'end') {
+			xgds_video.endEpisode(data.data);
+			// actually stop the episode and load the recorded page.
+			// TODO fire this event from back end
+		}
+			
 	}
 });

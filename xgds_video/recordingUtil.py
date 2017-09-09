@@ -60,7 +60,12 @@ def makedirsIfNeeded(path):
 
 
 def emptySegmentDir(recordedVideoDir):
-    if not os.listdir(recordedVideoDir):
+    ''' check if this segment directory is empty
+    '''
+    try:
+        if not os.listdir(recordedVideoDir):
+            return True
+    except:
         return True
     return False
 
@@ -224,6 +229,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, episode):
 
 
 def endSegment(segment, endTime):
+    print 'ending segment ' % str(segment)
     segment.endTime = endTime
     segment.save()
     segment.broadcast('end')

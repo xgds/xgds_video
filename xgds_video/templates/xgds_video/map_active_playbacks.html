@@ -1,9 +1,14 @@
 {% extends "xgds_video/map_recorded_playbacks.html" %}
+{% load static %}
 
 {% block videoscripts %} 
 	{{block.super}}
+	<script src="{% static 'xgds_core/js/sseUtils.js' %}"></script>
+    <script src="{{ STATIC_URL }}xgds_video/js/activeVideoUtils.js"></script>
+    <script src="{{ STATIC_URL }}xgds_video/js/videoSseUtils.js"></script>
 	<script type="text/javascript">
         isLive = true;
+        videoSse.initialize();
     </script>
 {% endblock videoscripts %}
 

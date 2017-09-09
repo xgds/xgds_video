@@ -21,6 +21,7 @@ import m3u8
 import pytz
 import re
 import json
+from threading import Timer
 from datetime import datetime
 from glob import glob
 import traceback
@@ -33,6 +34,7 @@ from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 
 from xgds_video import util
 from xgds_video import recordingUtil
+from xgds_core.views import getDelay
 
 if settings.XGDS_CORE_REDIS:
     from xgds_core.redisUtil import publishRedisSSE
@@ -218,7 +220,18 @@ class AbstractVideoSegment(models.Model):
                 result = {'status': status,
                           'data': self.getDict()}
                 json_string = json.dumps(result, cls=DatetimeJsonEncoder)
+                print 'seg:broadcast'
+                print json_string
                 publishRedisSSE(self.source.name, self.getSseType(), json_string)
+                
+                if status == 'start': 
+                    result = {'status': 'play',
+                              'data': self.getDict()}
+                    json_string = json.dumps(result, cls=DatetimeJsonEncoder)
+                    print 'seg:broadcast (delay)'
+                    print json_string
+                    t = Timer(getDelay() + util.XGDS_VIDEO_BUFFER_FUDGE_FACTOR, publishRedisSSE, [self.source.name, self.getSseType(), json_string])
+                    t.start()
                 return json_string
         except:
             traceback.print_exc()
@@ -280,7 +293,10 @@ class AbstractVideoEpisode(models.Model):
                 result = {'status': status,
                           'data': self.getDict()}
                 json_string = json.dumps(result, cls=DatetimeJsonEncoder)
-                publishRedisSSE('sse', self.getSseType(), json_string)
+                print 'epi:broadcast (delay)'
+                print json_string
+                t = Timer(getDelay(), publishRedisSSE, ['sse', self.getSseType(), json_string])
+                t.start()
                 return json_string
         except:
             traceback.print_exc()
