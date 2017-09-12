@@ -23,6 +23,7 @@ import m3u8
 
 from django.conf import settings
 from geocamUtil.loader import LazyGetModelByName, getClassByName
+from xgds_core.views import getDelay
 
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
@@ -30,7 +31,10 @@ SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 XGDS_VIDEO_BUFFER_FUDGE_FACTOR = settings.XGDS_VIDEO_NUM_BUFFERED_CHUNKS * settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
 
 def getDelaySeconds(flightName):
-    return settings.XGDS_VIDEO_DELAY_SECONDS
+    delay = getDelay()
+#     the below is already subtracted when we use the delay seconds.
+#     delay -= XGDS_VIDEO_BUFFER_FUDGE_FACTOR
+    return delay
 
 
 def getShortTimeString(dateTime):
