@@ -29,7 +29,7 @@ $.extend(xgds_video,{
 		if (newSegment.segNumber in segments){
 			return false;
 		}
-		xgds_video.options.displaySegments[newSegment.segNumber] = newSegment;
+		segments[newSegment.segNumber] = newSegment;
 		xgds_video.setupPlaylist(source);
 		return false
 	},
