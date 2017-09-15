@@ -231,7 +231,7 @@ class HLSRecorder:
             self.m3u8Full.add_segment(seg)
             
             self.saveM3U8ToFile()
-        except requests.exceptions.Timeout t:
+        except requests.exceptions.Timeout:
             # end prior segment we had a timeout
             self.endCurrentVideoSegment()
             #TODO eventually it would be good to update the m3u8 index to match the files we have.  This better never happen
@@ -287,7 +287,7 @@ class HLSRecorder:
                 else:
                     self.endCurrentVideoSegment()
                     time.sleep(5)     # Something went wrong, wait 5 seconds and try again
-        except requests.exceptions.Timeout t:
+        except requests.exceptions.Timeout:
             # end prior segment we had a timeout
             self.endCurrentVideoSegment()
 
