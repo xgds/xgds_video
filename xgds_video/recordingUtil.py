@@ -37,8 +37,8 @@ from geocamUtil.loader import LazyGetModelByName, getClassByName
 from django.core.cache import caches  
 _cache = caches['default']
 
-if settings.XGDS_CORE_REDIS:
-    from xgds_core.redisUtil import publishRedisSSE
+# if settings.XGDS_CORE_REDIS:
+#     from xgds_core.redisUtil import publishRedisSSE
 
 
 SETTINGS_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -285,10 +285,10 @@ def endActiveEpisode(end_time):
         episode.broadcast('end')
 
 
-def publishSSE(channel, status, data):
-    if settings.XGDS_SSE and settings.XGDS_CORE_REDIS:
-        result = {'status': status,
-                  'data': data}
-        json_string = json.dumps(result, cls=DatetimeJsonEncoder)
-        publishRedisSSE(channel, SSE_TYPE, json_string)
-        return json_string
+# def publishSSE(channel, status, data):
+#     if settings.XGDS_SSE and settings.XGDS_CORE_REDIS:
+#         result = {'status': status,
+#                   'data': data}
+#         json_string = json.dumps(result, cls=DatetimeJsonEncoder)
+#         publishRedisSSE(channel, SSE_TYPE, json_string)
+#         return json_string

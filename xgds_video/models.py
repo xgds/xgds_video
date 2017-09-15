@@ -220,17 +220,20 @@ class AbstractVideoSegment(models.Model):
                 result = {'status': status,
                           'data': self.getDict()}
                 json_string = json.dumps(result, cls=DatetimeJsonEncoder)
-                print 'seg:broadcast'
-                print json_string
-                publishRedisSSE(self.source.name, self.getSseType(), json_string)
                 
-                if status == 'start': 
+                if status == 'start':
+                    # broadcast start event immediately
+                    publishRedisSSE(self.source.name, self.getSseType(), json_string)
+                    
+                    # broadcast play event after delay plus fudge
                     result = {'status': 'play',
                               'data': self.getDict()}
                     json_string = json.dumps(result, cls=DatetimeJsonEncoder)
-                    print 'seg:broadcast (delay)'
-                    print json_string
                     t = Timer(getDelay() + settings.XGDS_VIDEO_BUFFER_FUDGE_FACTOR, publishRedisSSE, [self.source.name, self.getSseType(), json_string])
+                    t.start()
+                elif status == 'end':
+                    # broadcast end event after delay
+                    t = Timer(getDelay(), publishRedisSSE, [self.source.name, self.getSseType(), json_string])
                     t.start()
                 return json_string
         except:

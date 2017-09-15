@@ -48,6 +48,9 @@ $.extend(xgds_video,{
 		// play it
 		player.play(true);
 	},
+	endSegment: function(segment){
+		jwplayer(segment.source.shortName).play(false);
+	},
 	startEpisode: function(episode){
 		var currentEpisode = xgds_video.options.episode;
 		if (currentEpisode.shortName !== episode.shortName){

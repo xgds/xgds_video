@@ -41,7 +41,7 @@ $.extend(videoSse, {
 		if (status == 'start'){
 			xgds_video.addSegment(data.data);
 		} else if (status == 'end') {
-			//noop
+			xgds_video.endSegment(data.data);
 		} else if (status == 'play') {
 			xgds_video.playSegment(data.data);
 		}
