@@ -19,15 +19,16 @@ _cache = caches['default']
 
 RECORDER_SEGMENT_BUFFER_SIZE = 6
 
+TIMEOUT_CONNECT = 3
+TIMEOUT_READ = 8
 
 class HLSRecorder:
     def __init__(self, sourceUrl, m3u8DirPath, recorderId, episodePK, sourcePK):
+        self.initialized = False
         self.stopRecording = False
         self.m3u8Full = None
         self.maxSegmentNumber = None
         self.sourceUrl = sourceUrl
-        self.sleepCycleCounter = 0
-        self.timeout = False
         self.m3u8DirPath = m3u8DirPath
         self.recorderId = recorderId
         self.episodePK = episodePK
@@ -132,16 +133,19 @@ class HLSRecorder:
 
     def getM3U8(self):
         try:
-            m3u8String = self.httpSession.get(self.sourceUrl).text
+            m3u8String = self.httpSession.get(self.sourceUrl, timeout=(TIMEOUT_CONNECT, TIMEOUT_READ)).text
             m3u8Obj = m3u8.loads(m3u8String)
             if not m3u8Obj.files:
                 # m3u8 must have a playlist which holds the files, read that one.
                 baseUrl = os.path.dirname(self.sourceUrl)
                 for p in m3u8Obj.playlists:
                     playlistUri = p.uri
-                    m3u8String = self.httpSession.get(os.path.join(baseUrl, playlistUri)).text
+                    m3u8String = self.httpSession.get(os.path.join(baseUrl, playlistUri), timeout=(TIMEOUT_CONNECT, TIMEOUT_READ)).text
                     m3u8Obj = m3u8.loads(m3u8String)
             return m3u8Obj
+        except requests.exceptions.Timeout as t:
+            # it timed out, end the current segment
+            raise t
         except:
             time.sleep(0.5)
             print "%s %s %s" % ("recordHLS:",
@@ -156,18 +160,18 @@ class HLSRecorder:
         f.write(self.m3u8Full.dumps())
         f.close()
         
-    def saveM3U8SegmentsToDisk(self, analyzedSegments, addSegmentsToList=True):
-        for seg in self.m3u8Full.segments:
-            videoData = self.httpSession.get("%s/%s" % (os.path.dirname(self.sourceUrl),
-                                         seg.uri)).content
-            f = open("%s/%s" % (self.m3u8DirPath, seg.uri),"w")
-            f.write(videoData)
-            f.close()
-            if addSegmentsToList:
-                self.m3u8Full.add_segment(seg)
-            if seg == analyzedSegments['lastSegment']:
-                #done -- we do not expect any problems in this initial state but if we want to be thorough we should handle making a new xgds segment in here
-                break
+#     def saveM3U8SegmentsToDisk(self, analyzedSegments, addSegmentsToList=True):
+#         for seg in self.m3u8Full.segments:
+#             videoData = self.httpSession.get("%s/%s" % (os.path.dirname(self.sourceUrl),
+#                                          seg.uri)).content
+#             f = open("%s/%s" % (self.m3u8DirPath, seg.uri),"w")
+#             f.write(videoData)
+#             f.close()
+#             if addSegmentsToList:
+#                 self.m3u8Full.add_segment(seg)
+#             if seg == analyzedSegments['lastSegment']:
+#                 #done -- we do not expect any problems in this initial state but if we want to be thorough we should handle making a new xgds segment in here
+#                 break
 
     
     def addToSegmentBuffer(self, seg, flushed=False):
@@ -182,20 +186,29 @@ class HLSRecorder:
     
     def initXgdsSegmentRecording(self):
         self.xgdsSegment = getCurrentSegmentForSource(self.sourcePK, self.episodePK)
-        firstm3u8 = self.getM3U8()
-        if firstm3u8:
-            setVideoRecorderStatusCache(self.episodePK, self.sourcePK)
-            self.m3u8Full = copy.deepcopy(firstm3u8)
-            self.m3u8Full.segments = m3u8.model.SegmentList()  # Initialize with empty list          
-            #TODO we have never seen gaps here but it is theoretically possible.
-            for chunk in firstm3u8.segments:
-                self.addToSegmentBuffer(chunk)
-            sleepDuration = self.playlistTotalTime(firstm3u8) - firstm3u8.segments[-1].duration
-            self.flushVideoAndPlaylist()
-            time.sleep(sleepDuration)
+        try:
+            firstm3u8 = self.getM3U8()
+            if firstm3u8:
+                setVideoRecorderStatusCache(self.episodePK, self.sourcePK)
+                self.m3u8Full = copy.deepcopy(firstm3u8)
+                self.m3u8Full.segments = m3u8.model.SegmentList()  # Initialize with empty list          
+                #TODO we have never seen gaps here but it is theoretically possible.
+                for chunk in firstm3u8.segments:
+                    self.addToSegmentBuffer(chunk)
+                sleepDuration = self.playlistTotalTime(firstm3u8) - firstm3u8.segments[-1].duration
+                self.flushVideoAndPlaylist()
+                time.sleep(sleepDuration)
+                self.initialized = True
+        except:
+            # may have had a timeout exception
+            self.initialized = False
+            pass
+        return self.initialized
 
 
     def flushVideoAndPlaylist(self):
+        ''' Check for discontinuity and make a new segment if there is one.
+        '''
         for segData in self.segmentBuffer:
             currSegNumber = self.segmentNumber(segData['chunk'])
             if self.maxSegmentNumber and ((currSegNumber - self.maxSegmentNumber) != 1) and not segData['flushed']:
@@ -208,28 +221,36 @@ class HLSRecorder:
             
                 
     def storeVideoUpdateIndex(self, seg):
-        videoData = self.httpSession.get("%s/%s" % (os.path.dirname(self.sourceUrl),
-                                                    seg.uri)).content
-        f = open("%s/%s" % (self.m3u8DirPath, seg.uri),"w")
-        f.write(videoData)
-        f.close()
-        self.m3u8Full.add_segment(seg)
-        
-        self.saveM3U8ToFile()
+        ''' pull in the actual binary video file '''
+        try:
+            videoData = self.httpSession.get("%s/%s" % (os.path.dirname(self.sourceUrl),
+                                                        seg.uri), timeout=(TIMEOUT_CONNECT, TIMEOUT_READ)).content
+            f = open("%s/%s" % (self.m3u8DirPath, seg.uri),"w")
+            f.write(videoData)
+            f.close()
+            self.m3u8Full.add_segment(seg)
+            
+            self.saveM3U8ToFile()
+        except requests.exceptions.Timeout t:
+            # end prior segment we had a timeout
+            self.endCurrentVideoSegment()
+            #TODO eventually it would be good to update the m3u8 index to match the files we have.  This better never happen
 
+    def endCurrentVideoSegment(self):
+        
+        # **TODO** SUPER IMPORTANT read the end time from the ts file of the last m3u8 segment somehow
+        if self.xgdsSegment and not self.xgdsSegment.endTime:
+            # First be sure existing index file is flushed to disk
+            self.saveM3U8ToFile(addEndTag=True)
+            endTime = datetime.datetime.now(pytz.utc)
+            endSegment(self.xgdsSegment, endTime)
 
     def makeNewXgdsSegment(self, m3u8Latest=None, seg=None, segNumber=None):
         ''' Make a new segment because we hit a discontinuity or gap '''
         # update self.m3u8FilePath & self.m3u8DirPath
         # build the new m3u8 object that has the m3u8 segments we care about
+        self.endCurrentVideoSegment()
         
-        # First be sure existing index file is flushed to disk
-        self.saveM3U8ToFile(addEndTag=True)
-        
-        # **TODO** SUPER IMPORTANT read the end time from the ts file of the last m3u8 segment somehow
-        endTime = datetime.datetime.now(pytz.utc)
-        endSegment(self.xgdsSegment, endTime)
-
         # Now create playlist for new xGDS segment with empty chunk list
         newM3u8Full = copy.deepcopy(self.m3u8Full)
         newM3u8Full.segments = m3u8.model.SegmentList()  # Initialize with empty list
@@ -248,26 +269,33 @@ class HLSRecorder:
 
 
     def recordNextBlock(self, sleepAfterRecord=True):
-        m3u8Latest = self.getM3U8()
-        
-        for chunk in m3u8Latest.segments:
-            if not self.segmentInBuffer(chunk):
-                self.addToSegmentBuffer(chunk)
+        try:
+            m3u8Latest = self.getM3U8()
+            
+            for chunk in m3u8Latest.segments:
+                if not self.segmentInBuffer(chunk):
+                    self.addToSegmentBuffer(chunk)
+    
+            self.flushVideoAndPlaylist()
+    
+            if sleepAfterRecord:
+                #TODO handle discontinuity better
+                self.httpSession.close()  # Close out session before sleep to avoid having too many open
+                if len(m3u8Latest.segments) > 0:
+                    sleepDuration = self.playlistTotalTime(m3u8Latest) - m3u8Latest.segments[-1].duration
+                    time.sleep(sleepDuration)
+                else:
+                    self.endCurrentVideoSegment()
+                    time.sleep(5)     # Something went wrong, wait 5 seconds and try again
+        except requests.exceptions.Timeout t:
+            # end prior segment we had a timeout
+            self.endCurrentVideoSegment()
 
-        self.flushVideoAndPlaylist()
 
-        if sleepAfterRecord:
-            #TODO handle discontinuity better
-            self.httpSession.close()  # Close out session before sleep to avoid having too many open
-            if len(m3u8Latest.segments) > 0:
-                sleepDuration = self.playlistTotalTime(m3u8Latest) - m3u8Latest.segments[-1].duration
-                self.timeout = False
-                self.sleepCycleCounter += 1
-                time.sleep(sleepDuration)
-            else:
-                self.sleepCycleCounter += 1
-                self.timeout = True
-                time.sleep(5)     # Something went wrong, wait 5 seconds and try again
+    def runInitializeLoop(self):
+        while not self.initialized:
+            self.initXgdsSegmentRecording()
+            time.sleep(5)
 
     def runRecordingLoop(self):
         while not self.stopRecording:
@@ -309,7 +337,7 @@ def main():
     print "  Output path:", opts.outputDir
     
     hlsRecorder = HLSRecorder(opts.sourceUrl, opts.outputDir, opts.recorderId, opts.episodePK, opts.sourcePK)
-    hlsRecorder.initXgdsSegmentRecording()
+    hlsRecorder.runInitializeLoop()
     hlsRecorder.runRecordingLoop()
     print "recordHLS: Recording Complete. End tag written. Exiting..."
 
