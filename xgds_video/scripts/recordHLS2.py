@@ -232,6 +232,7 @@ class HLSRecorder:
             
             self.saveM3U8ToFile()
         except requests.exceptions.Timeout:
+            print "*** Timeout saving video data - ending segment!"
             # end prior segment we had a timeout
             self.endCurrentVideoSegment()
             #TODO eventually it would be good to update the m3u8 index to match the files we have.  This better never happen
@@ -239,8 +240,10 @@ class HLSRecorder:
     def endCurrentVideoSegment(self):
         
         # **TODO** SUPER IMPORTANT read the end time from the ts file of the last m3u8 segment somehow
+        print "*** End video segment check"
         if self.xgdsSegment and not self.xgdsSegment.endTime:
             # First be sure existing index file is flushed to disk
+            print "*** Segment not ended - writing end time now..."
             self.saveM3U8ToFile(addEndTag=True)
             endTime = datetime.datetime.now(pytz.utc)
             endSegment(self.xgdsSegment, endTime)
@@ -249,6 +252,7 @@ class HLSRecorder:
         ''' Make a new segment because we hit a discontinuity or gap '''
         # update self.m3u8FilePath & self.m3u8DirPath
         # build the new m3u8 object that has the m3u8 segments we care about
+        print "*** Make new segment - ending current one first"
         self.endCurrentVideoSegment()
         
         # Now create playlist for new xGDS segment with empty chunk list
@@ -282,13 +286,16 @@ class HLSRecorder:
                 #TODO handle discontinuity better
                 self.httpSession.close()  # Close out session before sleep to avoid having too many open
                 if len(m3u8Latest.segments) > 0:
+                    print "*** Record next block - Have some segments - waiting to read next"
                     sleepDuration = self.playlistTotalTime(m3u8Latest) - m3u8Latest.segments[-1].duration
                     time.sleep(sleepDuration)
                 else:
+                    print "*** End segment - playlist was empty!"
                     self.endCurrentVideoSegment()
                     time.sleep(5)     # Something went wrong, wait 5 seconds and try again
         except requests.exceptions.Timeout:
             # end prior segment we had a timeout
+            print "*** End segment - playlist read timed out!"
             self.endCurrentVideoSegment()
 
 
