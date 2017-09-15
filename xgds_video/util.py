@@ -28,12 +28,11 @@ from xgds_core.views import getDelay
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
 SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
-XGDS_VIDEO_BUFFER_FUDGE_FACTOR = settings.XGDS_VIDEO_NUM_BUFFERED_CHUNKS * settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
 
 def getDelaySeconds(flightName):
     delay = getDelay()
 #     the below is already subtracted when we use the delay seconds.
-#     delay -= XGDS_VIDEO_BUFFER_FUDGE_FACTOR
+#     delay -= settings.XGDS_VIDEO_BUFFER_FUDGE_FACTOR
     return delay
 
 
@@ -185,7 +184,7 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
                 # 2. if secondsAgo < delay, calculatedDelay = videoDelayInSecs - secondsAgo
                 calculatedDelay = max(videoDelayInSecs - secondsAgo, 0)
             if calculatedDelay > 0: 
-                (videoDelayInChunks, m3u8_index) = getNumChunksFromEndForDelay(calculatedDelay - XGDS_VIDEO_BUFFER_FUDGE_FACTOR, indexFilePath)
+                (videoDelayInChunks, m3u8_index) = getNumChunksFromEndForDelay(calculatedDelay - settings.XGDS_VIDEO_BUFFER_FUDGE_FACTOR, indexFilePath)
                 if videoDelayInChunks > 0:
                     m3u8_index.is_endlist = False
             else:
