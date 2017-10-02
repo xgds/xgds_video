@@ -83,7 +83,7 @@ def splitFlightName(flightName):
 
 def startFlightRecording(request, flightName):
     (episodeName, sourceName) = splitFlightName(flightName)
-    startTime=timezone.now()
+    startTime=timezone.now()   #TODO: This is not true - we should lookup timecode from Wowza playlist
     try:
         videoEpisode = EPISODE_MODEL.get().objects.get(shortName=episodeName)
         if videoEpisode.endTime:
