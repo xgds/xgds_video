@@ -34,6 +34,8 @@ from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 
 from xgds_video import util
 from xgds_video import recordingUtil
+from xgds_video.recordingUtil import getFudgeForSource
+
 from xgds_core.views import getDelay
 
 if settings.XGDS_CORE_REDIS:
@@ -229,12 +231,12 @@ class AbstractVideoSegment(models.Model):
                     result = {'status': 'play',
                               'data': self.getDict()}
                     json_string = json.dumps(result, cls=DatetimeJsonEncoder)
-                    t = Timer(getDelay() + settings.XGDS_VIDEO_BUFFER_FUDGE_FACTOR, publishRedisSSE, [self.source.name, self.getSseType(), json_string])
+                    t = Timer(getDelay() + getFudgeForSource(self.source.name), publishRedisSSE, [self.source.name, self.getSseType(), json_string])
                     t.start()
                 elif status == 'end':
                     # broadcast end event after delay
                     t = Timer(getDelay(), publishRedisSSE, [self.source.name, self.getSseType(), json_string])
-                    #t = Timer(getDelay() + settings.XGDS_VIDEO_BUFFER_FUDGE_FACTOR, publishRedisSSE, [self.source.name, self.getSseType(), json_string])
+                    #t = Timer(getDelay() + getFudgeForSource(self.source.name), publishRedisSSE, [self.source.name, self.getSseType(), json_string])
                     t.start()
                 return json_string
         except:

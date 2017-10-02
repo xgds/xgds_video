@@ -24,6 +24,7 @@ import m3u8
 from django.conf import settings
 from geocamUtil.loader import LazyGetModelByName, getClassByName
 from xgds_core.views import getDelay
+from xgds_video.recordingUtil import getFudgeForSource
 
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
@@ -184,7 +185,7 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
                 # 2. if secondsAgo < delay, calculatedDelay = videoDelayInSecs - secondsAgo
                 calculatedDelay = max(videoDelayInSecs - secondsAgo, 0)
             if calculatedDelay > 0: 
-                (videoDelayInChunks, m3u8_index) = getNumChunksFromEndForDelay(calculatedDelay - settings.XGDS_VIDEO_BUFFER_FUDGE_FACTOR, indexFilePath)
+                (videoDelayInChunks, m3u8_index) = getNumChunksFromEndForDelay(calculatedDelay - getFudgeForSource(sourceShortName), indexFilePath)
                 if videoDelayInChunks > 0:
                     m3u8_index.is_endlist = False
             else:

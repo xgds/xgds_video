@@ -292,3 +292,16 @@ def endActiveEpisode(end_time):
 #         json_string = json.dumps(result, cls=DatetimeJsonEncoder)
 #         publishRedisSSE(channel, SSE_TYPE, json_string)
 #         return json_string
+
+def setFudgeForSource(sourceName, seconds):
+    key = 'VIDEO_FUDGE_' + sourceName;
+    _cache.set(key, seconds)
+
+    
+def getFudgeForSource(sourceName):
+    # use memcache to retrieve the frational seconds fudge factor for this video source
+    key = 'VIDEO_FUDGE_' + sourceName;
+    fudge = _cache.get(key)
+    if not fudge:
+        fudge = settings.XGDS_VIDEO_BUFFER_FUDGE_FACTOR
+    return fudge

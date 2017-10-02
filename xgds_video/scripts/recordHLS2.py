@@ -8,13 +8,14 @@ import pytz
 import copy
 import os
 from collections import deque
-from xgds_video.recordingUtil import invokeMakeNewSegment, getCurrentSegmentForSource, endSegment
+from xgds_video.recordingUtil import invokeMakeNewSegment, getCurrentSegmentForSource, endSegment, setFudgeForSource
 from xgds_video.scripts.updateVideoRecorderStatus import setVideoRecorderStatusCache
 
 import django
 django.setup()
 from django.conf import settings
-from django.core.cache import caches  
+from django.core.cache import caches
+from django.utils import timezone  
 _cache = caches['default']
 
 RECORDER_SEGMENT_BUFFER_SIZE = 6
@@ -183,12 +184,22 @@ class HLSRecorder:
         segNumber = self.segmentNumber(seg)
         return segNumber in self.segmentIDBuffer
     
+    def updateFudgeFactor(self, m3u8Data):
+        nowTime = timezone.now()
+        segNum = self.segmentNumber(m3u8Data.segments.last())
+        magicNum = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS*segNum #converts to unix time
+        chunkTime = datetime.datetime.fromtimestamp(magicNum)
+        timeDiff = nowTime - chunkTime
+        timeDiffSeconds = timeDiff.total_seconds()
+        setFudgeForSource(self.recorderId, timeDiffSeconds)
+        
     
     def initXgdsSegmentRecording(self):
         self.xgdsSegment = getCurrentSegmentForSource(self.sourcePK, self.episodePK)
         try:
             firstm3u8 = self.getM3U8()
             if firstm3u8:
+                self.updateFudgeFactor(firstm3u8)
                 setVideoRecorderStatusCache(self.episodePK, self.sourcePK)
                 self.m3u8Full = copy.deepcopy(firstm3u8)
                 self.m3u8Full.segments = m3u8.model.SegmentList()  # Initialize with empty list          
