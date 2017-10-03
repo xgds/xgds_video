@@ -7,6 +7,7 @@ import datetime
 import pytz
 import copy
 import os
+import traceback
 from collections import deque
 from xgds_video.recordingUtil import invokeMakeNewSegment, getCurrentSegmentForSource, endSegment, setFudgeForSource
 from xgds_video.scripts.updateVideoRecorderStatus import setVideoRecorderStatusCache
@@ -15,7 +16,6 @@ import django
 django.setup()
 from django.conf import settings
 from django.core.cache import caches
-from django.utils import timezone  
 _cache = caches['default']
 
 RECORDER_SEGMENT_BUFFER_SIZE = 6
@@ -184,22 +184,30 @@ class HLSRecorder:
         segNumber = self.segmentNumber(seg)
         return segNumber in self.segmentIDBuffer
     
-    def updateFudgeFactor(self, m3u8Data):
-        nowTime = timezone.now()
-        segNum = self.segmentNumber(m3u8Data.segments.last())
+    def updateFudgeFactor(self, segNum):
+        # NOTE: this assumes that Wowza is encoding segment numbers as timestamps
+        print "computing fudge factor..."
+        nowTime = datetime.datetime.utcnow()
+        #segNum = self.segmentNumber(m3u8Data.segments[-1])
+        print 'segnum is %d' % segNum
         magicNum = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS*segNum #converts to unix time
-        chunkTime = datetime.datetime.fromtimestamp(magicNum)
+        print 'magicnum is %d' % magicNum
+        chunkTime = datetime.datetime.utcfromtimestamp(magicNum)
+        print str(chunkTime)
         timeDiff = nowTime - chunkTime
         timeDiffSeconds = timeDiff.total_seconds()
+        print "Computed HLS video delay:", timeDiffSeconds
         setFudgeForSource(self.recorderId, timeDiffSeconds)
         
     
     def initXgdsSegmentRecording(self):
+        print "Initalizing first segment"
         self.xgdsSegment = getCurrentSegmentForSource(self.sourcePK, self.episodePK)
         try:
             firstm3u8 = self.getM3U8()
+            print "got first playlist"
             if firstm3u8:
-                self.updateFudgeFactor(firstm3u8)
+                self.updateFudgeFactor(self.segmentNumber(firstm3u8.segments[-1]))
                 setVideoRecorderStatusCache(self.episodePK, self.sourcePK)
                 self.m3u8Full = copy.deepcopy(firstm3u8)
                 self.m3u8Full.segments = m3u8.model.SegmentList()  # Initialize with empty list          
@@ -211,6 +219,7 @@ class HLSRecorder:
                 time.sleep(sleepDuration)
                 self.initialized = True
         except:
+            traceback.print_exc()
             # may have had a timeout exception
             self.initialized = False
             pass
@@ -224,6 +233,8 @@ class HLSRecorder:
             currSegNumber = self.segmentNumber(segData['chunk'])
             if self.maxSegmentNumber and ((currSegNumber - self.maxSegmentNumber) != 1) and not segData['flushed']:
                 self.makeNewXgdsSegment()
+                # compute new time offset
+                self.updateFudgeFactor(currSegNumber)
             if not segData['flushed']:
                 self.storeVideoUpdateIndex(segData['chunk'])
                 segData['flushed'] = True
@@ -265,11 +276,11 @@ class HLSRecorder:
         # build the new m3u8 object that has the m3u8 segments we care about
         print "*** Make new segment - ending current one first"
         self.endCurrentVideoSegment()
-        
+
         # Now create playlist for new xGDS segment with empty chunk list
         newM3u8Full = copy.deepcopy(self.m3u8Full)
         newM3u8Full.segments = m3u8.model.SegmentList()  # Initialize with empty list
-        self.m3u8Full = newM3u8Full          
+        self.m3u8Full = newM3u8Full
 
         # **TODO** SUPER IMPORTANT read the start time from the ts file of the next m3u8 segment somehow
         startTime = datetime.datetime.now(pytz.utc)
