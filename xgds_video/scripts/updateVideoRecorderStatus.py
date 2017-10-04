@@ -3,7 +3,6 @@ import datetime
 import os
 import re
 import time
-import memcache
 import logging
 import json
 import subprocess
@@ -18,6 +17,7 @@ django.setup()
 
 from django.conf import settings
 from xgds_status_board.models import Subsystem, SubsystemStatus
+from xgds_status_board.util import *
 from basaltApp.models import BasaltActiveFlight, BasaltResource
 from basaltApp.views import getActiveEpisode
 from xgds_video.util import getSegmentPath
@@ -82,14 +82,14 @@ def setVideoRecorderStatusCache(episodePK, sourcePK):
 
 def getColorLevel(indexFileExists, elapsedTsCreateTime, subsystemStatus):
     if (not indexFileExists) or (not elapsedTsCreateTime):
-        return subsystemStatus.ERROR
+        return ERROR_COLOR
     else: 
         if elapsedTsCreateTime <= 10:  # if ts file was created less than 10 seconds ago
-            return subsystemStatus.OKAY
+            return OKAY_COLOR
         elif (elapsedTsCreateTime > 10 ) and (elapsedTsCreateTime <=20): 
-            return subsystemStatus.WARNING
+            return WARNING_COLOR
         else: # elapsedSeconds > 20:
-            return subsystemStatus.ERROR
+            return ERROR_COLOR
 
 
 def checkTsFileCount(prevSegNum, segNum, prevTsCount, tsFileCount):
@@ -108,7 +108,7 @@ def getDefaultStatus(subsystemStatus, flightName):
     return {"name": subsystemStatus.name, 
             "displayName": subsystemStatus.displayName, 
             "elapsedTime": "",
-            "statusColor": subsystemStatus.NO_DATA,
+            "statusColor": NO_DATA,
             "indexFileExists": 0,
             "lastUpdated": "",
             "segNumber": 0,
