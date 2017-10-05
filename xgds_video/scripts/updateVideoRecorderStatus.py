@@ -107,7 +107,6 @@ def checkTsFileCount(prevSegNum, segNum, prevTsCount, tsFileCount):
 def getDefaultStatus(subsystemStatus, flightName):
     return {"name": subsystemStatus.name, 
             "displayName": subsystemStatus.displayName, 
-            "elapsedTime": "",
             "statusColor": NO_DATA,
             "indexFileExists": 0,
             "lastUpdated": "",
@@ -165,7 +164,6 @@ def setVideoRecorderStatus(resourceNames):
             incrementingTs = checkTsFileCount(prevSegNum, segNum, prevTsCount, tsFileCount)
             lastUpdatedTime = dateutil.parser.parse(jsonDict['lastUpdated'])
             if incrementingTs: 
-                jsonDict['elapsedTime'] = subsystemStatus.getElapsedTimeString(lastUpdatedTime)
                 jsonDict['lastUpdated'] = datetime.datetime.utcnow().isoformat()
                 
             elapsedTimeSeconds = subsystemStatus.getElapsedTimeSeconds(lastUpdatedTime)
