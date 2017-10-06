@@ -46,7 +46,7 @@ class HLSRecorder:
                        self.stopRecording)
 
     def updateCachedStatus(self, analyzedSegments):
-        myKey = "recordHLS:%s:recordingStatus" % self.recorderId
+        myKey = "%s_recorder" % self.recorderId
         status = {"currentSegment": analyzedSegments['lastSegmentNumber'],
                   "totalDuration":analyzedSegments['totalTime'],
                   "lastUpdate":datetime.datetime.utcnow().isoformat()}
