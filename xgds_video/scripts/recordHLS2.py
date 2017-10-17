@@ -10,7 +10,6 @@ import os
 import traceback
 from collections import deque
 from xgds_video.recordingUtil import invokeMakeNewSegment, getCurrentSegmentForSource, endSegment, setFudgeForSource
-from xgds_video.scripts.updateVideoRecorderStatus import setVideoRecorderStatusCache
 
 import django
 django.setup()
@@ -206,9 +205,9 @@ class HLSRecorder:
         try:
             firstm3u8 = self.getM3U8()
             print "got first playlist"
-            if firstm3u8:
+            if firstm3u8 and firstm3u8.segments:
                 self.updateFudgeFactor(self.segmentNumber(firstm3u8.segments[-1]))
-                setVideoRecorderStatusCache(self.episodePK, self.sourcePK)
+                #setVideoRecorderStatusCache(self.episodePK, self.sourcePK)
                 self.m3u8Full = copy.deepcopy(firstm3u8)
                 self.m3u8Full.segments = m3u8.model.SegmentList()  # Initialize with empty list          
                 #TODO we have never seen gaps here but it is theoretically possible.
