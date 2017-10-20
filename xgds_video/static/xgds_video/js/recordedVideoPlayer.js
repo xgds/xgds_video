@@ -90,14 +90,14 @@ $.extend(xgds_video,{
 				xgds_video.startPlayer(this);
 				xgds_video.soundController();
 			},
-			onSeek: function(data) {
-				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
-				console.log('POSITION IS NOW ' + this.getPosition());
-			},
-			onSeeked: function(data) {
-				console.log('ON SEEKED: ' + data.startPosition + " | " + data.offset);
-				console.log('POSITION IS NOW ' + this.getPosition());
-			},
+//			onSeek: function(data) {
+//				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
+//				console.log('POSITION IS NOW ' + this.getPosition());
+//			},
+//			onSeeked: function(data) {
+//				console.log('ON SEEKED: ' + data.startPosition + " | " + data.offset);
+//				console.log('POSITION IS NOW ' + this.getPosition());
+//			},
 			onComplete: function() {
 				console.log('onComplete ' + this.id + ' ' + this.getState());
 				//stop until start of the next segment.
@@ -110,7 +110,7 @@ $.extend(xgds_video,{
 //				console.log(e);
 //			},
 			onPlay: function(e) { //gets called per source
-				console.log('ON PLAY');
+				//console.log('ON PLAY');
 				var segments = xgds_video.options.displaySegments[this.id];
 				var segment = segments[this.getPlaylistIndex()];
 				var pendingActions = xgds_video.pendingPlayerActions[this.id];
@@ -138,6 +138,12 @@ $.extend(xgds_video,{
 			onBuffer: function(e) {
 				xgds_video.onTimeController(this);
 			},
+//			onBufferChange: function(e) {
+//				console.log('BUFFER CHANGE')
+//				console.log('POSITION: ' + this.getPosition());
+//				console.log(' NEW DURATION: ' + e.duration);
+//			},
+
 			onIdle: function(e) {
 				if (e.position > Math.floor(e.duration)) {
 					//this.pause(true);
@@ -146,6 +152,7 @@ $.extend(xgds_video,{
 				//xgds_video.onTimeController(this);
 			},
 			onTime: function(object) {
+				//console.log('ON TIME POSITION IS: ' + this.getPosition());
 				if (!xgds_video.options.hasMasterSlider){
 					return;
 				}
