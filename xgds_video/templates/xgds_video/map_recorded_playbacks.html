@@ -223,7 +223,7 @@
 var indexFileUrl = null;
 
 {% if episode %}
-    indexFileUrl = "{% url 'xgds_video_index_file' 'flightName' 'sourceShortName' 'segmentIndex' %}";
+    indexFileUrl = "/xgds_video/videoIndexFile/flightName/sourceShortName/segmentIndex/";
 {% endif %}
 {% endblock setupIndexUrl %}
 

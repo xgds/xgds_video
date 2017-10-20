@@ -90,6 +90,7 @@ $.extend(xgds_video,{
 			var indexFileUrl = xgds_video.options.indexFileUrl.replace('flightName', flightName);
 			indexFileUrl = indexFileUrl.replace('sourceShortName', sourceShortName);
 			indexFileUrl = indexFileUrl.replace('segmentIndex', xgds_video.padNum(segment.segNumber, 3));
+			indexFileUrl = indexFileUrl + segment.indexFileName;
 			filePaths.push(indexFileUrl);
 		});
 		return filePaths;
