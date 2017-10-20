@@ -90,14 +90,14 @@ $.extend(xgds_video,{
 				xgds_video.startPlayer(this);
 				xgds_video.soundController();
 			},
-//			onSeek: function(data) {
-//				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
-//				console.log('POSITION IS NOW ' + this.getPosition());
-//			},
-//			onSeeked: function(data) {
-//				console.log('ON SEEKED: ' + data.startPosition + " | " + data.offset);
-//				console.log('POSITION IS NOW ' + this.getPosition());
-//			},
+			onSeek: function(data) {
+				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
+				console.log('POSITION IS NOW ' + this.getPosition());
+			},
+			onSeeked: function(data) {
+				console.log('ON SEEKED: ' + data.startPosition + " | " + data.offset);
+				console.log('POSITION IS NOW ' + this.getPosition());
+			},
 			onComplete: function() {
 				console.log('onComplete ' + this.id + ' ' + this.getState());
 				//stop until start of the next segment.
@@ -110,6 +110,7 @@ $.extend(xgds_video,{
 //				console.log(e);
 //			},
 			onPlay: function(e) { //gets called per source
+				console.log('ON PLAY');
 				var segments = xgds_video.options.displaySegments[this.id];
 				var segment = segments[this.getPlaylistIndex()];
 				var pendingActions = xgds_video.pendingPlayerActions[this.id];
@@ -463,7 +464,7 @@ $.extend(xgds_video,{
 		$('#playbutton').addClass("active");
 		$('#playbuttonLink').addClass("active");
 		$('#pausebutton').removeClass("active");
-		$('#pausebuttonLink').addClass("active");
+		$('#pausebuttonLink').removeClass("active");
 		if (xgds_video.options.hasMasterSlider){
 			var currTime = xgds_video.getSliderTime();
 		}

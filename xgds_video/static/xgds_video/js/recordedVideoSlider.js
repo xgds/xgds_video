@@ -165,14 +165,29 @@ $.extend(xgds_video,{
 		/**
 		 * initialize master slider with range (episode start time->episode end time)
 		 */
-		if (Object.keys(xgds_video.options.displaySegments).length == 0){
+		var keysLength = (Object.keys(xgds_video.options.displaySegments).length);
+		if (keysLength == 0){
 			return;
 		}
-		var endTime = xgds_video.options.episode.endTime ? xgds_video.options.episode.endTime : xgds_video.options.lastSegment.endTime;
-		var endMoment = moment(endTime);
-		var startMoment = moment(xgds_video.options.episode.startTime);
+		var singleSource = (keysLength == 1);
+		
+		var startMoment = undefined;
+		var endMoment = undefined;
+		var endTime = undefined;
+		if (!singleSource) {
+			// use the episode
+			startMoment = moment(xgds_video.options.episode.startTime);
+			endTime = xgds_video.options.episode.endTime ? xgds_video.options.episode.endTime : xgds_video.options.lastSegment.endTime;
+			endMoment = moment(endTime);
+		} else {
+			// use the segments from the single source
+			var segments = xgds_video.options.displaySegments[Object.keys(xgds_video.options.displaySegments)[0]];
+			startMoment = moment(segments[0].startTime);
+			endTime = xgds_video.options.lastSegment.endTime;
+			endMoment = moment(endTime);
+		}
 		//var duration = endMoment.diff(startMoment, 'seconds');
-		if (xgds_video.options.episode.endTime) {
+		if (endTime !== undefined) {
 			xgds_video.masterSlider = $('#masterSlider').slider({
 				step: 1,
 				min: startMoment.unix(), //moment(xgds_video.options.firstSegment.startTime).unix(),
