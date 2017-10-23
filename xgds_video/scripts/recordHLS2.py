@@ -216,9 +216,7 @@ class HLSRecorder:
                 #TODO we have never seen gaps here but it is theoretically possible.
                 for chunk in firstm3u8.segments:
                     self.addToSegmentBuffer(chunk)
-                #sleepDuration = self.playlistTotalTime(firstm3u8) - firstm3u8.segments[-1].duration
-                #sleepDuration = firstm3u8.segments[0].duration
-                sleepDuration = 1
+                sleepDuration = 2 * settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
                 self.flushVideoAndPlaylist()
                 time.sleep(sleepDuration)
                 self.initialized = True
