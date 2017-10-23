@@ -18,6 +18,7 @@ from django.core.cache import caches
 _cache = caches['default']
 
 RECORDER_SEGMENT_BUFFER_SIZE = 6
+MAX_CHUNK_GAP = 2
 
 TIMEOUT_CONNECT = 3
 TIMEOUT_READ = 8
@@ -213,7 +214,9 @@ class HLSRecorder:
                 #TODO we have never seen gaps here but it is theoretically possible.
                 for chunk in firstm3u8.segments:
                     self.addToSegmentBuffer(chunk)
-                sleepDuration = self.playlistTotalTime(firstm3u8) - firstm3u8.segments[-1].duration
+                #sleepDuration = self.playlistTotalTime(firstm3u8) - firstm3u8.segments[-1].duration
+                #sleepDuration = firstm3u8.segments[0].duration
+                sleepDuration = 1
                 self.flushVideoAndPlaylist()
                 time.sleep(sleepDuration)
                 self.initialized = True
@@ -230,7 +233,7 @@ class HLSRecorder:
         '''
         for segData in self.segmentBuffer:
             currSegNumber = self.segmentNumber(segData['chunk'])
-            if self.maxSegmentNumber and ((currSegNumber - self.maxSegmentNumber) != 1) and not segData['flushed']:
+            if self.maxSegmentNumber and ((currSegNumber - self.maxSegmentNumber) > MAX_CHUNK_GAP) and not segData['flushed']:
                 self.makeNewXgdsSegment()
                 # compute new time offset
                 self.updateFudgeFactor(currSegNumber)
