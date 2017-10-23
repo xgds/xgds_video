@@ -10,6 +10,8 @@ import os
 import traceback
 from collections import deque
 from xgds_video.recordingUtil import invokeMakeNewSegment, getCurrentSegmentForSource, endSegment, setFudgeForSource
+from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfRunning
+
 
 import django
 django.setup()
@@ -339,6 +341,11 @@ class HLSRecorder:
         endTime = datetime.datetime.now(pytz.utc)
         self.saveM3U8ToFile(addEndTag=True)
         endSegment(self.xgdsSegment, endTime)
+        
+        if settings.PYRAPTORD_SERVICE is True:
+            pyraptord = getPyraptordClient('pyraptord')
+            recorderService = '%s_recorder' % self.xgdsSegment.source.shortName
+            stopPyraptordServiceIfRunning(pyraptord, recorderService)
         
 
 def main():
