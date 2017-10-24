@@ -20,7 +20,7 @@ from django.core.cache import caches
 _cache = caches['default']
 
 RECORDER_SEGMENT_BUFFER_SIZE = 6
-MAX_CHUNK_GAP = 2
+MAX_CHUNK_GAP = 1
 
 TIMEOUT_CONNECT = 3
 TIMEOUT_READ = 8
