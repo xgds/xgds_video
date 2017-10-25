@@ -22,6 +22,10 @@ _cache = caches['default']
 RECORDER_SEGMENT_BUFFER_SIZE = 6
 MAX_CHUNK_GAP = 1
 
+WAIT_AFTER_INITIAL_PLAYLIST = 0.5
+# WAIT_AFTER_PLAYLIST = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
+WAIT_AFTER_PLAYLIST = 1.0
+
 TIMEOUT_CONNECT = 3
 TIMEOUT_READ = 8
 
@@ -216,7 +220,7 @@ class HLSRecorder:
                 #TODO we have never seen gaps here but it is theoretically possible.
                 for chunk in firstm3u8.segments:
                     self.addToSegmentBuffer(chunk)
-                sleepDuration = 2 * settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
+                sleepDuration = WAIT_AFTER_INITIAL_PLAYLIST
                 self.flushVideoAndPlaylist()
                 time.sleep(sleepDuration)
                 self.initialized = True
@@ -311,7 +315,8 @@ class HLSRecorder:
                 self.httpSession.close()  # Close out session before sleep to avoid having too many open
                 if len(m3u8Latest.segments) > 0:
                     print "*** Record next block - Have some segments - waiting to read next"
-                    sleepDuration = self.playlistTotalTime(m3u8Latest) - m3u8Latest.segments[-1].duration
+                    #sleepDuration = self.playlistTotalTime(m3u8Latest) - m3u8Latest.segments[-1].duration
+                    sleepDuration = WAIT_AFTER_PLAYLIST
                     time.sleep(sleepDuration)
                 else:
                     print "*** End segment - playlist was empty!"
