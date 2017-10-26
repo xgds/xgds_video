@@ -14,13 +14,14 @@ from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfR
 
 
 import django
+import socket
 django.setup()
 from django.conf import settings
 from django.core.cache import caches
 _cache = caches['default']
 
 RECORDER_SEGMENT_BUFFER_SIZE = 6
-MAX_CHUNK_GAP = 2
+MAX_CHUNK_GAP = 1
 
 TIMEOUT_CONNECT = 3
 TIMEOUT_READ = 8
@@ -39,6 +40,8 @@ class HLSRecorder:
         self.segmentBuffer = deque([], RECORDER_SEGMENT_BUFFER_SIZE)
         self.segmentIDBuffer = deque([], RECORDER_SEGMENT_BUFFER_SIZE)
         self.xgdsSegment = None
+        self.httpHeaders = {"Referer":"https://%s/xgds_video/recorder/%s" % (socket.getfqdn(), recorderId),
+                            "Origin":"https://%s" % socket.getfqdn()}
 
         self.m3u8Filename = os.path.basename(sourceUrl)
         self.m3u8FilePath = "%s/%s" % (m3u8DirPath, self.m3u8Filename)
@@ -136,14 +139,21 @@ class HLSRecorder:
 
     def getM3U8(self):
         try:
-            m3u8String = self.httpSession.get(self.sourceUrl, timeout=(TIMEOUT_CONNECT, TIMEOUT_READ)).text
+            m3u8String = self.httpSession.get(self.sourceUrl, timeout=(TIMEOUT_CONNECT, TIMEOUT_READ), stream=False,
+                                              headers=self.httpHeaders).text
             m3u8Obj = m3u8.loads(m3u8String)
             if not m3u8Obj.files:
                 # m3u8 must have a playlist which holds the files, read that one.
                 baseUrl = os.path.dirname(self.sourceUrl)
+                # TODO: this is weird.  It generally only happens w. Wowza which sends exactly one playlist.  If there's
+                # more than one, we'll use the last one.
                 for p in m3u8Obj.playlists:
                     playlistUri = p.uri
-                    m3u8String = self.httpSession.get(os.path.join(baseUrl, playlistUri), timeout=(TIMEOUT_CONNECT, TIMEOUT_READ)).text
+                    # Note: if there *is* a playlist, we should start polling that instead of the top level file.
+                    self.sourceUrl = os.path.join(baseUrl, playlistUri)
+                    m3u8String = self.httpSession.get(self.sourceUrl,
+                                                      timeout=(TIMEOUT_CONNECT, TIMEOUT_READ),
+                                                      stream=False, header=self.httpHeaders).text
                     m3u8Obj = m3u8.loads(m3u8String)
             return m3u8Obj
         except requests.exceptions.Timeout as t:
@@ -216,7 +226,7 @@ class HLSRecorder:
                 #TODO we have never seen gaps here but it is theoretically possible.
                 for chunk in firstm3u8.segments:
                     self.addToSegmentBuffer(chunk)
-                sleepDuration = 2 * settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
+                sleepDuration = 0.5 * settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
                 self.flushVideoAndPlaylist()
                 time.sleep(sleepDuration)
                 self.initialized = True
@@ -248,7 +258,8 @@ class HLSRecorder:
         ''' pull in the actual binary video file '''
         try:
             videoData = self.httpSession.get("%s/%s" % (os.path.dirname(self.sourceUrl),
-                                                        seg.uri), timeout=(TIMEOUT_CONNECT, TIMEOUT_READ)).content
+                                                        seg.uri), timeout=(TIMEOUT_CONNECT, TIMEOUT_READ),
+                                             stream=False, headers=self.httpHeaders).content
             f = open("%s/%s" % (self.m3u8DirPath, seg.uri),"w")
             f.write(videoData)
             f.close()
@@ -288,6 +299,7 @@ class HLSRecorder:
         startTime = datetime.datetime.now(pytz.utc)
         
         # construct the new segment object
+        self.httpSession.close()   # Close session and re-establish link to video feed
         parentDirectory = os.path.dirname(self.m3u8DirPath)
         segmentInfo = invokeMakeNewSegment(self.sourcePK, parentDirectory, self.sourceUrl, startTime, self.episodePK)
         self.sourceUrl = segmentInfo['videoFeed'].url
@@ -308,10 +320,10 @@ class HLSRecorder:
     
             if sleepAfterRecord:
                 #TODO handle discontinuity better
-                self.httpSession.close()  # Close out session before sleep to avoid having too many open
+#                self.httpSession.close()  # Close out session before sleep to avoid having too many open
                 if len(m3u8Latest.segments) > 0:
                     print "*** Record next block - Have some segments - waiting to read next"
-                    sleepDuration = self.playlistTotalTime(m3u8Latest) - m3u8Latest.segments[-1].duration
+                    sleepDuration = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
                     time.sleep(sleepDuration)
                 else:
                     print "*** End segment - playlist was empty!"
