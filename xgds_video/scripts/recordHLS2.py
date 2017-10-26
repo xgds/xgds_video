@@ -324,6 +324,7 @@ class HLSRecorder:
                 if len(m3u8Latest.segments) > 0:
                     print "*** Record next block - Have some segments - waiting to read next"
                     sleepDuration = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
+                    #sleepDuration = self.playlistTotalTime(m3u8Latest) - m3u8Latest.segments[-1].duration
                     time.sleep(sleepDuration)
                 else:
                     print "*** End segment - playlist was empty!"
