@@ -312,6 +312,8 @@ class HLSRecorder:
         try:
             m3u8Latest = self.getM3U8()
             
+            if not m3u8Latest or not m3u8Latest.segments:
+                return
             for chunk in m3u8Latest.segments:
                 if not self.segmentInBuffer(chunk):
                     self.addToSegmentBuffer(chunk)
