@@ -243,7 +243,7 @@ class HLSRecorder:
         '''
         for segData in self.segmentBuffer:
             currSegNumber = self.segmentNumber(segData['chunk'])
-            if self.maxSegmentNumber and ((currSegNumber - self.maxSegmentNumber) > MAX_CHUNK_GAP) and not segData['flushed']:
+            if self.maxSegmentNumber and ((currSegNumber - self.maxSegmentNumber) != 1) and not segData['flushed']:
                 self.makeNewXgdsSegment()
                 # compute new time offset
                 self.updateFudgeFactor(currSegNumber)
