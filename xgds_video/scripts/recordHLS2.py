@@ -197,18 +197,22 @@ class HLSRecorder:
         return segNumber in self.segmentIDBuffer
     
     def updateFudgeFactor(self, segNum):
+        print "returning constant fudge factor"
+        # We were returning a computed fudge factor based on Wowza timecode, but that seems problematic.  Instead
+        # return a fixed value from settings
         # NOTE: this assumes that Wowza is encoding segment numbers as timestamps
-        print "computing fudge factor..."
-        nowTime = datetime.datetime.utcnow()
-        #segNum = self.segmentNumber(m3u8Data.segments[-1])
-        print 'segnum is %d' % segNum
-        magicNum = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS*segNum #converts to unix time
-        print 'magicnum is %d' % magicNum
-        chunkTime = datetime.datetime.utcfromtimestamp(magicNum)
-        print str(chunkTime)
-        timeDiff = nowTime - chunkTime
-        timeDiffSeconds = timeDiff.total_seconds()
-        print "Computed HLS video delay:", timeDiffSeconds
+#        print "computing fudge factor..."
+#        nowTime = datetime.datetime.utcnow()
+#        #segNum = self.segmentNumber(m3u8Data.segments[-1])
+#        print 'segnum is %d' % segNum
+#        magicNum = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS*segNum #converts to unix time
+#        print 'magicnum is %d' % magicNum
+#        chunkTime = datetime.datetime.utcfromtimestamp(magicNum)
+#        print str(chunkTime)
+#        timeDiff = nowTime - chunkTime
+#        timeDiffSeconds = timeDiff.total_seconds()
+#        print "Computed HLS video delay:", timeDiffSeconds
+        timeDiffSeconds = settings.XGDS_VIDEO_BUFFER_FUDGE_FACTOR
         setFudgeForSource(self.recorderId, timeDiffSeconds)
         
     
