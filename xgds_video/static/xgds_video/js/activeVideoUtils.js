@@ -31,7 +31,7 @@ $.extend(xgds_video,{
 		}
 		segments[newSegment.segNumber] = newSegment;
 		xgds_video.setupPlaylist(source);
-		return false
+		return false;
 	},
 	playSegment: function(segment){
 		//TODO see if we might be paused.
