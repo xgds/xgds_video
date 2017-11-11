@@ -15,6 +15,7 @@ from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfR
 
 import django
 import socket
+from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 django.setup()
 from django.conf import settings
 from django.core.cache import caches
@@ -57,7 +58,7 @@ class HLSRecorder:
         status = {"currentSegment": analyzedSegments['lastSegmentNumber'],
                   "totalDuration":analyzedSegments['totalTime'],
                   "lastUpdate":datetime.datetime.utcnow().isoformat()}
-        _cache.set(myKey, json.dumps(status))
+        _cache.set(myKey, json.dumps(status, cls=DatetimeJsonEncoder))
 
     
     def playlistTotalTime(self, playlist):
