@@ -26,9 +26,9 @@ from geocamUtil.loader import LazyGetModelByName, getClassByName
 from xgds_core.views import getDelay
 from xgds_video.recordingUtil import getFudgeForSource
 
-
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
 SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
+LIVE_PLAYLIST_SIZE = 3
 
 def getDelaySeconds(flightName):
     delay = getDelay()
@@ -162,11 +162,21 @@ def getNumChunksFromEndForDelay(delayTime, indexPath):
     return segCount, index
 
 
+def getSegmentNumber(segmentObj):
+    segFileName = os.path.basename(segmentObj.uri)
+    name,ext = os.path.splitext(segFileName)
+    try:
+        baseName, otherNumber, segNum = name.split("_")
+    except:
+        baseName,segNum = name.split("-")
+            
+    return int(segNum)
+
 def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=None):
     """ This is truncating the last n rows from the m3u8 file and reappending the end and the metadata at the top.
     This fakes our delay
     """
-    
+
     # Look up path to index file
     GET_INDEX_FILE_METHOD = getClassByName(settings.XGDS_VIDEO_INDEX_FILE_METHOD)
     indexFileSuffix, segment = GET_INDEX_FILE_METHOD(flightName, sourceShortName, segmentNumber)
@@ -189,7 +199,10 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
                 if videoDelayInChunks > 0:
                     m3u8_index.is_endlist = False
             else:
+                # I *think* we should only get here if we have signal loss during a live feed and are playing out the last
+                # bit of playlist in which case we *should* add an end tag.
                 m3u8_index = m3u8.load(indexFilePath)
+                m3u8_index.is_endlist = True
                 videoDelayInChunks = 0
                 #TODO broadcast segment end, show glitch in progress screen
         else:
@@ -204,6 +217,10 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
 
             if videoDelayInChunks > 0: # and len(m3u8_chunks) > videoDelayInChunks:
                 del m3u8_chunks[-videoDelayInChunks:]
+                del m3u8_chunks[:-settings.XGDS_VIDEO_LIVE_PLAYLIST_SIZE]
+
+        firstSegNum = getSegmentNumber(m3u8_index.segments[0])
+        m3u8_index.media_sequence = firstSegNum
 
         for s in m3u8_chunks:
             s.uri = str(segmentDirectoryUrl) + '/' + s.uri
