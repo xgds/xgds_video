@@ -234,7 +234,7 @@ class HLSRecorder:
                 #TODO we have never seen gaps here but it is theoretically possible.
                 for chunk in firstm3u8.segments:
                     self.addToSegmentBuffer(chunk)
-                sleepDuration = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
+                sleepDuration = 0.5 * settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
                 self.flushVideoAndPlaylist()
                 time.sleep(sleepDuration)
                 self.initialized = True
@@ -335,7 +335,7 @@ class HLSRecorder:
             else:
                 mediaSequenceDuplicate = False
             
-            updateCachedStatus({'lastSegmentNumber':self.xgdsSegment.segNumber,
+            self.updateCachedStatus({'lastSegmentNumber':self.xgdsSegment.segNumber,
                                 'lastChunkNumber':self.maxSegmentNumber})
             for chunk in m3u8Latest.segments:
                 if not self.segmentInBuffer(chunk):
@@ -347,7 +347,7 @@ class HLSRecorder:
             if mediaSequenceDuplicate:
                 print "Duplicate sequence #/playlist detected"
 
-            if mediaSequenceDuplicate:  # (len(m3u8Latest.segments) == 0) Not sure if we need this for teradek - may need to check
+            if self.initialized and mediaSequenceDuplicate:  # (len(m3u8Latest.segments) == 0) Not sure if we need this for teradek - may need to check
                 print "*** End segment - playlist was empty or duplicated!"
                 self.endCurrentVideoSegment()
                 
