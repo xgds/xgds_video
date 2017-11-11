@@ -56,7 +56,7 @@ class HLSRecorder:
     def updateCachedStatus(self, analyzedSegments):
         myKey = "%s_recorder" % self.recorderId
         status = {"currentSegment": analyzedSegments['lastSegmentNumber'],
-                  "totalDuration":analyzedSegments['totalTime'],
+                  "maxChunk":analyzedSegments['lastChunkNumber'],
                   "lastUpdate":datetime.datetime.utcnow().isoformat()}
         _cache.set(myKey, json.dumps(status, cls=DatetimeJsonEncoder))
 
@@ -332,6 +332,8 @@ class HLSRecorder:
             mediaSequenceDuplicate = (self.lastMediaSequenceNum == m3u8Latest.media_sequence)
             self.lastMediaSequenceNum = m3u8Latest.media_sequence
             
+            updateCachedStatus({'lastSegmentNumber':self.xgdsSegment.segNumber,
+                                'lastChunkNumber':self.maxSegmentNumber})
             for chunk in m3u8Latest.segments:
                 if not self.segmentInBuffer(chunk):
                     self.addToSegmentBuffer(chunk)
