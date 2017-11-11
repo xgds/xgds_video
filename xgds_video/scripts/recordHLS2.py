@@ -234,7 +234,7 @@ class HLSRecorder:
                 #TODO we have never seen gaps here but it is theoretically possible.
                 for chunk in firstm3u8.segments:
                     self.addToSegmentBuffer(chunk)
-                sleepDuration = 0.5 * settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
+                sleepDuration = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
                 self.flushVideoAndPlaylist()
                 time.sleep(sleepDuration)
                 self.initialized = True
@@ -329,8 +329,11 @@ class HLSRecorder:
             if numChunks < settings.XGDS_VIDEO_LIVE_PLAYLIST_SIZE:
                 return
             
-            mediaSequenceDuplicate = (self.lastMediaSequenceNum == m3u8Latest.media_sequence)
-            self.lastMediaSequenceNum = m3u8Latest.media_sequence
+            if m3u8Latest.media_sequence:
+                mediaSequenceDuplicate = (self.lastMediaSequenceNum == m3u8Latest.media_sequence)
+                self.lastMediaSequenceNum = m3u8Latest.media_sequence
+            else:
+                mediaSequenceDuplicate = False
             
             for chunk in m3u8Latest.segments:
                 if not self.segmentInBuffer(chunk):
