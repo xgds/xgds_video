@@ -22,6 +22,7 @@ _cache = caches['default']
 
 RECORDER_SEGMENT_BUFFER_SIZE = 6
 MAX_CHUNK_GAP = 1
+XGDS_VIDEO_START_OFFSET = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS * settings.XGDS_VIDEO_LIVE_PLAYLIST_SIZE
 
 TIMEOUT_CONNECT = 3
 TIMEOUT_READ = 8
@@ -40,6 +41,7 @@ class HLSRecorder:
         self.segmentBuffer = deque([], RECORDER_SEGMENT_BUFFER_SIZE)
         self.segmentIDBuffer = deque([], RECORDER_SEGMENT_BUFFER_SIZE)
         self.xgdsSegment = None
+        self.lastMediaSequenceNum = None
         self.httpHeaders = {"Referer":"https://%s/xgds_video/recorder/%s" % (socket.getfqdn(), recorderId),
                             "Origin":"https://%s" % socket.getfqdn()}
 
@@ -153,13 +155,14 @@ class HLSRecorder:
                     self.sourceUrl = os.path.join(baseUrl, playlistUri)
                     m3u8String = self.httpSession.get(self.sourceUrl,
                                                       timeout=(TIMEOUT_CONNECT, TIMEOUT_READ),
-                                                      stream=False, header=self.httpHeaders).text
+                                                      stream=False, headers=self.httpHeaders).text
                     m3u8Obj = m3u8.loads(m3u8String)
             return m3u8Obj
         except requests.exceptions.Timeout as t:
             # it timed out, end the current segment
             raise t
         except:
+            traceback.print_exc()
             time.sleep(0.5)
             print "%s %s %s" % ("recordHLS:",
                                 "*** Warning: Exception polling Source.",
@@ -248,6 +251,7 @@ class HLSRecorder:
         for segData in self.segmentBuffer:
             currSegNumber = self.segmentNumber(segData['chunk'])
             if self.maxSegmentNumber and ((currSegNumber - self.maxSegmentNumber) != 1) and not segData['flushed']:
+                print "*** HLS Record: Making new xGDS segment ***"
                 self.makeNewXgdsSegment()
                 # compute new time offset
                 self.updateFudgeFactor(currSegNumber)
@@ -300,7 +304,7 @@ class HLSRecorder:
         self.m3u8Full = newM3u8Full
 
         # **TODO** SUPER IMPORTANT read the start time from the ts file of the next m3u8 segment somehow
-        startTime = datetime.datetime.now(pytz.utc)
+        startTime = datetime.datetime.now(pytz.utc) - datetime.timedelta(seconds = XGDS_VIDEO_START_OFFSET)
         
         # construct the new segment object
         self.httpSession.close()   # Close session and re-establish link to video feed
@@ -315,27 +319,36 @@ class HLSRecorder:
     def recordNextBlock(self, sleepAfterRecord=True):
         try:
             m3u8Latest = self.getM3U8()
-            
-            if not m3u8Latest or not m3u8Latest.segments:
+
+            if not m3u8Latest:
                 return
+            numChunks = 0
+            if m3u8Latest.segments:
+                numChunks = len(m3u8Latest.segments)
+            if numChunks < settings.XGDS_VIDEO_LIVE_PLAYLIST_SIZE:
+                return
+            
+            mediaSequenceDuplicate = (self.lastMediaSequenceNum == m3u8Latest.media_sequence)
+            self.lastMediaSequenceNum = m3u8Latest.media_sequence
+            
             for chunk in m3u8Latest.segments:
                 if not self.segmentInBuffer(chunk):
                     self.addToSegmentBuffer(chunk)
     
-            self.flushVideoAndPlaylist()
-    
+            if not mediaSequenceDuplicate:
+                self.flushVideoAndPlaylist()
+
+            if mediaSequenceDuplicate:
+                print "Duplicate sequence #/playlist detected"
+
+            if mediaSequenceDuplicate:  # (len(m3u8Latest.segments) == 0) Not sure if we need this for teradek - may need to check
+                print "*** End segment - playlist was empty or duplicated!"
+                self.endCurrentVideoSegment()
+                
             if sleepAfterRecord:
-                #TODO handle discontinuity better
-#                self.httpSession.close()  # Close out session before sleep to avoid having too many open
-                if len(m3u8Latest.segments) > 0:
-                    print "*** Record next block - Have some segments - waiting to read next"
-                    sleepDuration = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
-                    #sleepDuration = self.playlistTotalTime(m3u8Latest) - m3u8Latest.segments[-1].duration
-                    time.sleep(sleepDuration)
-                else:
-                    print "*** End segment - playlist was empty!"
-                    self.endCurrentVideoSegment()
-                    time.sleep(5)     # Something went wrong, wait 5 seconds and try again
+                sleepDuration = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS
+                time.sleep(sleepDuration)
+
         except requests.exceptions.Timeout:
             # end prior segment we had a timeout
             print "*** End segment - playlist read timed out!"

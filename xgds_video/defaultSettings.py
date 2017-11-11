@@ -20,6 +20,9 @@ from geocamUtil.SettingsUtil import getOrCreateArray
 XGDS_VIDEO_NEW_DIR_PERMISSIONS = 0777
 XGDS_VIDEO_MAX_EPISODE_DURATION_MINUTES = 180
 
+# Size of playlist "window" for HLS live video.  Wowza and Teradek default to 3, but this can be adjusted on Wowza
+XGDS_VIDEO_LIVE_PLAYLIST_SIZE = 3
+
 XGDS_VIDEO_SOURCE_MODEL = 'xgds_video.VideoSource'
 XGDS_VIDEO_SETTINGS_MODEL = 'xgds_video.VideoSettings'
 XGDS_VIDEO_FEED_MODEL = 'xgds_video.VideoFeed'
