@@ -231,12 +231,18 @@ class AbstractVideoSegment(models.Model):
                     result = {'status': 'play',
                               'data': self.getDict()}
                     json_string = json.dumps(result, cls=DatetimeJsonEncoder)
-                    t = Timer(getDelay() + getFudgeForSource(self.source.name), publishRedisSSE, [self.source.name, self.getSseType(), json_string])
+                    previous = None
+                    gap = 0
+                    try:
+                        previous = lastSeg.episode.videosegment_set.filter(source=lastSeg.source, pk__lt=lastSeg.pk).last()
+                        gap = (self.startTime - previous.endTime).total_seconds()
+                    except:
+                        pass #may be on the first segment
+                    t = Timer(getDelay() + getFudgeForSource(self.source.name) - gap, publishRedisSSE, [self.source.name, self.getSseType(), json_string])
                     t.start()
                 elif status == 'end':
                     # broadcast end event after delay
-                    t = Timer(getDelay(), publishRedisSSE, [self.source.name, self.getSseType(), json_string])
-                    #t = Timer(getDelay() + getFudgeForSource(self.source.name), publishRedisSSE, [self.source.name, self.getSseType(), json_string])
+                    t = Timer(getDelay() - getFudgeForSource(self.source.name), publishRedisSSE, [self.source.name, self.getSseType(), json_string])
                     t.start()
                 return json_string
         except:

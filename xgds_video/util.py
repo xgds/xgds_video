@@ -211,7 +211,7 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
                 # bit of playlist in which case we *should* add an end tag.
                 try:
                     if segment.endTime:
-                    m3u8_index = m3u8.load(indexFilePath)
+                        m3u8_index = m3u8.load(indexFilePath)
                     if segment.episode.endTime: 
                         m3u8_index.is_endlist = True
                         valid = True
