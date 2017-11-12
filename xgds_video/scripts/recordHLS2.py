@@ -376,6 +376,7 @@ class HLSRecorder:
         # **TODO** SUPER IMPORTANT read the end time from the ts file of the last m3u8 segment somehow
         endTime = datetime.datetime.now(pytz.utc)
         self.saveM3U8ToFile(addEndTag=True)
+        print 'CALLING END SEGMENT'
         endSegment(self.xgdsSegment, endTime)
         
         if settings.PYRAPTORD_SERVICE is True:

@@ -41,7 +41,7 @@ from xgds_core.views import get_handlebars_templates
 from xgds_video import util
 from xgds_video.models import *  # pylint: disable=W0401
 from xgds_map_server.views import getSearchForms
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.urlresolvers import reverse
 from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfRunning
 
@@ -603,7 +603,8 @@ def videoIndexFile(request, flightName=None, sourceShortName=None, segmentNumber
     
     # use regex substitution to replace hostname, etc.
     (indexFileContents, indexFilePath) = util.getIndexFileContents(flightName, sourceShortName, segmentNumber)
-
+    if not indexFileContents:
+        return JsonResponse({'status': 'fail', 'exception': 'NO INDEX FILE CONTENTS'}, status=406)
     # return modified file in next line
     response = HttpResponse(indexFileContents, content_type="application/x-mpegurl")
     content_disposition = 'filename = "%s"' % os.path.basename(indexFilePath)

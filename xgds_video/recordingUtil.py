@@ -230,6 +230,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, episode):
 
 def endSegment(segment, endTime):
     print 'ending segment %s' % str(segment)
+    print 'endtime %s' % str(endTime)
     segment.endTime = endTime
     segment.save()
     segment.broadcast('end')

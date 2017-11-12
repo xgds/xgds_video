@@ -150,16 +150,23 @@ def getIndexFilePath(flightName, sourceShortName, segmentNumber):
 
 
 def getNumChunksFromEndForDelay(delayTime, indexPath):
-    index = m3u8.load(indexPath)
-    segList = index.segments
+    index = None
     segCount = 0
     totalTime = 0
-    for s in reversed(segList):
-        totalTime += s.duration
-        segCount += 1
-        if totalTime >= delayTime:
-            break
-    return segCount, index
+    valid = False    
+    try:
+        index = m3u8.load(indexPath)
+        segList = index.segments
+
+        for s in reversed(segList):
+            totalTime += s.duration
+            segCount += 1
+            if totalTime >= delayTime:
+                break
+        valid = True
+    except:
+        traceback.print_exc()
+    return segCount, index, valid
 
 
 def getSegmentNumber(segmentObj):
@@ -183,6 +190,7 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
 
     indexFilePath = settings.DATA_ROOT + indexFileSuffix
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
+    valid = False
     try:
         videoDelayInSecs = getClassByName(settings.XGDS_VIDEO_DELAY_AMOUNT_METHOD)(flightName)
         if videoDelayInSecs > 0:
@@ -195,22 +203,40 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
                 # 2. if secondsAgo < delay, calculatedDelay = videoDelayInSecs - secondsAgo
                 calculatedDelay = max(videoDelayInSecs - secondsAgo, 0)
             if calculatedDelay > 0: 
-                (videoDelayInChunks, m3u8_index) = getNumChunksFromEndForDelay(calculatedDelay - getFudgeForSource(sourceShortName), indexFilePath)
+                (videoDelayInChunks, m3u8_index, valid) = getNumChunksFromEndForDelay(calculatedDelay - getFudgeForSource(sourceShortName), indexFilePath)
                 if videoDelayInChunks > 0:
                     m3u8_index.is_endlist = False
             else:
                 # I *think* we should only get here if we have signal loss during a live feed and are playing out the last
                 # bit of playlist in which case we *should* add an end tag.
-                m3u8_index = m3u8.load(indexFilePath)
-                m3u8_index.is_endlist = True
-                videoDelayInChunks = 0
-                #TODO broadcast segment end, show glitch in progress screen
+                try:
+                    if segment.endTime:
+                    m3u8_index = m3u8.load(indexFilePath)
+                    if segment.episode.endTime: 
+                        m3u8_index.is_endlist = True
+                        valid = True
+                    videoDelayInChunks = 0
+                    #TODO broadcast segment end, show glitch in progress screen
+                except:
+                    traceback.print_exc()
         else:
-            m3u8_index = m3u8.load(indexFilePath)
-            videoDelayInChunks = 0
+            try: 
+                m3u8_index = m3u8.load(indexFilePath)
+                videoDelayInChunks = 0
+                valid = True
+            except:
+                traceback.print_exc()
         
+        if not valid:
+            if m3u8_index:
+                 del m3u8_index.segments
+                 return (m3u8_index.dumps(), indexFilePath)
+            else:
+                 return (None, None)
+
         m3u8_chunks = m3u8_index.segments
-        if len(m3u8_chunks) > 0:
+        
+        if m3u8_chunks and len(m3u8_chunks) > 0:
             # this was probably to handle vlc badness
 #             if segments[0].duration > 100:
 #                 del segments[0]
@@ -219,7 +245,10 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
                 del m3u8_chunks[-videoDelayInChunks:]
                 del m3u8_chunks[:-settings.XGDS_VIDEO_LIVE_PLAYLIST_SIZE]
 
-        firstSegNum = getSegmentNumber(m3u8_index.segments[0])
+        if m3u8_chunks:
+            firstSegNum = getSegmentNumber(m3u8_index.segments[0])
+        else:
+            firstSegNum = 0
         m3u8_index.media_sequence = firstSegNum
 
         for s in m3u8_chunks:
@@ -231,4 +260,4 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
         #TODO handle better
         traceback.print_exc()
         traceback.print_stack()
-        return segmentDirectoryUrl
+        return (None, None)
