@@ -129,6 +129,7 @@ def stopFlightRecording(request, flightName, endEpisode = False):
 
 
 def makeNewSegment(source, recordingDir, recordingUrl, startTime, episode):
+#    traceback.print_stack()
     if not source.videofeed_set.all():
         logging.info("video feeds set is empty")
         return
@@ -218,8 +219,8 @@ def startRecording(source, recordingDir, recordingUrl, startTime, episode):
     
     print recorderCommand
     if settings.PYRAPTORD_SERVICE is True:
-        (pyraptord, recorderService)
-        stopPyraptordServiceIfRunning(pyraptord, recorderService)
+        #(pyraptord, recorderService)
+        #stopPyraptordServiceIfRunning(pyraptord, recorderService)
         pyraptord.updateServiceConfig(recorderService,
                                       {'command': recorderCommand,
                                        'cwd': segmentInfo['recordedVideoDir']})
