@@ -84,34 +84,27 @@ class HLSRecorder:
             print "Max segment:", self.maxSegmentNumber
             if segNumber > self.maxSegmentNumber:
                 if self.maxSegmentNumber >= 0 and not firstHit:
-                    print "if 1"
                     firstHit = True
                     if self.maxSegmentNumber + 1 < segNumber:
-                        print "if 2"
                         discontinuity = True # discontinuity between files
                         nextGoodSegment = seg
                         nextGoodSegmentNumber = segNumber
                 if contiguous:
-                    print "if 3"
                     if not lastSegmentNumber:
-                        print "if 4"
                         lastSegmentNumber = segNumber
                         totalTime = totalTime + seg.duration
                         lastGoodSegment = seg
                     else:
                         if lastSegmentNumber + 1 == segNumber:
-                            print "if 5"
                             totalTime = totalTime + seg.duration
                             lastSegmentNumber = segNumber
                             lastGoodSegment = seg
                         else:
-                            print "if 6"
                             gap = True
                             nextGoodSegment = seg
                             nextGoodSegmentNumber = segNumber
                             break
                 else:
-                    print "if 7"
                     totalTime = totalTime + seg.duration
                     lastGoodSegment = seg
                     lastSegmentNumber = segNumber
@@ -177,19 +170,6 @@ class HLSRecorder:
         f.write(self.m3u8Full.dumps())
         f.close()
         
-#     def saveM3U8SegmentsToDisk(self, analyzedSegments, addSegmentsToList=True):
-#         for seg in self.m3u8Full.segments:
-#             videoData = self.httpSession.get("%s/%s" % (os.path.dirname(self.sourceUrl),
-#                                          seg.uri)).content
-#             f = open("%s/%s" % (self.m3u8DirPath, seg.uri),"w")
-#             f.write(videoData)
-#             f.close()
-#             if addSegmentsToList:
-#                 self.m3u8Full.add_segment(seg)
-#             if seg == analyzedSegments['lastSegment']:
-#                 #done -- we do not expect any problems in this initial state but if we want to be thorough we should handle making a new xgds segment in here
-#                 break
-
     
     def addToSegmentBuffer(self, seg, flushed=False):
         self.segmentBuffer.append({'chunk':seg, 'flushed': flushed})
@@ -201,7 +181,6 @@ class HLSRecorder:
         return segNumber in self.segmentIDBuffer
     
     def updateFudgeFactor(self, segNum):
-        print "returning constant fudge factor"
         # We were returning a computed fudge factor based on Wowza timecode, but that seems problematic.  Instead
         # return a fixed value from settings
         # NOTE: this assumes that Wowza is encoding segment numbers as timestamps
@@ -221,7 +200,6 @@ class HLSRecorder:
         
     
     def initXgdsSegmentRecording(self):
-        print "Initalizing first segment"
         self.xgdsSegment = getCurrentSegmentForSource(self.sourcePK, self.episodePK)
         try:
             firstm3u8 = self.getM3U8()

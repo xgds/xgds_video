@@ -114,7 +114,6 @@ def stopFlightRecording(request, flightName, endEpisode = False):
     commands = stopRecording(getVideoSource(sourceName), stopTime)
 
     if endEpisode:
-        print "Ending Episode and saving time", stopTime
         videoEpisode = EPISODE_MODEL.get().objects.get(shortName=episodeName)
         videoEpisode.endTime = stopTime
         videoEpisode.save()
@@ -125,7 +124,6 @@ def stopFlightRecording(request, flightName, endEpisode = False):
 
 
 def makeNewSegment(source, recordingDir, recordingUrl, startTime, episode):
-#    traceback.print_stack()
     if not source.videofeed_set.all():
         logging.info("video feeds set is empty")
         return
@@ -222,11 +220,10 @@ def startRecording(source, recordingDir, recordingUrl, startTime, episode):
         count = 0
         while running and count < 10:
             oldStatus = pyraptord.getStatus(recorderService)
-            if oldStatus['procStatus'] != 'running'
+            if 'procStatus' not in oldStatus or oldStatus['procStatus'] != 'running':
                 running = False
             time.sleep(0.5)
 
-        print 'ABOUT TO START PYCRORAPTOR RECORDING'
         pyraptord.updateServiceConfig(recorderService,
                                       {'command': recorderCommand,
                                        'cwd': segmentInfo['recordedVideoDir']})
@@ -236,11 +233,8 @@ def startRecording(source, recordingDir, recordingUrl, startTime, episode):
 
 
 def endSegment(segment, endTime):
-    print 'ending segment %s' % str(segment)
-    print 'endtime %s' % str(endTime)
     segment.endTime = endTime
     segment.save()
-    print 'ENDED SEGMENT -- SAVED'
     segment.broadcast('end')
 
 
