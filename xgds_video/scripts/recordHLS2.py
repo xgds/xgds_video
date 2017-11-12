@@ -262,7 +262,6 @@ class HLSRecorder:
             self.maxSegmentNumber = currSegNumber
             
             
-                
     def storeVideoUpdateIndex(self, seg):
         ''' pull in the actual binary video file '''
         try:
@@ -378,8 +377,10 @@ class HLSRecorder:
         self.saveM3U8ToFile(addEndTag=True)
         print 'CALLING END SEGMENT'
         endSegment(self.xgdsSegment, endTime)
+        print 'DONE CALLING END SEGMENT'
         
         if settings.PYRAPTORD_SERVICE is True:
+            print 'COMMIT SUICIDE'
             pyraptord = getPyraptordClient('pyraptord')
             recorderService = '%s_recorder' % self.xgdsSegment.source.shortName
             stopPyraptordServiceIfRunning(pyraptord, recorderService)

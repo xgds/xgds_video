@@ -19,6 +19,7 @@ import logging
 import os
 import stat
 import traceback
+import time
 import json
 
 from django.utils import timezone
@@ -106,20 +107,15 @@ def startFlightRecording(request, flightName):
     messages.info(request, commands)
     return redirect(reverse('error'))
 
+
 def stopFlightRecording(request, flightName, endEpisode = False):
     (episodeName, sourceName) = splitFlightName(flightName)
     stopTime = timezone.now()
     commands = stopRecording(getVideoSource(sourceName), stopTime)
-    videoEpisode = EPISODE_MODEL.get().objects.get(shortName=episodeName)
 
- #   done = True
-    #TODO this only will work if videosegment is the model -- AND maybe remove if endEposode flag works
- #   for segment in videoEpisode.videosegment_set.all():
- #       if not segment.endTime:
- #           done = False
- #           break
     if endEpisode:
         print "Ending Episode and saving time", stopTime
+        videoEpisode = EPISODE_MODEL.get().objects.get(shortName=episodeName)
         videoEpisode.endTime = stopTime
         videoEpisode.save()
         videoEpisode.broadcast('end')
@@ -221,6 +217,16 @@ def startRecording(source, recordingDir, recordingUrl, startTime, episode):
     if settings.PYRAPTORD_SERVICE is True:
         #(pyraptord, recorderService)
         #stopPyraptordServiceIfRunning(pyraptord, recorderService)
+        # the old process will suicide so let us look to see if it is done
+        running = True
+        count = 0
+        while running and count < 10:
+            oldStatus = pyraptord.getStatus(recorderService)
+            if oldStatus['procStatus'] != 'running'
+                running = False
+            time.sleep(0.5)
+
+        print 'ABOUT TO START PYCRORAPTOR RECORDING'
         pyraptord.updateServiceConfig(recorderService,
                                       {'command': recorderCommand,
                                        'cwd': segmentInfo['recordedVideoDir']})
@@ -234,6 +240,7 @@ def endSegment(segment, endTime):
     print 'endtime %s' % str(endTime)
     segment.endTime = endTime
     segment.save()
+    print 'ENDED SEGMENT -- SAVED'
     segment.broadcast('end')
 
 
