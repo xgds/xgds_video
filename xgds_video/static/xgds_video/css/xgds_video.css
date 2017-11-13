@@ -4,6 +4,15 @@
 	width: 100%;
 }
 
+#player_container {
+	margin-left:-10px;
+	margin-right:-10px;
+}
+
+.mt-negative-1rem {
+	margin-bottom: -5px;
+}
+
 .hint {
 	font-style: italic;
 	font-size: .8em;
@@ -237,6 +246,24 @@ blocky div label input{
 .noteitem.stretch {
 	align-self: stretch;
 }
+
+#container {
+  position: relative;
+  margin-left: -15px !important;
+  margin-right: -15px !important;
+  padding-right: 2px;
+  padding-left: 2px;
+}
+
+.grid-stack-item-content {
+	background-color: #e8e8e8;
+    display: block;
+	margin-left: -7px !important;
+	margin-right: -7px !important;
+	padding: 3px;
+	padding-top: 3px;
+}
+
 
 /*__BEGIN_LICENSE__
 /* Copyright (c) 2015, United States Government, as represented by the
