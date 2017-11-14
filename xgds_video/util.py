@@ -229,7 +229,10 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
         
         if not valid:
             if m3u8_index:
-                 del m3u8_index.segments
+                 try:
+                    m3u8_index.segments = None
+                 except:
+                    pass
                  return (m3u8_index.dumps(), indexFilePath)
             else:
                  return (None, None)
