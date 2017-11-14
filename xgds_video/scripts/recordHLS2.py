@@ -219,8 +219,9 @@ class HLSRecorder:
         self.m3u8Full = newM3u8Full
 
         # **TODO** SUPER IMPORTANT read the start time from the ts file of the next m3u8 segment somehow
-        startTime = datetime.datetime.now(pytz.utc) - datetime.timedelta(seconds = XGDS_VIDEO_START_OFFSET)
-        
+#        startTime = datetime.datetime.now(pytz.utc) - datetime.timedelta(seconds = XGDS_VIDEO_START_OFFSET)
+        startTime = datetime.datetime.now(pytz.utc)
+
         # construct the new segment object
         self.httpSession.close()   # Close session and re-establish link to video feed
         parentDirectory = os.path.dirname(self.m3u8DirPath)
