@@ -230,45 +230,6 @@ class HLSRecorder:
         self.xgdsSegment = segmentInfo['segmentObj']
         self.m3u8FilePath = "%s/%s" % (self.m3u8DirPath, self.m3u8Filename)
 
-''' SAMPLE M3U8 DATA:
-#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-TARGETDURATION:5
-#EXT-X-MEDIA-SEQUENCE:11496
-#EXTINF:2.002,
-media_w1672102878_11496.ts
-#EXTINF:2.002,
-media_w1672102878_11497.ts
-#EXTINF:2.002,
-media_w1672102878_11498.ts
-
---expected next bad possibility --
-#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-TARGETDURATION:5
-#EXT-X-MEDIA-SEQUENCE:11496
-#EXTINF:2.002,
-media_w1672102878_11496.ts
-#EXTINF:2.002,
-media_w1672102878_11497.ts
-#EXTINF:2.002,
-media_w1672102878_11498.ts
-
-2 identical playlists in a row. 
-
---- then get immediate next segment --
-#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-TARGETDURATION:5
-#EXT-X-MEDIA-SEQUENCE:11497
-#EXTINF:2.002,
-media_w1672102878_11497.ts
-#EXTINF:2.002,
-media_w1672102878_11498.ts
-#EXTINF:2.002,
-media_w1672102878_11499.ts
-
-'''
     def recordNextBlock(self, sleepAfterRecord=True):
         try:
             m3u8Latest = self.getM3U8()
@@ -287,8 +248,9 @@ media_w1672102878_11499.ts
             else:
                 mediaSequenceDuplicate = False
             
-            self.updateCachedStatus({'lastSegmentNumber':self.xgdsSegment.segNumber,
-                                'lastChunkNumber':self.maxSegmentNumber})
+            if self.xgdsSegment:
+                self.updateCachedStatus({'lastSegmentNumber':self.xgdsSegment.segNumber,
+                                         'lastChunkNumber':self.maxSegmentNumber})
             for chunk in m3u8Latest.segments:
                 if not self.segmentInBuffer(chunk):
                     self.addToSegmentBuffer(chunk)
