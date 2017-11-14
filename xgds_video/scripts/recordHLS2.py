@@ -41,6 +41,7 @@ class HLSRecorder:
         self.sourcePK = sourcePK
         self.segmentBuffer = deque([], RECORDER_SEGMENT_BUFFER_SIZE)
         self.segmentIDBuffer = deque([], RECORDER_SEGMENT_BUFFER_SIZE)
+        self.forceMakeNewSegment = False
         self.xgdsSegment = None
         self.lastMediaSequenceNum = None
         self.httpHeaders = {"Referer":"https://%s/xgds_video/recorder/%s" % (socket.getfqdn(), recorderId),
@@ -66,62 +67,6 @@ class HLSRecorder:
         for seg in playlist.segments:
             totalTime += seg.duration
         return totalTime
-    
-    
-    def analyzeM3U8Segments(self, m3u8Obj, contiguous=True):
-        totalTime = 0.0
-        #TODO this does not handle a gap.
-        lastSegmentNumber = None
-        lastGoodSegment = None
-        nextGoodSegment = None
-        nextGoodSegmentNumber = None
-        gap = False #gap within the m3u8 segments
-        discontinuity = False #gap between 2 m3u8 files
-        firstHit = False
-        for seg in m3u8Obj.segments:
-            segNumber = self.segmentNumber(seg)
-            print "Seg number:", segNumber
-            print "Max segment:", self.maxSegmentNumber
-            if segNumber > self.maxSegmentNumber:
-                if self.maxSegmentNumber >= 0 and not firstHit:
-                    firstHit = True
-                    if self.maxSegmentNumber + 1 < segNumber:
-                        discontinuity = True # discontinuity between files
-                        nextGoodSegment = seg
-                        nextGoodSegmentNumber = segNumber
-                if contiguous:
-                    if not lastSegmentNumber:
-                        lastSegmentNumber = segNumber
-                        totalTime = totalTime + seg.duration
-                        lastGoodSegment = seg
-                    else:
-                        if lastSegmentNumber + 1 == segNumber:
-                            totalTime = totalTime + seg.duration
-                            lastSegmentNumber = segNumber
-                            lastGoodSegment = seg
-                        else:
-                            gap = True
-                            nextGoodSegment = seg
-                            nextGoodSegmentNumber = segNumber
-                            break
-                else:
-                    totalTime = totalTime + seg.duration
-                    lastGoodSegment = seg
-                    lastSegmentNumber = segNumber
-            elif segNumber == self.maxSegmentNumber:
-                print 'segNumber equals max segment number '
-                lastSegmentNumber = segNumber
-                lastGoodSegment = seg
-
-        result = {'lastSegment':lastGoodSegment,
-                'lastSegmentNumber': lastSegmentNumber,
-                'nextSegment': nextGoodSegment,
-                'nextSegmentNumber': nextGoodSegmentNumber,
-                'totalTime':totalTime,
-                'gap': gap,
-                'discontinuity': discontinuity}
-        print "M3U8 analysis", result
-        return result
 
     def segmentNumber(self, segmentObj):
         segFileName = os.path.basename(segmentObj.uri)
@@ -184,17 +129,6 @@ class HLSRecorder:
         # We were returning a computed fudge factor based on Wowza timecode, but that seems problematic.  Instead
         # return a fixed value from settings
         # NOTE: this assumes that Wowza is encoding segment numbers as timestamps
-#        print "computing fudge factor..."
-#        nowTime = datetime.datetime.utcnow()
-#        #segNum = self.segmentNumber(m3u8Data.segments[-1])
-#        print 'segnum is %d' % segNum
-#        magicNum = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS*segNum #converts to unix time
-#        print 'magicnum is %d' % magicNum
-#        chunkTime = datetime.datetime.utcfromtimestamp(magicNum)
-#        print str(chunkTime)
-#        timeDiff = nowTime - chunkTime
-#        timeDiffSeconds = timeDiff.total_seconds()
-#        print "Computed HLS video delay:", timeDiffSeconds
         timeDiffSeconds = settings.XGDS_VIDEO_BUFFER_FUDGE_FACTOR
         setFudgeForSource(self.recorderId, timeDiffSeconds)
         
@@ -229,9 +163,10 @@ class HLSRecorder:
         '''
         for segData in self.segmentBuffer:
             currSegNumber = self.segmentNumber(segData['chunk'])
-            if self.maxSegmentNumber and ((currSegNumber - self.maxSegmentNumber) != 1) and not segData['flushed']:
+            if self.forceMakeNewSegment or (self.maxSegmentNumber and ((currSegNumber - self.maxSegmentNumber) != 1) and not segData['flushed']):
                 print "*** HLS Record: Making new xGDS segment ***"
                 self.makeNewXgdsSegment()
+                self.forceMakeNewSegment = False
                 # compute new time offset
                 self.updateFudgeFactor(currSegNumber)
             if not segData['flushed']:
@@ -268,6 +203,8 @@ class HLSRecorder:
             self.saveM3U8ToFile(addEndTag=True)
             endTime = datetime.datetime.now(pytz.utc)
             endSegment(self.xgdsSegment, endTime)
+            self.xgdsSegment = None
+            self.forceMakeNewSegment = True
 
     def makeNewXgdsSegment(self, m3u8Latest=None, seg=None, segNumber=None):
         ''' Make a new segment because we hit a discontinuity or gap '''
@@ -293,7 +230,45 @@ class HLSRecorder:
         self.xgdsSegment = segmentInfo['segmentObj']
         self.m3u8FilePath = "%s/%s" % (self.m3u8DirPath, self.m3u8Filename)
 
+''' SAMPLE M3U8 DATA:
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-TARGETDURATION:5
+#EXT-X-MEDIA-SEQUENCE:11496
+#EXTINF:2.002,
+media_w1672102878_11496.ts
+#EXTINF:2.002,
+media_w1672102878_11497.ts
+#EXTINF:2.002,
+media_w1672102878_11498.ts
 
+--expected next bad possibility --
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-TARGETDURATION:5
+#EXT-X-MEDIA-SEQUENCE:11496
+#EXTINF:2.002,
+media_w1672102878_11496.ts
+#EXTINF:2.002,
+media_w1672102878_11497.ts
+#EXTINF:2.002,
+media_w1672102878_11498.ts
+
+2 identical playlists in a row. 
+
+--- then get immediate next segment --
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-TARGETDURATION:5
+#EXT-X-MEDIA-SEQUENCE:11497
+#EXTINF:2.002,
+media_w1672102878_11497.ts
+#EXTINF:2.002,
+media_w1672102878_11498.ts
+#EXTINF:2.002,
+media_w1672102878_11499.ts
+
+'''
     def recordNextBlock(self, sleepAfterRecord=True):
         try:
             m3u8Latest = self.getM3U8()
