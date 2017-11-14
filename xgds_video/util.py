@@ -28,7 +28,7 @@ from xgds_video.recordingUtil import getFudgeForSource
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
 SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
-LIVE_PLAYLIST_SIZE = 3
+LIVE_PLAYLIST_SIZE_TO_PLAYER = 6
 
 def getDelaySeconds(flightName):
     delay = getDelay()
@@ -243,7 +243,7 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
 
             if videoDelayInChunks > 0: # and len(m3u8_chunks) > videoDelayInChunks:
                 del m3u8_chunks[-videoDelayInChunks:]
-                del m3u8_chunks[:-settings.XGDS_VIDEO_LIVE_PLAYLIST_SIZE]
+                del m3u8_chunks[:-LIVE_PLAYLIST_SIZE_TO_PLAYER]
 
         if m3u8_chunks:
             firstSegNum = getSegmentNumber(m3u8_index.segments[0])
