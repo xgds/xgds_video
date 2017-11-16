@@ -24,6 +24,7 @@ _cache = caches['default']
 RECORDER_SEGMENT_BUFFER_SIZE = 6
 MAX_CHUNK_GAP = 1
 XGDS_VIDEO_START_OFFSET = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS * settings.XGDS_VIDEO_LIVE_PLAYLIST_SIZE
+MAX_DUP_PLAYLISTS = 3
 
 TIMEOUT_CONNECT = 3
 TIMEOUT_READ = 8
@@ -39,6 +40,7 @@ class HLSRecorder:
         self.recorderId = recorderId
         self.episodePK = episodePK
         self.sourcePK = sourcePK
+        self.dupSequenceCount = 0
         self.segmentBuffer = deque([], RECORDER_SEGMENT_BUFFER_SIZE)
         self.segmentIDBuffer = deque([], RECORDER_SEGMENT_BUFFER_SIZE)
         self.forceMakeNewSegment = False
@@ -248,6 +250,7 @@ class HLSRecorder:
                 self.lastMediaSequenceNum = m3u8Latest.media_sequence
             else:
                 mediaSequenceDuplicate = False
+                self.dupSequenceCount = 0
             
             if self.xgdsSegment:
                 self.updateCachedStatus({'lastSegmentNumber':self.xgdsSegment.segNumber,
@@ -256,11 +259,18 @@ class HLSRecorder:
                 if not self.segmentInBuffer(chunk):
                     self.addToSegmentBuffer(chunk)
     
+            if mediaSequenceDuplicate:
+                self.dupSequenceCount += 1
+                print "*** potential video drop.  Dup playlist count: %d" % self.dupSequenceCount
+                if self.dupSequenceCount < MAX_DUP_PLAYLISTS:
+                    mediaSequenceDuplicate = False
+                else:
+                    print "*** %d Duplicate sequence #/playlist detected" % self.dupSequenceCount
+            else:
+                self.dupSequenceCount = 0
+
             if not mediaSequenceDuplicate:
                 self.flushVideoAndPlaylist()
-
-            if mediaSequenceDuplicate:
-                print "Duplicate sequence #/playlist detected"
 
             if self.initialized and mediaSequenceDuplicate:  # (len(m3u8Latest.segments) == 0) Not sure if we need this for teradek - may need to check
                 print "*** End segment - playlist was empty or duplicated!"
