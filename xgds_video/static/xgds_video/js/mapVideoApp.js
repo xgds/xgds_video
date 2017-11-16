@@ -33,27 +33,8 @@
 		         hideModelChoice: true,
 		         selectedModel: app.options.modelName});
 	        this.showChildView('searchRegion', searchView);
-	        this.drawLatestPlan();
+	        app.map.drawLatestPlan();
 		},
-		drawLatestPlan: function(){
-			$.ajax({
-				url: '/xgds_planner2/plans/today/json',
-				dataType: 'json',
-				type: "GET",
-				success: $.proxy(function(data) {
-					if (!_.isUndefined(data.A) && app.options.settingsLive){
-						app.latestPlan = data.A;
-						app.latestPlan.latestPlan = true;
-
-						app.nodeMap["latestPlan"] = new app.views.MapLinkView({
-							node: app.latestPlan,
-							group: this.mapLinkGroup,
-							url: app.latestPlan.url
-						});
-					}
-				}, this)
-			});
-		}
 	});
 	
 	xGDS.VideoApplication = xGDS.Application.extend( {
