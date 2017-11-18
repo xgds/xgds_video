@@ -24,7 +24,7 @@ _cache = caches['default']
 RECORDER_SEGMENT_BUFFER_SIZE = 6
 MAX_CHUNK_GAP = 1
 XGDS_VIDEO_START_OFFSET = settings.XGDS_VIDEO_EXPECTED_CHUNK_DURATION_SECONDS * settings.XGDS_VIDEO_LIVE_PLAYLIST_SIZE
-MAX_DUP_PLAYLISTS = 3
+MAX_DUP_PLAYLISTS_DEFAULT = 3
 
 TIMEOUT_CONNECT = 3
 TIMEOUT_READ = 8
@@ -236,6 +236,7 @@ class HLSRecorder:
     def recordNextBlock(self, sleepAfterRecord=True):
         try:
             m3u8Latest = self.getM3U8()
+            maxDupPlaylistCount = _cache.get("MaxDupPlaylistCount")
 
             if not m3u8Latest:
                 return
@@ -262,7 +263,7 @@ class HLSRecorder:
             if mediaSequenceDuplicate:
                 self.dupSequenceCount += 1
                 print "*** potential video drop.  Dup playlist count: %d" % self.dupSequenceCount
-                if self.dupSequenceCount < MAX_DUP_PLAYLISTS:
+                if self.dupSequenceCount < maxDupPlaylistCount:
                     mediaSequenceDuplicate = False
                 else:
                     print "*** %d Duplicate sequence #/playlist detected" % self.dupSequenceCount
@@ -333,11 +334,15 @@ def main():
     if (not opts.sourceUrl) or (not opts.outputDir) or (not opts.recorderId):
         parser.error("All options are required")
 
+    if not _cache.get("MaxDupPlaylistCount"):
+        _cache.set("MaxDupPlaylistCount", MAX_DUP_PLAYLISTS_DEFAULT)
+
     print "Start HLS recording:"
     print "  Recorder ID:", opts.recorderId
     print "  Source URL:", opts.sourceUrl
     print "  Output path:", opts.outputDir
-    
+    print "  Max dup playlists before new segment:", _cache.get("MaxDupPlaylistCount")
+
     hlsRecorder = HLSRecorder(opts.sourceUrl, opts.outputDir, opts.recorderId, opts.episodePK, opts.sourcePK)
     hlsRecorder.runInitializeLoop()
     hlsRecorder.runRecordingLoop()
