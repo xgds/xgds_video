@@ -104,9 +104,3 @@ XGDS_VIDEO_BUFFER_FUDGE_FACTOR = XGDS_VIDEO_LIVE_PLAYLIST_SIZE_TO_PLAYER * XGDS_
  """
 JWPLAYER_KEY = None
 
-BOWER_INSTALLED_APPS = getOrCreateArray('BOWER_INSTALLED_APPS')
-BOWER_INSTALLED_APPS += ['jwplayer=https://ssl.p.jwpcdn.com/player/download/jwplayer-7.10.7.zip',
-                         'moment',
-                         'moment-timezone',
-                         'packery'
-                         ]
