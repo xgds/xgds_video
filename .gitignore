@@ -9,3 +9,4 @@
 /static/css/*.r*.css
 /xgds_video/build
 migrations/
+node_modules

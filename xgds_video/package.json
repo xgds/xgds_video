@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "jwplayer": "https://ssl.p.jwpcdn.com/player/download/jwplayer-7.10.7.zip",
+    "jwplayer": "jwplayer/jwplayer#v8.0.4",
     "moment": "^2.19.3",
     "moment-timezone": "^0.5.14",
     "packery": "^2.1.1"
