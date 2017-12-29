@@ -4,14 +4,14 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "jwplayer": "jwplayer/jwplayer#v8.0.4",
     "moment": "^2.19.3",
     "moment-timezone": "^0.5.14",
     "packery": "^2.1.1"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "preinstall": "curl -OL https://ssl.p.jwpcdn.com/player/download/jwplayer-7.10.7.zip ; unzip jwplayer-7.10.7.zip -d node_modules ; mv node_modules/jwplayer-7.10.7 node_modules/jwplayer ; rm jwplayer-7.10.7.zip"
   },
   "author": "",
   "license": "Apache-2.0"
