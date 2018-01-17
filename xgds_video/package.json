@@ -8,6 +8,11 @@
     "moment-timezone": "^0.5.14",
     "packery": "^2.1.1"
   },
+  "django": {
+    "jwplayer": {
+      "include": [ "*" ]
+    }
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
