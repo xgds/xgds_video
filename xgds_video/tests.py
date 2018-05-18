@@ -22,4 +22,5 @@ class xgds_videoTest(TestCase):
     Tests for xgds_video
     """
     def test_xgds_video(self):
-        print "testing git hook 7 in xgds_video"
+        # print "testing git hook 7 in xgds_video"
+        pass
