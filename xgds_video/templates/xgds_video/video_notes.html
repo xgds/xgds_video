@@ -1,6 +1,6 @@
 {% with form=data %}
 {% if user.is_authenticated %}
-<button id="add_note_button" class="btn btn-primary float_button add_note_button">+ Note</button>
+<button id="add_note_button" class="btn btn-primary float_button add_note_button">+ {{ settings.XGDS_NOTES_NOTE_MONIKER}}</button>
 <div id="notes_content" class="tab-content active notes_content notes_input_container" style="background-color:{{ color }};">
 	<div class="notediv" id="notes_input" style="display:none;">
 		<form id="create_note{{ form.index }}" class="create_note_form" action="" method="POST">
