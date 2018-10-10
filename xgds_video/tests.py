@@ -14,10 +14,10 @@
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 
 
-class xgds_videoTest(TestCase):
+class xgds_videoTest(TransactionTestCase):
     """
     Tests for xgds_video
     """
