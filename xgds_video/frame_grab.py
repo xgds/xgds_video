@@ -20,16 +20,22 @@ import argparse
 import m3u8
 import os
 from dateutil.parser import parse as dateparser
-import string
 
-def take_screenshot(input_file, seconds_into, output_name):
-    {
-        ffmpeg
-        .input(input_file, ss=seconds_into)
-        .filter('scale', -1, -1)
-        .output(output_name, vframes=1)
-        .run()
-    }
+
+# D make take_screenshot return buffer of bytes
+# D make main save those bytes to a file
+# make a callable function that acts like main (test on commandline with import)
+# make prog index a parameter
+# D make it save with a UTC YYYY-MM-DD hhmmss and option pre-tag (vessel name?)
+def take_screenshot(input_file, seconds_into):
+    out, _ = (
+        ffmpeg. \
+        input(input_file, ss=seconds_into). \
+        output('pipe:', vframes=1, format='image2', vcodec='png'). \
+        run(capture_stdout=True, quiet=True)
+    )
+    return out
+
 
 def calculate_ts_file(folder_name, s_int):
     # open the prog_index.m3u8
@@ -73,13 +79,44 @@ def hms_to_total_s(hms_string):
     ans = int(s) + int(m)*60 + int(h)*60*60
     return ans
 
+
+def grab_frame(path, start_time, grab_time, file=None, hms=None,):
+    """
+    Grab a frame from a given video, return as buffer??
+    :param path: path to folder containing .ts files
+    :param start_time: start datetime of video
+    :param grab_time: datetime of desired frame
+    :param file: video file from which to grab frame
+    :param hms: HH:mm:ss into video to grab frame
+    :return:
+    """
+    if grab_time:
+        if not start_time:
+            print '**** You must specify the start time of the video ****'
+            exit - 1
+        time_diff = grab_time - start_time
+        seconds = int(time_diff.seconds)
+    elif args.hms:
+        seconds = hms_to_total_s(hms)
+    else:
+        print '**** You must specify a time to take a frame grab ****'
+        exit - 1
+
+    if path:
+        ts_file, offset = calculate_ts_file(path, seconds)
+        # if you don't cast the offset time to an int, resulting screenshot is wavy gray
+        return take_screenshot(os.path.join(path, ts_file), int(offset))
+    else:
+        return take_screenshot(file, seconds)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', help='video from which to take screenshot', default='input.mov')
     parser.add_argument('-p', '--path', help='path to folder containing ts files')
     parser.add_argument('-s', '--start', help='start date/time of video')
     parser.add_argument('-g', '--grab', help='date/time of desired frame')
-    parser.add_argument('-o', help='name of output file', default='output.png')
+    parser.add_argument('-o', help='prefix of output file', default='Screenshot')
     parser.add_argument('-hms', help='HH:mm:ss into video to take screenshot')
 
     args, unknown = parser.parse_known_args()
@@ -98,22 +135,17 @@ if __name__ == '__main__':
             if len(potential_date) > 12:
                 try:
                     start_time = dateparser(potential_date)
-                    print 'calculated start time = ' + str(start_time)
                 except ValueError:
                    print '**** Unable to infer video start time from folder name ****'
+                   exit - 1
             else:
                 print '**** You must specify the start time of the video ****'
-                exit - 1
-        time_diff = grab_time - start_time
-        seconds = int(time_diff.seconds)
-    elif args.hms:
-        seconds = hms_to_total_s(args.hms)
-    else:
-        print '**** You must specify a time to take a frame grab ****'
 
-    if args.path:
-        ts_file, offset = calculate_ts_file(args.path, seconds)
-        # if you don't cast the offset time to an int, resulting screenshot is wavy gray
-        take_screenshot(os.path.join(args.path, ts_file), int(offset), args.o)
-    else:
-        take_screenshot(args.file, seconds, args.o)
+    img_bytes = grab_frame(args.file, args.path, start_time, grab_time, args.o, args.hms)
+
+    outfile_name = args.o + '_' + str(grab_time.strftime("%Y.%m.%d-%H.%M.%S")) + '.png'
+
+    with open(outfile_name, 'wb') as f:
+        f.write(img_bytes)
+        f.close()
+
