@@ -24,7 +24,7 @@ from dateutil.parser import parse as dateparser
 
 # D make take_screenshot return buffer of bytes
 # D make main save those bytes to a file
-# make a callable function that acts like main (test on commandline with import)
+# D make a callable function that acts like main (test on commandline with import)
 # make prog index a parameter
 # D make it save with a UTC YYYY-MM-DD hhmmss and option pre-tag (vessel name?)
 def take_screenshot(input_file, seconds_into):
@@ -37,9 +37,9 @@ def take_screenshot(input_file, seconds_into):
     return out
 
 
-def calculate_ts_file(folder_name, s_int):
+def calculate_ts_file(folder_name, s_int, index_file_name):
     # open the prog_index.m3u8
-    m3u8_obj = m3u8.load(os.path.join(folder_name, 'prog_index.m3u8'))
+    m3u8_obj = m3u8.load(os.path.join(folder_name, index_file_name))
 
     acc_time = 0
     num_segs = len(m3u8_obj.segments)
@@ -80,7 +80,7 @@ def hms_to_total_s(hms_string):
     return ans
 
 
-def grab_frame(path, start_time, grab_time, file=None, hms=None,):
+def grab_frame(path, start_time, grab_time, file=None, hms=None, index_file_name='prog_index.m3u8'):
     """
     Grab a frame from a given video, return as buffer??
     :param path: path to folder containing .ts files
@@ -88,6 +88,7 @@ def grab_frame(path, start_time, grab_time, file=None, hms=None,):
     :param grab_time: datetime of desired frame
     :param file: video file from which to grab frame
     :param hms: HH:mm:ss into video to grab frame
+    :param index_file_name: name of the file that lists length of each .ts file
     :return:
     """
     if grab_time:
@@ -103,7 +104,7 @@ def grab_frame(path, start_time, grab_time, file=None, hms=None,):
         exit - 1
 
     if path:
-        ts_file, offset = calculate_ts_file(path, seconds)
+        ts_file, offset = calculate_ts_file(path, seconds, index_file_name)
         # if you don't cast the offset time to an int, resulting screenshot is wavy gray
         return take_screenshot(os.path.join(path, ts_file), int(offset))
     else:
@@ -112,11 +113,12 @@ def grab_frame(path, start_time, grab_time, file=None, hms=None,):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', help='video from which to take screenshot', default='input.mov')
     parser.add_argument('-p', '--path', help='path to folder containing ts files')
     parser.add_argument('-s', '--start', help='start date/time of video')
     parser.add_argument('-g', '--grab', help='date/time of desired frame')
     parser.add_argument('-o', help='prefix of output file', default='Screenshot')
+    parser.add_argument('-i', '--index', help='name of index file listing ts file durations')
+    parser.add_argument('-f', '--file', help='video from which to take screenshot', default='input.mov')
     parser.add_argument('-hms', help='HH:mm:ss into video to take screenshot')
 
     args, unknown = parser.parse_known_args()
@@ -141,7 +143,7 @@ if __name__ == '__main__':
             else:
                 print '**** You must specify the start time of the video ****'
 
-    img_bytes = grab_frame(args.file, args.path, start_time, grab_time, args.o, args.hms)
+    img_bytes = grab_frame(args.path, start_time, grab_time, args.file, args.hms, args.index)
 
     outfile_name = args.o + '_' + str(grab_time.strftime("%Y.%m.%d-%H.%M.%S")) + '.png'
 
