@@ -17,17 +17,20 @@
 
 import ffmpeg
 import argparse
-import m3u8
+from geocamUtil.TimeUtil import hms_to_total_s
 import os
+from xgds_video.util import calculate_ts_file
 from dateutil.parser import parse as dateparser
 
-
-# D make take_screenshot return buffer of bytes
-# D make main save those bytes to a file
-# D make a callable function that acts like main (test on commandline with import)
-# make prog index a parameter
-# D make it save with a UTC YYYY-MM-DD hhmmss and option pre-tag (vessel name?)
+# write test
+# merge in
 def take_screenshot(input_file, seconds_into):
+    """
+    Return the bytes for the image that is seconds_into the imput_file
+    :param input_file: video file to take the screenshot from
+    :param seconds_into: seconds into the video to take the screenshot
+    :return: bytes of the screenshot image
+    """
     out, _ = (
         ffmpeg. \
         input(input_file, ss=seconds_into). \
@@ -37,71 +40,28 @@ def take_screenshot(input_file, seconds_into):
     return out
 
 
-def calculate_ts_file(folder_name, s_int, index_file_name):
-    # open the prog_index.m3u8
-    m3u8_obj = m3u8.load(os.path.join(folder_name, index_file_name))
-
-    acc_time = 0
-    num_segs = len(m3u8_obj.segments)
-    s_float = float(s_int)
-    file_number = 0
-    for seg_num in range(0, num_segs):
-        next_delta = m3u8_obj.segments[seg_num].duration
-        if acc_time + next_delta > float(s_float):
-            # save file number
-            # (if you subtract 1, you're off by one. not sure why.)
-            file_number = seg_num
-            break
-        acc_time = acc_time + next_delta
-        
-    if s_int > int(acc_time + next_delta):
-        print "**** Requested time "+str(s_int)+"s is outside range of prog_index.m3u8, "\
-              +str(int(acc_time + next_delta))+'s ****'
-        exit -1
-
-    return m3u8_obj.segments[file_number].uri, s_float - acc_time
-
-
-def hms_to_total_s(hms_string):
-    tokens = hms_string.split(':')
-    if len(tokens) == 3:
-        h = tokens[0]
-        m = tokens[1]
-        s = tokens[2]
-    elif len(tokens) == 2 :
-        h = 0
-        m = tokens[0]
-        s = tokens[1]
-    elif len(tokens) == 1 :
-        h = 0
-        m = 0
-        s = tokens[0]
-    ans = int(s) + int(m)*60 + int(h)*60*60
-    return ans
-
-
 def grab_frame(path, start_time, grab_time, file=None, hms=None, index_file_name='prog_index.m3u8'):
     """
-    Grab a frame from a given video, return as buffer??
+    Grab a frame from a given video, return as buffer
     :param path: path to folder containing .ts files
     :param start_time: start datetime of video
     :param grab_time: datetime of desired frame
     :param file: video file from which to grab frame
     :param hms: HH:mm:ss into video to grab frame
     :param index_file_name: name of the file that lists length of each .ts file
-    :return:
+    :return: bytes of the grabbed frame
     """
     if grab_time:
         if not start_time:
-            print '**** You must specify the start time of the video ****'
-            exit - 1
+            msg = '**** You must specify the start time of the video ****'
+            raise Exception(msg)
         time_diff = grab_time - start_time
         seconds = int(time_diff.seconds)
     elif args.hms:
         seconds = hms_to_total_s(hms)
     else:
-        print '**** You must specify a time to take a frame grab ****'
-        exit - 1
+        msg = '**** You must specify a time to take a frame grab ****'
+        raise Exception(msg)
 
     if path:
         ts_file, offset = calculate_ts_file(path, seconds, index_file_name)

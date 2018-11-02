@@ -263,3 +263,35 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
         traceback.print_exc()
         traceback.print_stack()
         return (None, None)
+
+
+def calculate_ts_file(folder_name, seconds_int, index_file_name):
+    """
+    Find the ts file that is s_int seconds into the recording
+    :param folder_name: that holds ts files
+    :param seconds_int: seconds into the recording
+    :param index_file_name: usually prog_index.m3u8
+    :return: tsfile name and offset seconds into the file
+    """
+    # open the prog_index.m3u8
+    m3u8_obj = m3u8.load(os.path.join(folder_name, index_file_name))
+
+    acc_time = 0
+    num_segs = len(m3u8_obj.segments)
+    s_float = float(seconds_int)
+    file_number = 0
+    for seg_num in range(0, num_segs):
+        next_delta = m3u8_obj.segments[seg_num].duration
+        if acc_time + next_delta > float(s_float):
+            # save file number
+            # (if you subtract 1, you're off by one. not sure why.)
+            file_number = seg_num
+            break
+        acc_time = acc_time + next_delta
+
+    if seconds_int > int(acc_time + next_delta):
+        msg = "Requested time " + str(seconds_int) + "s is outside range of " + index_file_name + ", " \
+              + str(int(acc_time + next_delta)) + 's'
+        raise Exception(msg)
+
+    return m3u8_obj.segments[file_number].uri, s_float - acc_time
