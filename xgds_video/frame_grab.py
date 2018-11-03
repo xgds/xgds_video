@@ -15,12 +15,15 @@
 # specific language governing permissions and limitations under the License.
 # __END_LICENSE__
 
+import django
+django.setup()
 import ffmpeg
 import argparse
 from geocamUtil.TimeUtil import hms_to_total_s
 import os
 from xgds_video.util import calculate_ts_file
 from dateutil.parser import parse as dateparser
+
 
 # write test
 # merge in
@@ -40,7 +43,7 @@ def take_screenshot(input_file, seconds_into):
     return out
 
 
-def grab_frame(path, start_time, grab_time, file=None, hms=None, index_file_name='prog_index.m3u8'):
+def grab_frame(path=None, start_time=None, grab_time=None, file=None, hms=None, index_file_name='prog_index.m3u8'):
     """
     Grab a frame from a given video, return as buffer
     :param path: path to folder containing .ts files
@@ -57,7 +60,7 @@ def grab_frame(path, start_time, grab_time, file=None, hms=None, index_file_name
             raise Exception(msg)
         time_diff = grab_time - start_time
         seconds = int(time_diff.seconds)
-    elif args.hms:
+    elif hms:
         seconds = hms_to_total_s(hms)
     else:
         msg = '**** You must specify a time to take a frame grab ****'
@@ -77,7 +80,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--start', help='start date/time of video')
     parser.add_argument('-g', '--grab', help='date/time of desired frame')
     parser.add_argument('-o', help='prefix of output file', default='Screenshot')
-    parser.add_argument('-i', '--index', help='name of index file listing ts file durations')
+    parser.add_argument('-i', '--index', help='name of index file listing ts file durations', default='prog_index.m3u8')
     parser.add_argument('-f', '--file', help='video from which to take screenshot', default='input.mov')
     parser.add_argument('-hms', help='HH:mm:ss into video to take screenshot')
 
