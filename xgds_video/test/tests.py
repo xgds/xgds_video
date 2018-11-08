@@ -15,12 +15,31 @@
 #__END_LICENSE__
 
 from django.test import TransactionTestCase
-
+from django.core.urlresolvers import reverse
 
 class xgds_videoTest(TransactionTestCase):
     """
     Tests for xgds_video
     """
+    filepath = '/home/xgds/xgds_subsea/apps/xgds_video/test/test_files/na1.stream_2018-09-02-22.58.45.785-UTC_65'
+    ref_2 = filepath + '/Screenshot_2018.09.02-22.58.52.png'
+
     def test_xgds_video(self):
         # print "testing git hook 7 in xgds_video"
         pass
+
+    def test_frame_grab(self):
+        """
+        Test getting image bytes from a series of .ts files
+        """
+        response = self.client.post(reverse('grab_frame_nickname'),
+                                    {'path': xgds_videoTest.filepath,
+                                     'start_time': '20180902 22:58:45',
+                                     'grab_time': '20180902 22:58:52'})
+        with open(xgds_videoTest.ref_2, 'rb') as f:
+            reference_bytes_2 = f.read()
+            f.close()
+
+        pic = response.content
+        equals_reference = (pic == reference_bytes_2)
+        self.assertTrue(equals_reference)

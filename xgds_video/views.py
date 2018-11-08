@@ -22,7 +22,7 @@ import calendar
 import re
 import m3u8
 import zmq
-
+import textwrap
 
 from django.shortcuts import render
 from django.shortcuts import redirect
@@ -44,6 +44,8 @@ from xgds_map_server.views import getSearchForms
 from django.http import HttpResponse, JsonResponse
 from django.core.urlresolvers import reverse
 from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfRunning
+from dateutil.parser import parse as dateparser
+from frame_grab import grab_frame
 
 SOURCE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -54,6 +56,38 @@ NOTE_MODEL = LazyGetModelByName(getattr(settings, 'XGDS_NOTES_NOTE_MODEL'))
 
 
 logging.basicConfig(level=logging.INFO)
+
+
+def helloWorld(request):
+    response_text = textwrap.dedent('''\
+        <html>
+        <head>
+            <title>Greetings to the world</title>
+        </head>
+        <body>
+            <h1>Greetings to the world</h1>
+            <p>Hello, world!</p>
+        </body>
+        </html>
+    ''')
+    return HttpResponse(response_text)
+
+
+def grabFrame(request):
+    start = request.POST.get('start_time')
+    grab = request.POST.get('grab_time')
+    starttime = dateparser(start)
+    grabtime = dateparser(grab)
+    img_bytes = grab_frame(request.POST.get('path'), starttime, grabtime)
+    mimeType = "image/jpeg"
+    response = HttpResponse(img_bytes, content_type=mimeType)
+    return response
+
+    # outfile_name = args.o + '_' + str(grab_time.strftime("%Y.%m.%d-%H.%M.%S")) + '.png'
+    #
+    # with open(outfile_name, 'wb') as f:
+    #     f.write(img_bytes)
+    #     f.close()
 
 
 def test(request):

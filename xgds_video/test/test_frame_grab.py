@@ -70,7 +70,7 @@ class TestFrameGrab(TestCase):
         # path, grab, no start
         with self.assertRaises(Exception):
             bytes = grab_frame(TestFrameGrab.filepath,
-                            grab=dateparser('20180902 22:58:52'))
+                            grab_time=dateparser('20180902 22:58:52'))
 
         # no grab, no start
         with self.assertRaises(Exception):

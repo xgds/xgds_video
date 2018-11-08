@@ -24,4 +24,6 @@ urlpatterns = [url(r'^videoStill/(?P<flightName>\w+)/(?P<time>[^/]+).thumbnail.j
                url(r'^videoStill/(?P<flightName>\w+)/(?P<time>[^/]+).jpg/(?P<isDownload>\d)/$', views.displayVideoStill, {}, 'xgds_video_downloadStill'),  # full-size still from video
                url(r'^recorded/(?P<flightName>\w+).json$', views.getEpisodeSegmentsJson, {}, 'xgds_video_recorded_json'),  # active recorded video json
                url(r'^recorded/(?P<flightName>\w+)/(?P<sourceShortName>\w+).json$', views.getEpisodeSegmentsJson, {}, 'xgds_video_recorded_json'),  # active recorded video json
+               url(r'^helloWorld', views.helloWorld, {}, 'hello_world_nickname'),  # for testing
+               url(r'^grabFrame', views.grabFrame, {}, 'grab_frame_nickname'),  # grab frame
                ]
