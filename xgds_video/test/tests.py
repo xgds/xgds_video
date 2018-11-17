@@ -10,12 +10,16 @@
 #
 # Unless required by applicable law or agreed to in writing, software distributed
 # under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
 
 from django.test import TransactionTestCase
 from django.core.urlresolvers import reverse
+from geocamUtil.loader import LazyGetModelByName, getClassByName
+from django.conf import settings
+from dateutil.parser import parse as dateparser
 
 class xgds_videoTest(TransactionTestCase):
     """
@@ -24,9 +28,62 @@ class xgds_videoTest(TransactionTestCase):
     filepath = '/home/xgds/xgds_subsea/apps/xgds_video/test/test_files/na1.stream_2018-09-02-22.58.45.785-UTC_65'
     ref_2 = filepath + '/Screenshot_2018.09.02-22.58.52.png'
 
+    fixtures = ['geocamTrack_initial_data.json',
+                'xgds_core_initial_data.json',
+                'xgds_core_testing.json',
+                'test_cameras.json',
+                'test_h1708_herc_track.json',
+                'test_h1708_herc_positions.json',
+                'test_h1708_herc_flight.json' ]
+
+    @classmethod
+    def setUpClass(self):
+        # Keep track of the global default vehicle pk and set the global to
+        # what these tests need it to be
+        self.default_vehicle_pk = settings.XGDS_CORE_DEFAULT_VEHICLE_PK
+        settings.XGDS_CORE_DEFAULT_VEHICLE_PK = 1
+
+    @classmethod
+    def tearDownClass(self):
+        # Restore the global variable we changed during setup
+        settings.XGDS_CORE_DEFAULT_VEHICLE_PK = self.default_vehicle_pk
+
+
     def test_xgds_video(self):
         # print "testing git hook 7 in xgds_video"
         pass
+
+    def test_frame_grab_and_insert_database(self):
+        """
+        Test grabbing a video frame and inserting it into the CouchDB
+        """
+        grab_time_str = '20180902 22:58:52'
+        start_time_str = '20180902 22:58:45'
+        vehicle_name = 'Generic Vehicle'
+
+
+        response = self.client.post(reverse('save_frame_nickname'),
+                                    {'path': xgds_videoTest.filepath,
+                                     'start_time': start_time_str,
+                                     'grab_time': grab_time_str,
+                                     'vehicle': vehicle_name,
+                                     'camera': 'Hercules'
+                                     })
+
+        shortname = 'Framegrab_20180902_22:58:52.png'
+        grabtime = dateparser(grab_time_str)
+
+        found = LazyGetModelByName(settings.XGDS_IMAGE_IMAGE_SET_MODEL).get().objects.filter(
+            name=shortname,
+            acquisition_time=grabtime)
+
+        with open(xgds_videoTest.ref_2, 'rb') as f:
+            reference_bytes_2 = f.read()
+            f.close()
+
+        equals_reference = (found == reference_bytes_2)
+        self.assertTrue(equals_reference)
+
 
     def test_frame_grab(self):
         """

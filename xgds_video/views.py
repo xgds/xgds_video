@@ -46,6 +46,7 @@ from django.core.urlresolvers import reverse
 from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfRunning
 from dateutil.parser import parse as dateparser
 from frame_grab import grab_frame
+from xgds_video.defaultSettings import XGDS_VIDEO_FRAME_GRAB_DIR
 
 SOURCE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
@@ -79,15 +80,24 @@ def grabFrame(request):
     starttime = dateparser(start)
     grabtime = dateparser(grab)
     img_bytes = grab_frame(request.POST.get('path'), starttime, grabtime)
-    mimeType = "image/jpeg"
+    mimeType = "image/png"
     response = HttpResponse(img_bytes, content_type=mimeType)
-    return response
 
-    # outfile_name = args.o + '_' + str(grab_time.strftime("%Y.%m.%d-%H.%M.%S")) + '.png'
+    # outfile_name = XGDS_VIDEO_FRAME_GRAB_DIR + '_' + str(grabtime.strftime("%Y.%m.%d-%H.%M.%S")) + '.png'
     #
     # with open(outfile_name, 'wb') as f:
-    #     f.write(img_bytes)
+    #     f.write(response.content)
     #     f.close()
+    #
+    # # from here (or earlier) want to call xgds_image/views.py saveImage(request)
+    # # don't make a new request but make a new dictionary
+    #
+    # {'path': xgds_videoTest.filepath,
+    #  'start_time': '20180902 22:58:45',
+    #  'grab_time': '20180902 22:58:52'}
+    # # okay, but then how do I invoke it? can I just call it like
+    # saveImage(request)
+    return response
 
 
 def test(request):
