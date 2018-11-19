@@ -20,6 +20,7 @@ from django.core.urlresolvers import reverse
 from geocamUtil.loader import LazyGetModelByName, getClassByName
 from django.conf import settings
 from dateutil.parser import parse as dateparser
+from xgds_video.frame_grab import *
 
 class xgds_videoTest(TransactionTestCase):
     """
@@ -54,9 +55,9 @@ class xgds_videoTest(TransactionTestCase):
         settings.XGDS_CORE_DEFAULT_VEHICLE_PK = self.default_vehicle_pk
 
     def test_take_screenshot(self):
-        bytes = take_screenshot(TestFrameGrab.ts_1, 2)
+        bytes = take_screenshot(xgds_videoTest.ts_1, 2)
 
-        with open(TestFrameGrab.ref_1, 'rb') as f:
+        with open(xgds_videoTest.ref_1, 'rb') as f:
             reference_bytes = f.read()
             f.close()
 
@@ -67,11 +68,11 @@ class xgds_videoTest(TransactionTestCase):
 
     def test_grab_frame(self):
         # path, start, grab
-        bytes = grab_frame(TestFrameGrab.filepath,
+        bytes = grab_frame(xgds_videoTest.filepath,
                            dateparser('20180902 22:58:45'),
                            dateparser('20180902 22:58:52'))
 
-        with open(TestFrameGrab.ref_2, 'rb') as f:
+        with open(xgds_videoTest.ref_2, 'rb') as f:
             reference_bytes_2 = f.read()
             f.close()
 
@@ -79,17 +80,17 @@ class xgds_videoTest(TransactionTestCase):
         self.assertTrue(equals_reference)
 
         # path, hms
-        bytes = grab_frame(TestFrameGrab.filepath,
+        bytes = grab_frame(xgds_videoTest.filepath,
                            hms='00:00:07')
 
         equals_reference = (bytes == reference_bytes_2)
         self.assertTrue(equals_reference)
 
         # file, hms
-        bytes = grab_frame(file=TestFrameGrab.ts_1,
+        bytes = grab_frame(file=xgds_videoTest.ts_1,
                            hms='00:00:02')
 
-        with open(TestFrameGrab.ref_1, 'rb') as f:
+        with open(xgds_videoTest.ref_1, 'rb') as f:
             reference_bytes_1 = f.read()
             f.close()
 
@@ -99,12 +100,12 @@ class xgds_videoTest(TransactionTestCase):
     def test_exceptions(self):
         # path, grab, no start
         with self.assertRaises(Exception):
-            bytes = grab_frame(TestFrameGrab.filepath,
+            bytes = grab_frame(xgds_videoTest.filepath,
                             grab_time=dateparser('20180902 22:58:52'))
 
         # no grab, no start
         with self.assertRaises(Exception):
-            bytes = grab_frame(TestFrameGrab.filepath)
+            bytes = grab_frame(xgds_videoTest.filepath)
 
 
     def test_frame_grab_and_insert_database(self):
