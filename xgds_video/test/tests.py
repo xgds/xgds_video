@@ -40,7 +40,8 @@ class xgds_videoTest(TransactionTestCase):
                 'test_cameras.json',
                 'test_h1708_herc_track.json',
                 'test_h1708_herc_positions.json',
-                'test_h1708_herc_flight.json' ]
+                'test_h1708_herc_flight.json',
+                'test_users.json']
 
     @classmethod
     def setUpClass(self):
@@ -67,6 +68,7 @@ class xgds_videoTest(TransactionTestCase):
         self.assertTrue(equals_reference)
 
     def test_grab_frame(self):
+
         # path, start, grab
         bytes = grab_frame(xgds_videoTest.filepath,
                            dateparser('20180902 22:58:45'),
@@ -101,12 +103,11 @@ class xgds_videoTest(TransactionTestCase):
         # path, grab, no start
         with self.assertRaises(Exception):
             bytes = grab_frame(xgds_videoTest.filepath,
-                            grab_time=dateparser('20180902 22:58:52'))
+                               grab_time=dateparser('20180902 22:58:52'))
 
         # no grab, no start
         with self.assertRaises(Exception):
             bytes = grab_frame(xgds_videoTest.filepath)
-
 
     def test_frame_grab_and_insert_database(self):
         """
@@ -117,15 +118,17 @@ class xgds_videoTest(TransactionTestCase):
         vehicle_name = 'Generic Vehicle'
 
 
-        response = self.client.post(reverse('save_frame_nickname'),
+        response = self.client.post(reverse('grab_frame_save_image'),
                                     {'path': xgds_videoTest.filepath,
                                      'start_time': start_time_str,
                                      'grab_time': grab_time_str,
                                      'vehicle': vehicle_name,
-                                     'camera': 'Hercules'
+                                     'camera': 'Hercules',
+                                     'username': 'xgds',
+                                     'filename_prefix': 'test_grab'
                                      })
 
-        shortname = 'Framegrab_20180902_22:58:52.png'
+        shortname = 'test_grab_20180902_22:58:52.png'
         grabtime = dateparser(grab_time_str)
 
         found = LazyGetModelByName(settings.XGDS_IMAGE_IMAGE_SET_MODEL).get().objects.filter(
@@ -144,10 +147,10 @@ class xgds_videoTest(TransactionTestCase):
         """
         Test getting image bytes from a series of .ts files
         """
-        response = self.client.post(reverse('grab_frame_nickname'),
+        response = self.client.post(reverse('grab_frame'),
                                     {'path': xgds_videoTest.filepath,
                                      'start_time': '20180902 22:58:45',
-                                     'grab_time': '20180902 22:58:52'})
+                                     'grab_time': '20180902 22:58:52',})
         with open(xgds_videoTest.ref_2, 'rb') as f:
             reference_bytes_2 = f.read()
             f.close()

@@ -58,22 +58,6 @@ NOTE_MODEL = LazyGetModelByName(getattr(settings, 'XGDS_NOTES_NOTE_MODEL'))
 
 logging.basicConfig(level=logging.INFO)
 
-
-def helloWorld(request):
-    response_text = textwrap.dedent('''\
-        <html>
-        <head>
-            <title>Greetings to the world</title>
-        </head>
-        <body>
-            <h1>Greetings to the world</h1>
-            <p>Hello, world!</p>
-        </body>
-        </html>
-    ''')
-    return HttpResponse(response_text)
-
-
 def grabFrame(request):
     start = request.POST.get('start_time')
     grab = request.POST.get('grab_time')

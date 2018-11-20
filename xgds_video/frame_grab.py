@@ -15,18 +15,20 @@
 # specific language governing permissions and limitations under the License.
 # __END_LICENSE__
 
-import django
-django.setup()
+import pydevd
+import traceback
 import ffmpeg
 import argparse
-from geocamUtil.TimeUtil import hms_to_total_s
 import os
-from xgds_video.util import calculate_ts_file
 from dateutil.parser import parse as dateparser
 
+import django
+django.setup()
 
-# write test
-# merge in
+from geocamUtil.TimeUtil import hms_to_total_s
+from xgds_video.util import calculate_ts_file
+
+
 def take_screenshot(input_file, seconds_into):
     """
     Return the bytes for the image that is seconds_into the imput_file
@@ -34,13 +36,18 @@ def take_screenshot(input_file, seconds_into):
     :param seconds_into: seconds into the video to take the screenshot
     :return: bytes of the screenshot image
     """
-    out, _ = (
-        ffmpeg. \
-        input(input_file, ss=seconds_into). \
-        output('pipe:', vframes=1, format='image2', vcodec='png'). \
-        run(capture_stdout=True, quiet=True)
-    )
-    return out
+
+    try:
+        ffmpeg_input = ffmpeg.input(input_file, ss=seconds_into)
+        ffmpeg_output = ffmpeg_input.output('pipe:', vframes=1, format='image2', vcodec='png')
+        out, _ = ffmpeg_output.run(capture_stdout=True, quiet=True)
+        return out
+    except Exception as e:
+        print 'PROBLEM TAKING SCREENSHOT make sure ffmpeg is installed correctly'
+        print 'pip install ffmpeg-python'
+        print 'apt-get install libav-tools'
+        traceback.print_exc()
+        raise e
 
 
 def grab_frame(path=None, start_time=None, grab_time=None, file=None, hms=None, index_file_name='prog_index.m3u8'):
