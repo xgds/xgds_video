@@ -243,7 +243,7 @@ def stopRecording(source, endTime):
     recorderService = '%s_recorder' % assetName
 
     if settings.XGDS_VIDEO_RECORDING_METHOD == 'HLS':
-        # set the memcache flag to stop.
+        # set the persistent flag to stop.
         #TODO make this better
         _cache.set("recordHLS:%s:stopRecording" % assetName, True)
         return 'SET MEMCACHE TO STOP HLS RECORDING FOR %s' % (assetName)

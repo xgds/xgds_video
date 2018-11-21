@@ -15,7 +15,6 @@
 # specific language governing permissions and limitations under the License.
 # __END_LICENSE__
 
-import pydevd
 import traceback
 import ffmpeg
 import argparse
