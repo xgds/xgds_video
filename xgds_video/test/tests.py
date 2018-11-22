@@ -15,12 +15,17 @@
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
 
+import subprocess
+import os
+import shutil
+import json
 from django.test import TransactionTestCase
 from django.core.urlresolvers import reverse
 from geocamUtil.loader import LazyGetModelByName, getClassByName
 from django.conf import settings
 from dateutil.parser import parse as dateparser
 from xgds_video.frame_grab import *
+
 
 class xgds_videoTest(TransactionTestCase):
     """
@@ -49,11 +54,27 @@ class xgds_videoTest(TransactionTestCase):
         # what these tests need it to be
         self.default_vehicle_pk = settings.XGDS_CORE_DEFAULT_VEHICLE_PK
         settings.XGDS_CORE_DEFAULT_VEHICLE_PK = 1
+        settings.COUCHDB_FILESTORE_NAME = "test-file-store"
+        db_url = '%s/%s' % (settings.COUCHDB_URL, settings.COUCHDB_FILESTORE_NAME)
+        # create the couchdb
+        subprocess.call([
+            "curl", "-X", "PUT", "http://couchdb:5984/test-file-store"
+        ], shell=False)
 
     @classmethod
     def tearDownClass(self):
         # Restore the global variable we changed during setup
         settings.XGDS_CORE_DEFAULT_VEHICLE_PK = self.default_vehicle_pk
+        # delete the couchdb
+        subprocess.call([
+            "curl", "-X", "DELETE", "http://couchdb:5984/test-file-store"
+        ], shell=False)
+
+        # clean up vips tiles
+        deepzoom_path = '/home/xgds/xgds_subsea/data/xgds_image/deepzoom_images/test_grab_20180902 22:58:52_deepzoom_1'
+
+        if os.path.exists(deepzoom_path):
+            shutil.rmtree(deepzoom_path)
 
     def test_take_screenshot(self):
         bytes = take_screenshot(xgds_videoTest.ts_1, 2)
@@ -117,7 +138,6 @@ class xgds_videoTest(TransactionTestCase):
         start_time_str = '20180902 22:58:45'
         vehicle_name = 'Generic Vehicle'
 
-
         response = self.client.post(reverse('grab_frame_save_image'),
                                     {'path': xgds_videoTest.filepath,
                                      'start_time': start_time_str,
@@ -128,20 +148,21 @@ class xgds_videoTest(TransactionTestCase):
                                      'filename_prefix': 'test_grab'
                                      })
 
-        shortname = 'test_grab_20180902_22:58:52.png'
-        grabtime = dateparser(grab_time_str)
-
-        found = LazyGetModelByName(settings.XGDS_IMAGE_IMAGE_SET_MODEL).get().objects.filter(
-            name=shortname,
-            acquisition_time=grabtime)
+        shortname = 'test_grab_20180902 22:58:52.png'
+        found = LazyGetModelByName(settings.XGDS_IMAGE_IMAGE_SET_MODEL).get().objects.get(name=shortname)
 
         with open(xgds_videoTest.ref_2, 'rb') as f:
             reference_bytes_2 = f.read()
             f.close()
 
-        equals_reference = (found == reference_bytes_2)
-        self.assertTrue(equals_reference)
+        # found is an ImageSet, get its raw image bytes
+        raw_image = found.getRawImage()
+        raw_image_file = raw_image.file
+        found_bytes = raw_image_file.read()
+        raw_image_file.close()
 
+        equals_reference = (found_bytes == reference_bytes_2)
+        self.assertTrue(equals_reference)
 
     def test_frame_grab(self):
         """
