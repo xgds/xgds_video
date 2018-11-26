@@ -58,16 +58,17 @@ class xgds_videoTest(TransactionTestCase):
         db_url = '%s/%s' % (settings.COUCHDB_URL, settings.COUCHDB_FILESTORE_NAME)
         # create the couchdb
         subprocess.call([
-            "curl", "-X", "PUT", "http://couchdb:5984/test-file-store"
+            "curl", "-X", "PUT", db_url
         ], shell=False)
 
     @classmethod
     def tearDownClass(self):
         # Restore the global variable we changed during setup
         settings.XGDS_CORE_DEFAULT_VEHICLE_PK = self.default_vehicle_pk
+        db_url = '%s/test-file-store' % (settings.COUCHDB_URL)
         # delete the couchdb
         subprocess.call([
-            "curl", "-X", "DELETE", "http://couchdb:5984/test-file-store"
+            "curl", "-X", "DELETE", db_url
         ], shell=False)
 
         # clean up vips tiles
