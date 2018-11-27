@@ -18,7 +18,6 @@
 import subprocess
 import os
 import shutil
-import json
 from django.test import TransactionTestCase
 from django.core.urlresolvers import reverse
 from geocamUtil.loader import LazyGetModelByName, getClassByName
