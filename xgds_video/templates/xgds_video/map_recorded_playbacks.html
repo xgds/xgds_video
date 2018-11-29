@@ -209,8 +209,12 @@
 			<i class="fa fa-lock pinDiv gray-light mr-1"></i>
 			<i class="fa fa-window-close gray-light fa-lg"></i>
 		</ul>
-		
-      		{% siteframe_form %}
+		<div id="overmap" class="mb-1 mt-negative-1rem">
+            {% if mapLayerDict.jsonFeatures|length == 0 %}{% siteframe_form %}{% endif %}
+            <button id="layers_button" type="button" class="btn btn-primary" data-backdrop=false data-toggle="modal" data-target="#layers_modal">
+                Layers
+            </button>
+        </div>
 		<div id="map"></div>
 	</div>
 </div>
@@ -304,19 +308,6 @@ xgds_notes.cleanData = function(data, containerDiv){
 }
 {% endblock cleanDataFunction %}
 
-{% block layers %}
-<div id="layers-gridstack-item" class="grid-stack-item" 
-	  data-gs-x="10" data-gs-y="40"
-      data-gs-width="2" data-gs-height="20" >
-	<div class="grid-stack-item-content" id="layers-gridstack-item-content">
-	<ul class="nav justify-content-end ">
-		<i class="fa fa-lock pinDiv gray-light mr-1"></i>
-		<i class="fa fa-window-close fa-lg gray-light"></i>
-	</ul>
-	<div id="layers" class="mt-negative-1rem"></div>
-	</div>
-</div>
-{% endblock layers %}
 
 {% block initGridstack %}
     var gsOptions = {width:12,
