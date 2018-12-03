@@ -24,9 +24,9 @@
 			searchRegion: '#searchDiv',
 		},
 		onRender: function() {
+			this.showChildView('layersRegion', new app.views.FancyTreeView());
 			app.map = new app.views.OLMapView();
 			this.showChildView('mapRegion', app.map);
-			this.showChildView('layersRegion', new app.views.FancyTreeView());
 			var searchView = new app.views.SearchView({template: '#template-mapViewerSearch',
 		         searchResultsRegion: true,
 		         viewRegion: false,
