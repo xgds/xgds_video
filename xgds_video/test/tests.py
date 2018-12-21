@@ -17,6 +17,7 @@
 
 import subprocess
 import os
+import json, yaml
 import shutil
 from django.test import TransactionTestCase
 from django.core.urlresolvers import reverse
@@ -36,7 +37,6 @@ class xgds_videoTest(TransactionTestCase):
     ts_1 = filepath + '/fileSequence0.ts'
     ref_1 = filepath + '/Screenshot_2018.09.02-22.58.47.png'
     ref_2 = filepath + '/Screenshot_2018.09.02-22.58.52.png'
-
 
     fixtures = ['geocamTrack_initial_data.json',
                 'xgds_core_initial_data.json',
@@ -130,6 +130,10 @@ class xgds_videoTest(TransactionTestCase):
         with self.assertRaises(Exception):
             bytes = grab_frame(xgds_videoTest.filepath)
 
+        # no grab, no start
+        with self.assertRaises(Exception):
+            bytes = grab_frame(xgds_videoTest.filepath)
+
     def test_frame_grab_and_insert_database(self):
         """
         Test grabbing a video frame and inserting it into the CouchDB
@@ -179,3 +183,82 @@ class xgds_videoTest(TransactionTestCase):
         pic = response.content
         equals_reference = (pic == reference_bytes_2)
         self.assertTrue(equals_reference)
+
+    def test_deficient_params(self):
+        """
+        Test leaving out POST arguments, verify we get errors
+        :return:
+        """
+        no_start = self.client.post(reverse('grab_frame'),
+                                    {'path': xgds_videoTest.filepath,
+                                     'grab_time': '20180902 22:58:52' })
+
+        dict = json.loads(no_start.json())
+
+        self.assertEqual(dict['status'], 'error')
+        self.assertEqual(dict['error'], 'You must specify video start time.')
+
+        no_grab = self.client.post(reverse('grab_frame'),
+                                    {'path': xgds_videoTest.filepath,
+                                     'start_time': '20180902 22:58:52' })
+        dict = json.loads(no_grab.json())
+
+        self.assertEqual(dict['status'], 'error')
+        self.assertEqual(dict['error'], 'You must specify video grab time.')
+
+        no_start_save = self.client.post(reverse('grab_frame_save_image'),
+                                    {'path': xgds_videoTest.filepath,
+                                     'grab_time': '20180902 22:58:52' })
+
+        dict = json.loads(no_start_save.json())
+
+        self.assertEqual(dict['status'], 'error')
+        self.assertEqual(dict['error'], 'You must specify video start time.')
+
+        no_grab_save = self.client.post(reverse('grab_frame_save_image'),
+                                    {'path': xgds_videoTest.filepath,
+                                     'start_time': '20180902 22:58:52' })
+        dict = json.loads(no_grab_save.json())
+
+        self.assertEqual(dict['status'], 'error')
+        self.assertEqual(dict['error'], 'You must specify video grab time.')
+
+
+
+    def test_no_image_set(self):
+        vehicle_name = 'Generic Vehicle'
+        grab_time_str = '20180902 22:58:52'
+        start_time_str = '20180902 22:50:45'
+
+        no_imageset_save = self.client.post(reverse('grab_frame_save_image'),
+                                    {'path': xgds_videoTest.filepath,
+                                     'start_time': start_time_str,
+                                     'grab_time': grab_time_str,
+                                     'vehicle': vehicle_name,
+                                     'camera': 'Hercules',
+                                     'username': 'xgds',
+                                     'filename_prefix': 'test_grab'
+                                     })
+
+        dict = json.loads(no_imageset_save.json())
+
+        self.assertEqual(dict['status'], 'error')
+        self.assertEqual(dict['error'], 'Requested time 487s is outside range of prog_index.m3u8, 12s')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

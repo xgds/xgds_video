@@ -14,6 +14,8 @@
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
 from __future__ import division
+
+import httplib
 import json
 import logging
 import os
@@ -61,26 +63,25 @@ logging.basicConfig(level=logging.INFO)
 def grabFrame(request):
     start = request.POST.get('start_time')
     grab = request.POST.get('grab_time')
+
+    if start is None:
+        result_dict = {'status': 'error',
+                       'error': 'You must specify video start time.'
+                       }
+        return JsonResponse(json.dumps(result_dict),
+                            status=httplib.NOT_ACCEPTABLE, safe=False)
+    if grab is None:
+        result_dict = {'status': 'error',
+                       'error': 'You must specify video grab time.'
+                       }
+        return JsonResponse(json.dumps(result_dict),
+                            status=httplib.NOT_ACCEPTABLE, safe=False)
+
     starttime = dateparser(start)
     grabtime = dateparser(grab)
     img_bytes = grab_frame(request.POST.get('path'), starttime, grabtime)
     mimeType = "image/png"
     response = HttpResponse(img_bytes, content_type=mimeType)
-
-    # outfile_name = XGDS_VIDEO_FRAME_GRAB_DIR + '_' + str(grabtime.strftime("%Y.%m.%d-%H.%M.%S")) + '.png'
-    #
-    # with open(outfile_name, 'wb') as f:
-    #     f.write(response.content)
-    #     f.close()
-    #
-    # # from here (or earlier) want to call xgds_image/views.py saveImage(request)
-    # # don't make a new request but make a new dictionary
-    #
-    # {'path': xgds_videoTest.filepath,
-    #  'start_time': '20180902 22:58:45',
-    #  'grab_time': '20180902 22:58:52'}
-    # # okay, but then how do I invoke it? can I just call it like
-    # saveImage(request)
     return response
 
 

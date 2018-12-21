@@ -72,13 +72,16 @@ def grab_frame(path=None, start_time=None, grab_time=None, file=None, hms=None, 
         msg = '**** You must specify a time to take a frame grab ****'
         raise Exception(msg)
 
-    if path:
-        ts_file, offset = calculate_ts_file(path, seconds, index_file_name)
-        # if you don't cast the offset time to an int, resulting screenshot is wavy gray
-        return take_screenshot(os.path.join(path, ts_file), int(offset))
-    else:
-        return take_screenshot(file, seconds)
-
+    try:
+        if path:
+            ts_file, offset = calculate_ts_file(path, seconds, index_file_name)
+            # if you don't cast the offset time to an int, resulting screenshot is wavy gray
+            img_bytes = take_screenshot(os.path.join(path, ts_file), int(offset))
+        else:
+            img_bytes = take_screenshot(file, seconds)
+    except Exception as e:
+        raise e
+    return img_bytes
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
