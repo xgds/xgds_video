@@ -94,7 +94,6 @@ class AbstractVideoSettings(models.Model):
     playbackDataRate = models.FloatField(null=True, blank=True)
     aspectRatio = models.CharField(max_length=8, default='16:9')
 
-
     def getDict(self):
         return {"width": self.width, 
                 "height": self.height, 
@@ -199,7 +198,6 @@ class AbstractVideoSegment(models.Model):
                 self.endTime = endDT
                 self.save()
         return (self.startTime, self.endTime)
-        
 
     def getDict(self):
         return {"directoryName": self.directoryName,

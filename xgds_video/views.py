@@ -60,6 +60,7 @@ NOTE_MODEL = LazyGetModelByName(getattr(settings, 'XGDS_NOTES_NOTE_MODEL'))
 
 logging.basicConfig(level=logging.INFO)
 
+
 def grabFrame(request):
     start = request.POST.get('start_time')
     grab = request.POST.get('grab_time')
@@ -257,6 +258,7 @@ def displayVideoStill(request, flightName=None, time=None, thumbnail=False, isDo
         response['Content-disposition'] = 'attachment; filename=%s' % os.path.basename(fullSizePath)
     return response
 
+
 def buildImageResponse(thePath, default):
     # The image should now be there, but just in case, we catch exceptions
     try:
@@ -268,6 +270,7 @@ def buildImageResponse(thePath, default):
     f.close()
     response = HttpResponse(imageBits, content_type=mimeType)
     return response
+
 
 def showStillViewerWindow(request, flightName=None, time=None):
     if flightName is None:
@@ -622,7 +625,6 @@ def extraVideoContext(ctx):
     and then make sure to update your settings.py to define where to find this method
     '''
     pass
-
 
 
 def videoIndexFile(request, flightName=None, sourceShortName=None, segmentNumber=None):

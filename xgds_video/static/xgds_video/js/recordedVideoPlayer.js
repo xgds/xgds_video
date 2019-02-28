@@ -111,8 +111,8 @@ $.extend(xgds_video,{
 //			},
 			onPlay: function(e) { //gets called per source
 				//console.log('ON PLAY');
-				var segments = xgds_video.options.displaySegments[this.id];
-				var segment = segments[this.getPlaylistIndex()];
+				// var segments = xgds_video.options.displaySegments[this.id];
+				// var segment = segments[this.getPlaylistIndex()];
 				var pendingActions = xgds_video.pendingPlayerActions[this.id];
 				if (!(_.isUndefined(pendingActions)) && !(_.isEmpty(pendingActions))) {
 					xgds_video.pendingPlayerActions[this.id] = [];
@@ -276,7 +276,7 @@ $.extend(xgds_video,{
                 if (xgds_video.options.hasMasterSlider){
 					jwplayer(source).playlistItem(0).seek(0);
 				} else {
-                                        if (xgds_video.options.displaySegments[source][xgds_video.options.displaySegments[source].length - 1].endTime.isValid()){
+                	if (xgds_video.options.displaySegments[source][xgds_video.options.displaySegments[source].length - 1].endTime.isValid()){
 						// IF we are in the error state of an 'active' flight with an ended last segment, DO NOT PLAY.
 						jwplayer(source).pause();
 					}  else {
@@ -356,8 +356,8 @@ $.extend(xgds_video,{
 		 */
 		var soundOn = false;
 		for (var source in xgds_video.options.displaySegments) {
-			//TODO fix -- encode in DB or check if there is an audio stream, potentiall onMeta can give us some info
-			if (source.match('RD')) { //if the source is a research diver
+			//TODO potentially onMeta can give us some info
+			if (source.match(DEFAULT_AUDIO_SOURCE)) { //if the source is the default audio source
 				//if no other player sounds are on, unmute this player
 				if (!soundOn) {
 					jwplayer(source).setMute(false);

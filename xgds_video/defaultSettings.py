@@ -105,3 +105,6 @@ XGDS_VIDEO_BUFFER_FUDGE_FACTOR = XGDS_VIDEO_LIVE_PLAYLIST_SIZE_TO_PLAYER * XGDS_
 JWPLAYER_KEY = None
 
 XGDS_VIDEO_FRAME_GRAB_DIR = "addendum/xgds/capture_pngs"
+
+# You MUST override this to include the name of the default audio source
+XGDS_VIDEO_DEFAULT_AUDIO_SOURCE = ""
