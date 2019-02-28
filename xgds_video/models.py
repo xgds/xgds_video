@@ -88,6 +88,7 @@ class VideoSource(AbstractVideoSource):
 
 
 class AbstractVideoSettings(models.Model):
+    name = models.CharField(max_length=16, null=True, blank=True)
     width = models.IntegerField()
     height = models.IntegerField()
     compressionRate = models.FloatField(null=True, blank=True)
