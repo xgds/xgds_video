@@ -13,6 +13,7 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
+
 import pytz
 import re
 import datetime
@@ -28,6 +29,7 @@ from xgds_video.recordingUtil import getFudgeForSource
 
 TIME_ZONE = pytz.timezone(settings.XGDS_VIDEO_TIME_ZONE['code'])
 SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
+
 
 def getDelaySeconds(flightName):
     delay = getDelay()
@@ -122,30 +124,37 @@ def findEndMarker(item):
     if re.match("#EXT-X-ENDLIST", item):
         return True
 
+
 def getSegmentPath(flightName, sourceName, number):
     if sourceName:
         return '%s_%s/Video/Recordings/Segment%03d/' % (flightName, sourceName, int(number))
     else:
         return '%s/Video/Recordings/Segment%03d/' % (flightName, int(number))
 
+
 def getIndexFilePath(flightName, sourceShortName, segmentNumber):
     indexFileName = settings.XGDS_VIDEO_INDEX_FILE_NAME
     splits = flightName.split('_')
-    try:
-        if sourceShortName:
-            if flightName.endswith(sourceShortName):
-                flightName = splits[0]
-            segments = SEGMENT_MODEL.get().objects.filter(episode__shortName=flightName,segNumber=segmentNumber,source__name=sourceShortName)
+
+    if sourceShortName:
+        if flightName.endswith(sourceShortName):
+            episode_shortName = splits[0]
         else:
-            # flight name encodes both, split it
-            segments = SEGMENT_MODEL.get().objects.filter(episode__shortName=splits[0],segNumber=segmentNumber,source__name=splits[1])
-            
+            episode_shortName = flightName
+    else:
+        episode_shortName = splits[0]
+        sourceShortName = splits[1]
+
+    try:
+        segments = SEGMENT_MODEL.get().objects.filter(episode__shortName=episode_shortName,
+                                                      segNumber=int(segmentNumber),
+                                                      source__shortName=sourceShortName)
         # should only be one
         indexFileName = segments[0].indexFileName
+        return os.path.join(getSegmentPath(flightName, sourceShortName, segmentNumber), indexFileName), segments[0]
     except:
-        pass
-    
-    return ('%s/%s' % (getSegmentPath(flightName, sourceShortName, segmentNumber), indexFileName), segments[0])
+        raise Exception('Segments not found for %s: %s: %s' % (episode_shortName, sourceShortName, segmentNumber))
+
 
 
 def getNumChunksFromEndForDelay(delayTime, indexPath):
@@ -170,13 +179,20 @@ def getNumChunksFromEndForDelay(delayTime, indexPath):
 
 def getSegmentNumber(segmentObj):
     segFileName = os.path.basename(segmentObj.uri)
-    name,ext = os.path.splitext(segFileName)
+    name, ext = os.path.splitext(segFileName)
     try:
         baseName, otherNumber, segNum = name.split("_")
     except:
-        baseName,segNum = name.split("-")
+        try:
+            baseName, segNum = name.split("-")
+        except:
+            pattern = '(?:[a-z]*[A-Z]*)*([0-9]*)'
+            match = re.search(pattern, name)
+            if match:
+                return int(match.group(1))
             
     return int(segNum)
+
 
 def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=None):
     """ This is truncating the last n rows from the m3u8 file and reappending the end and the metadata at the top.
@@ -187,7 +203,7 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
     GET_INDEX_FILE_METHOD = getClassByName(settings.XGDS_VIDEO_INDEX_FILE_METHOD)
     indexFileSuffix, segment = GET_INDEX_FILE_METHOD(flightName, sourceShortName, segmentNumber)
 
-    indexFilePath = settings.DATA_ROOT + indexFileSuffix
+    indexFilePath = os.path.join(settings.DATA_ROOT, indexFileSuffix)
     segmentDirectoryUrl = settings.DATA_URL + os.path.dirname(indexFileSuffix)
     valid = False
     try:

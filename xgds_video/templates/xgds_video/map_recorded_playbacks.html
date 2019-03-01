@@ -46,120 +46,127 @@
 	{% endblock errorMessages %}
 	
  		
- 		{% block ribbonSlider %}
- 		{% if segmentsJson %}
- 		<fieldset id="videoFieldset">
- 			 {% if not isLive %}
- 			  <div id="ribbon"></div>
- 			  {% endif %}
-		 	  <div id="masterSlider" class="masterSlider" >
-		 	  </div>
- 		</fieldset>
- 		{% endif %}
- 		{% endblock ribbonSlider %}
+    {% block ribbonSlider %}
+    {% if segmentsJson %}
+    <fieldset id="videoFieldset">
+         {% if not isLive %}
+          <div id="ribbon"></div>
+          {% endif %}
+          <div id="masterSlider" class="masterSlider" >
+          </div>
+    </fieldset>
+    {% endif %}
+    {% endblock ribbonSlider %}
+
+     {% block preSearchDiv %}
+        <!-- presearchdiv -->
+        {% block videodivs %}
+            <!-- videodivs -->
+        {% if segmentsJson %}
+                {% block videoSources %}
+                    <!-- VIDEO SOURCES -->
+                {% for source in sources %}
+                    <!-- {{ source }} -->
+                <div id="source{{forloop.counter}}-gridstack-item" class="grid-stack-item"
+                    data-gs-x="{% if forloop.counter|modulo:2 == 0 %}6{% else %}0{% endif %}" data-gs-y="0"
+                    data-gs-width="{% if sources|length > 1 %}6{% else %}12{% endif %}" data-gs-height="{% if sources|length > 1 %}17{% else %}34{% endif %}" >
+                    <div class="grid-stack-item-content video-div" id="item{{forloop.counter}}" style="background-color:{{ source.displayColor }};">
+                        <ul class="nav justify-content-end ">
+                            <i class="fa fa-lock pinDiv gray-light mr-1"></i>
+                            <i class="fa fa-window-close gray-light fa-lg"></i>
+                        </ul>
+                        <div class="buttons mt-negative-1rem">
+                             <div class="toprow-left"><b>{{ source.name }}</b></div>
+                             <a class="btn btn-primary toprow-right small" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{% if sources|length > 1 %}{{flightName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
+                             <!-- <a class="btn btn-primary toprow-right small" href="#" onClick="showStillViewer('{{flightName}}', '{{source.shortName}}', getUrlFormatPlayerTime('{{source.shortName}}'));">Still</a> -->
+                             {% with feed=source.feed_set.all.0.shortName %}
+                             {% if feed %}
+                                 <a class="btn btn-primary" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>
+                             {% endif %}
+                             {% endwith %}
+                        </div>
+                        <!-- <section id="{{source.shortName}}_noteInput"> -->
+                            {% include "xgds_video/video_notes.html" with data=source.form source=source.shortName color=source.displayColor %}
+                        <!-- </section>  -->
+                        <!--embed the video-->
+                        <section>
+                            <div id="player_container" class="nav justify-content-center"> <!-- float-left">  -->
+                                <div id="{{ source.shortName }}" ></div>
+                            </div> <!--  player-container -->
+                            <div id="{{ source.shortName }}Label" > </div>
+                        </section>
+                        {% if not isLive %}
+                        <section>
+                            <div >
+                            Local Time: <span id="testSiteTime{{ source.shortName }}">0</span>
+                            </div>
+                        </section>
+                        {% endif %}
+                    </div><!--  item -->
+                 </div><!--  gridstack item -->
+                {% endfor %}
+                {% endblock videoSources %}
+            {% else %}
+            <!-- NO SEGMENTS JSON? -->
+        {% endif %}
+        {% endblock videodivs %}
+    {% endblock preSearchDiv %}
+
+    {% block searchDiv %}
+    <div id="search-gridstack-item" class="grid-stack-item"
+            data-gs-x="4" data-gs-y="60"
+            data-gs-width="6" data-gs-height="20" style="display:none;">
+            <div class="grid-stack-item-content" id="search-gridstack-item-content" >
+                <ul class="nav justify-content-end ">
+                    <i class="fa fa-lock pinDiv gray-light mr-1"></i>
+                    <i class="fa fa-window-close gray-light fa-lg"></i>
+                </ul>
+                <div id="searchDiv" class="mt-negative-1rem" style="display:none;"></div>
+            </div>
+    </div>
+    {% endblock searchDiv %}
  	
 {% endblock preDashboard %}
 
 {% block buttonrowLeft %}
 	{% if segmentsJson %}
-    		<div id="controllers" > 
-    			<div class="controller_div">
-	          	<a class="btn btn-primary btn btn-primary-info" id="playbuttonLink" href="#" onclick="xgds_video.playButtonCallback()">
-	              <i id="playbutton" class="fa fa-play fa-lg" onclick="xgds_video.playButtonCallback()"></i>
-	              </a>
-	            <a class="btn btn-primary btn btn-primary-info" id="pausebuttonLink" href="#" onclick="xgds_video.pauseButtonCallback()">
-	              <i id="pausebutton" class="fa fa-pause fa-lg active" onclick="xgds_video.pauseButtonCallback()"></i>
-	              </a>
-	             </div>
-	          </div>
-	    	<div id="infoTable" class="h4 mt-1 ml-5">
-	    		{% if episode %}
-		   				<b> {{ settings.XGDS_CORE_FLIGHT_MONIKER }}: </b>
-		   				<span> {{ episode.shortName }} </span>
-		   			</tr>
-	   			{% endif %}
-	   			{% if not isLive %}
-	   				<b class="ml-2">Local Time: </b>
-	   				<span id="sliderTimeLabel"></span>
-	   			{% endif %}
-	   		</div>
-	   	{% endif %}
-	   	{% endblock buttonrowLeft %}
+        <div id="controllers" >
+            <div class="controller_div">
+            <a class="btn btn-primary btn btn-primary-info" id="playbuttonLink" href="#" onclick="xgds_video.playButtonCallback()">
+              <i id="playbutton" class="fa fa-play fa-lg" onclick="xgds_video.playButtonCallback()"></i>
+              </a>
+            <a class="btn btn-primary btn btn-primary-info" id="pausebuttonLink" href="#" onclick="xgds_video.pauseButtonCallback()">
+              <i id="pausebutton" class="fa fa-pause fa-lg active" onclick="xgds_video.pauseButtonCallback()"></i>
+              </a>
+             </div>
+          </div>
+        <div id="infoTable" class="h4 mt-1 ml-5">
+            {% if episode %}
+                    <b> {{ settings.XGDS_CORE_FLIGHT_MONIKER }}: </b>
+                    <span> {{ episode.shortName }} </span>
+                </tr>
+            {% endif %}
+            {% if not isLive %}
+                <b class="ml-2">Local Time: </b>
+                <span id="sliderTimeLabel"></span>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock buttonrowLeft %}
 	   	
-	   	{% block buttonrowRight %}
-	   	{% if segmentsJson %}
-	   		{% block jumpto %}
-	   		<div id="seekTimeBox" class="d-flex flex-row align-items-center">
-				<label for="seekTime">Jump to:</label>
-	   			<input  id="seekTime" type="text" name="text-input" placeholder="HH:MM:SS" class="stylish" style="max-width:140px"/>
-	   			<button type="submit" class="btn btn-primary ml-1" id="seekButton" onclick='xgds_video.seekCallBack()'> Go </button>
-	   		</div>
-	   		{% endblock jumpto %}
-		{% endif %}
- 		{% endblock buttonrowRight %}
+{% block buttonrowRight %}
+    {% if segmentsJson %}
+        {% block jumpto %}
+        <div id="seekTimeBox" class="d-flex flex-row align-items-center">
+            <label for="seekTime">Jump to:</label>
+            <input  id="seekTime" type="text" name="text-input" placeholder="HH:MM:SS" class="stylish" style="max-width:140px"/>
+            <button type="submit" class="btn btn-primary ml-1" id="seekButton" onclick='xgds_video.seekCallBack()'> Go </button>
+        </div>
+        {% endblock jumpto %}
+    {% endif %}
+{% endblock buttonrowRight %}
 
-{% block preSearchDiv %}
 
-{% block videodivs %}
-{% if segmentsJson %}
-        {% block videoSources %}
-        {% for source in sources %}
-        <div id="source{{forloop.counter}}-gridstack-item" class="grid-stack-item" 
-			data-gs-x="{% if forloop.counter|modulo:2 == 0 %}6{% else %}0{% endif %}" data-gs-y="0"
-        	data-gs-width="{% if sources|length > 1 %}6{% else %}12{% endif %}" data-gs-height="{% if sources|length > 1 %}17{% else %}34{% endif %}" >
-        	<div class="grid-stack-item-content video-div" id="item{{forloop.counter}}" style="background-color:{{ source.displayColor }};">
-        		<ul class="nav justify-content-end ">
-                	<i class="fa fa-lock pinDiv gray-light mr-1"></i>
-					<i class="fa fa-window-close gray-light fa-lg"></i>
-				</ul>
-	            <div class="buttons mt-negative-1rem">
-	                 <div class="toprow-left"><b>{{ source.name }}</b></div>
-	                 <a class="btn btn-primary toprow-right small" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{% if sources|length > 1 %}{{flightName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
-                     <!-- <a class="btn btn-primary toprow-right small" href="#" onClick="showStillViewer('{{flightName}}', '{{source.shortName}}', getUrlFormatPlayerTime('{{source.shortName}}'));">Still</a> -->
-                     {% with feed=source.feed_set.all.0.shortName %}
-	                 {% if feed %}
-	                     <a class="btn btn-primary" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>
-	                 {% endif %}
-	                 {% endwith %}
-	            </div>
-				<!-- <section id="{{source.shortName}}_noteInput"> -->
-					{% include "xgds_video/video_notes.html" with data=source.form source=source.shortName color=source.displayColor %}
-             	<!-- </section>  -->
-             	<!--embed the video-->
-             	<section>
-              		<div id="player_container" class="nav justify-content-center"> <!-- float-left">  -->
-             			<div id="{{ source.shortName }}" ></div>
-             		</div> <!--  player-container -->
-             		<div id="{{ source.shortName }}Label" > </div>
-             	</section>
-             	{% if not isLive %}
-             	<section>
-             		<div >
-                 	Local Time: <span id="testSiteTime{{ source.shortName }}">0</span>
-             		</div>
-             	</section>
-             	{% endif %}
-            </div><!--  item -->
-         </div><!--  gridstack item -->
-        {% endfor %}
-        {% endblock videoSources %}
-{% endif %}
-{% endblock videodivs %}
-{% endblock preSearchDiv %}
-
-{% block searchDiv %}
-<div id="search-gridstack-item" class="grid-stack-item" 
-		data-gs-x="4" data-gs-y="60"
-        data-gs-width="6" data-gs-height="20" style="display:none;">
-        <div class="grid-stack-item-content" id="search-gridstack-item-content" >
-        	<ul class="nav justify-content-end ">	
-	        	<i class="fa fa-lock pinDiv gray-light mr-1"></i>
-	    		<i class="fa fa-window-close gray-light fa-lg"></i>
-	    	</ul>
-			<div id="searchDiv" class="mt-negative-1rem" style="display:none;"></div>
-		</div>
-</div>
-{% endblock searchDiv %}
 
 {% block searchResultsDiv %}
 <div id="search-results-gridstack-item" class="grid-stack-item" 

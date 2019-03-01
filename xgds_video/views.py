@@ -92,7 +92,8 @@ def test(request):
 
 def buildNoteForm(episodes, source, request, initial={}):
     moreInitial = callGetNoteExtras(episodes, source, request)
-    initial.update(moreInitial)
+    if moreInitial:
+        initial.update(moreInitial)
     return NoteForm(initial=initial)
     
     
@@ -147,7 +148,7 @@ def getEpisodeFromName(flightName):
     Point to site settings to see real implementation of this function
     GET_EPISODE_FROM_NAME_METHOD
     """
-    return None
+    return EPISODE_MODEL.get().objects.get(shortName=flightName)
 
 
 def getActiveEpisode():
@@ -156,6 +157,7 @@ def getActiveEpisode():
     GET_ACTIVE_EPISODE
     """
     return None
+
 
 def getSourcesFromVehicle(vehicleName):
     """
@@ -448,7 +450,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     if flightName:
         GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
         episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
-        if (episode != None and episode == activeepisode):
+        if episode != None and episode == activeepisode:
             active = True
 
     # this happens when user looks for live recorded
@@ -631,7 +633,7 @@ def videoIndexFile(request, flightName=None, sourceShortName=None, segmentNumber
     """
     modifies index file of recorded video to the correct host.
     """
-    
+
     # use regex substitution to replace hostname, etc.
     (indexFileContents, indexFilePath) = util.getIndexFileContents(flightName, sourceShortName, segmentNumber)
     if not indexFileContents:
