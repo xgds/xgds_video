@@ -64,7 +64,7 @@ $.extend(xgds_video,{
 		image: '/static/xgds_video/images/video-image.png',
 		events: {
 			onReady: function() {
-				console.log('ON READY ' + this.id);
+				// console.log('ON READY ' + this.id);
 				xgds_video.setupPlaylist(this.id);
 				//xgds_video.startPlayer(this);
 				//TODO it looks like this was already set up by the time we got here.
@@ -88,7 +88,7 @@ $.extend(xgds_video,{
 					}
 				}
 				xgds_video.startPlayer(this);
-				xgds_video.soundController();
+				xgds_video.audioController();
 			},
 //			onSeek: function(data) {
 //				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
@@ -350,26 +350,52 @@ $.extend(xgds_video,{
 //		xgds_video.seekHelper(timestr);
 //	},
 
-	soundController: function() {
-		/**
-		 * If the source is a diver, and no other divers are enabled, turn it on.
-		 */
-		var soundOn = false;
+	audioController: function() {
 		for (var source in xgds_video.options.displaySegments) {
 			//TODO potentially onMeta can give us some info
-			if (source.match(DEFAULT_AUDIO_SOURCE)) { //if the source is the default audio source
+			if (xgds_video.nameMatch(source, DEFAULT_AUDIO_SOURCE)) {
 				//if no other player sounds are on, unmute this player
-				if (!soundOn) {
-					jwplayer(source).setMute(false);
-					soundOn = true;
-				} else {
-					//there is already a player that is not muted. Turn off this
-					//player's sound.
-					if (!jwplayer(source).getMute()) {
-						jwplayer(source).setMute(true);
-					}
-				}
+				jwplayer(source).setMute(false);
+				jwplayer(source).setVolume(100); //todo use cookie
+			} else {
+				jwplayer(source).setMute(true);
 			}
+		}
+	},
+
+	nameMatch: function(name, compareTo) {
+		var lower_name = name.toLowerCase();
+		var lower_compare = compareTo.toLowerCase();
+		return (lower_name.indexOf(lower_compare) >= 0 || lower_compare.indexOf(lower_name) >= 0)
+	},
+
+	setupAudioSlider : function() {
+		$('.audioSlider').slider({
+			step : 5,
+			min : 0,
+			max : 100,
+			stop : xgds_video.audioSliderStop,
+			range : false,
+			value: 0
+		});
+
+		var sliders = $('.audioSlider');
+		_.forEach(sliders, function(slider) {
+			var source_id = slider.id.substring(6, slider.id.length);
+			if (xgds_video.nameMatch(source_id, DEFAULT_AUDIO_SOURCE)) {
+				$(slider).slider('value', 100);
+			}
+		});
+	},
+
+	audioSliderStop: function(event) {
+		var new_value = $(event.target).slider('value');
+		var source_id = event.target.id.substring(6, event.target.id.length);
+		if (new_value == 0){
+			jwplayer(source_id).setMute(true);
+		} else {
+			jwplayer(source_id).setMute(false);
+			jwplayer(source_id).setVolume(new_value);
 		}
 	},
 
@@ -413,9 +439,10 @@ $.extend(xgds_video,{
 			}
 			var videoPaths = xgds_video.getFilePaths(flightName, source, segments);
 			var thePlayerOptions = xgds_video.buildOptions(jwplayerOptions, videoPaths[0], xgds_video.options.playFlag, width);
-			var thePlayer = jwplayer(source).setup(thePlayerOptions);
+			jwplayer(source).setup(thePlayerOptions);
 
 		}
+		xgds_video.setupAudioSlider();
 	},
 
 	setupPlaylist:function(source) {

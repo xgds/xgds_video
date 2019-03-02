@@ -71,23 +71,24 @@
                     data-gs-x="{% if forloop.counter|modulo:2 == 0 %}6{% else %}0{% endif %}" data-gs-y="0"
                     data-gs-width="{% if sources|length > 1 %}6{% else %}12{% endif %}" data-gs-height="{% if sources|length > 1 %}17{% else %}34{% endif %}" >
                     <div class="grid-stack-item-content video-div" id="item{{forloop.counter}}" style="background-color:{{ source.displayColor }};">
-                        <ul class="nav justify-content-end ">
-                            <i class="fa fa-lock pinDiv gray-light mr-1"></i>
-                            <i class="fa fa-window-close gray-light fa-lg"></i>
-                        </ul>
-                        <div class="buttons mt-negative-1rem">
-                             <div class="toprow-left"><b>{{ source.name }}</b></div>
-                             <a class="btn btn-primary toprow-right small" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{% if sources|length > 1 %}{{flightName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
+                        <div class="d-flex justify-content-between">
+                             <div class="nav justify-content-lg-start">
+                                 <b>{{ source.name }}&nbsp;&nbsp;</b>
+                                 <i class="audioIcon fa fa-volume-off fa-lg"></i><div id="audio_{{ source.shortName }}" class="audioSlider"></div><i class="audioIcon fa fa-volume-up fa-lg"></i>
+                             </div>
+                            <div class="nav justify-content-end">
+                             <a class="btn btn-primary small" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{% if sources|length > 1 %}{{flightName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
                              <!-- <a class="btn btn-primary toprow-right small" href="#" onClick="showStillViewer('{{flightName}}', '{{source.shortName}}', getUrlFormatPlayerTime('{{source.shortName}}'));">Still</a> -->
                              {% with feed=source.feed_set.all.0.shortName %}
                              {% if feed %}
                                  <a class="btn btn-primary" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>
                              {% endif %}
                              {% endwith %}
+                                <i class="fa fa-lock pinDiv gray-light mr-1"></i>
+                                <i class="fa fa-window-close gray-light fa-lg"></i>
+                            </div>
                         </div>
-                        <!-- <section id="{{source.shortName}}_noteInput"> -->
-                            {% include "xgds_video/video_notes.html" with data=source.form source=source.shortName color=source.displayColor %}
-                        <!-- </section>  -->
+                        {% include "xgds_video/video_notes.html" with data=source.form source=source.shortName color=source.displayColor %}
                         <!--embed the video-->
                         <section>
                             <div id="player_container" class="nav justify-content-center"> <!-- float-left">  -->
