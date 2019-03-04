@@ -77,6 +77,7 @@
                                  <i class="audioIcon fa fa-volume-off fa-lg"></i><div id="audio_{{ source.shortName }}" class="audioSlider"></div><i class="audioIcon fa fa-volume-up fa-lg"></i>
                              </div>
                             <div class="nav justify-content-end">
+                             <a class="btn btn-primary small frame-grab-button" href="#" onclick="xgds_video.handleFrameGrab('{{ episode.shortName }}', '{{ source.shortName }}')">Frame Grab</a>
                              <a class="btn btn-primary small" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{% if sources|length > 1 %}{{flightName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
                              <!-- <a class="btn btn-primary toprow-right small" href="#" onClick="showStillViewer('{{flightName}}', '{{source.shortName}}', getUrlFormatPlayerTime('{{source.shortName}}'));">Still</a> -->
                              {% with feed=source.feed_set.all.0.shortName %}

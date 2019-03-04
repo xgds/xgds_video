@@ -83,6 +83,7 @@ def grab_frame(path=None, start_time=None, grab_time=None, file=None, hms=None, 
         raise e
     return img_bytes
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--path', help='path to folder containing ts files')

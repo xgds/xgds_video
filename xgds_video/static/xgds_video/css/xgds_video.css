@@ -96,6 +96,10 @@ div.ui-slider-range.ui-widget-header {
     background: #505050;
 }
 
+.frame-grab-button {
+	margin-right: 4px;
+}
+
 .audioIcon {
 	margin-top: 2px;
 	color:black !important;

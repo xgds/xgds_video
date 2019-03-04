@@ -550,6 +550,41 @@ $.extend(xgds_video,{
 		for (var source in xgds_video.options.displaySegments) {
 			jwplayer(source).pause(true);
 		}
+	},
+
+	handleFrameGrab: function(episode, source) {
+		var grab_time = xgds_video.getPlayerVideoTime(source);
+
+		$.ajax({
+            type: "POST",
+            url: '/xgds_video/grabImage/' + episode + '/' + source,
+            datatype: 'json',
+			data: {'grab_time': grab_time.format()},
+            success: function (data) {
+            	var image_json = data.json;
+            	var url = '/xgds_map_server/view/' + image_model_name + '/' + image_json.pk;
+            	window.open(url, target=image_json.name)
+            },
+            error: function (a) {
+                console.log(a);
+                alert('Error with frame grab.');
+            }
+        });
+		// var player = jwplayer(source);
+
+		// pause the player if it is playing
+		// var player_state = player.getState();
+		// if (player_state != 'paused'){
+		// 	player.pause();
+		// }
+
+
+
+		// if (player_state != 'paused'){
+		// 	player.play();
+		// }
+
+
 	}
 
 });

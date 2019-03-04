@@ -50,6 +50,8 @@ from dateutil.parser import parse as dateparser
 from frame_grab import grab_frame
 from xgds_video.defaultSettings import XGDS_VIDEO_FRAME_GRAB_DIR
 
+# introducting a dependency on xgds_image
+
 SOURCE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SOURCE_MODEL)
 SETTINGS_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SETTINGS_MODEL)
 FEED_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_FEED_MODEL)
@@ -84,6 +86,49 @@ def grabFrame(request):
     mimeType = "image/png"
     response = HttpResponse(img_bytes, content_type=mimeType)
     return response
+
+
+def grabFrameFromSource(request, episode, source):
+    """
+    Look up the path and start time given a source and grab time.  Pass this to xgds_image to grab frame and save image set.
+    :param request:
+    :param episode: the episode name
+    :param source: the source short name
+    :return:
+    """
+    grab = request.POST.get('grab_time')
+    if grab is None:
+        result_dict = {'status': 'error',
+                       'error': 'You must specify video grab time.'
+                       }
+        return JsonResponse(json.dumps(result_dict),
+                            status=httplib.NOT_ACCEPTABLE, safe=False)
+
+    grabtime = dateparser(grab)
+
+    episode = str(episode)
+    source = str(source)
+    found_segment = getSegmentForTimeFromSource(episode, source, grabtime)
+
+    if found_segment:
+        index_file_path, seg = util.getIndexFilePath(episode, source, found_segment.segNumber)
+        file_path = os.path.join(settings.DATA_ROOT, os.path.dirname(index_file_path))
+        
+        # modify request to have new information
+        request.POST._mutable = True
+        request.POST['path'] = file_path
+        request.POST['vehicle'] = seg.source.name
+        request.POST['start_time'] = found_segment.startTime.isoformat()
+        request.POST._mutable = False
+
+        SAVE_IMAGE_FUNCTION = getClassByName('xgds_image.views.grab_frame_save_image')
+        return SAVE_IMAGE_FUNCTION(request)
+
+    result_dict = {'status': 'error',
+                   'error': 'Could not find segment'
+                   }
+    return JsonResponse(json.dumps(result_dict),
+                        status=httplib.NOT_ACCEPTABLE, safe=False)
 
 
 def test(request):
@@ -375,6 +420,16 @@ def getSegmentForTime(flightName, time):
         except:
             segment = SEGMENT_MODEL.get().objects.get(episode=episode, startTime__lte=time, endTime=None, source=source)
         return segment
+
+
+def getSegmentForTimeFromSource(episode_name, source_short_name, time):
+    episode = EPISODE_MODEL.get().objects.get(shortName=episode_name)
+    source = SOURCE_MODEL.get().objects.get(shortName=source_short_name)
+    try:
+        segment = SEGMENT_MODEL.get().objects.get(episode=episode, startTime__lte=time, endTime__gte=time, source=source)
+    except:
+        segment = SEGMENT_MODEL.get().objects.get(episode=episode, startTime__lte=time, endTime=None, source=source)
+    return segment
 
 
 def getTimezoneFromFlightName(flightName):

@@ -134,7 +134,10 @@ def getSegmentPath(flightName, sourceName, number):
 
 def getIndexFilePath(flightName, sourceShortName, segmentNumber):
     indexFileName = settings.XGDS_VIDEO_INDEX_FILE_NAME
-    splits = flightName.split('_')
+    if '_' in flightName:
+        splits = flightName.split('_')
+    else:
+        splits = [flightName, sourceShortName]
 
     if sourceShortName:
         if flightName.endswith(sourceShortName):
