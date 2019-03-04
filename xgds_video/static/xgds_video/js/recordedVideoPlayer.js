@@ -374,7 +374,8 @@ $.extend(xgds_video,{
 			step : 5,
 			min : 0,
 			max : 100,
-			stop : xgds_video.audioSliderStop,
+			stop : xgds_video.handleAudioSliderChange,
+			slide : xgds_video.handleAudioSliderChange,
 			range : false,
 			value: 0
 		});
@@ -382,15 +383,25 @@ $.extend(xgds_video,{
 		var sliders = $('.audioSlider');
 		_.forEach(sliders, function(slider) {
 			var source_id = slider.id.substring(6, slider.id.length);
-			if (xgds_video.nameMatch(source_id, DEFAULT_AUDIO_SOURCE)) {
-				$(slider).slider('value', 100);
+			var cookie_key = 'volume_' + source_id;
+			var cookied_level = Cookies.get(cookie_key);
+			if (_.isUndefined(cookied_level)) {
+				if (xgds_video.nameMatch(source_id, DEFAULT_AUDIO_SOURCE)) {
+					cookied_level = 100;
+				} else {
+					cookied_level = 0;
+				}
+				Cookies.set(cookie_key, cookied_level);
 			}
+			$(slider).slider('value', cookied_level);
 		});
 	},
 
-	audioSliderStop: function(event) {
+	handleAudioSliderChange: function(event) {
 		var new_value = $(event.target).slider('value');
 		var source_id = event.target.id.substring(6, event.target.id.length);
+		var cookie_key = 'volume_' + source_id;
+		Cookies.set(cookie_key, new_value);
 		if (new_value == 0){
 			jwplayer(source_id).setMute(true);
 		} else {
