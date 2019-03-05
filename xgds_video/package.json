@@ -18,7 +18,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "preinstall": "curl -OL https://ssl.p.jwpcdn.com/player/download/jwplayer-7.10.7.zip ; unzip -uo jwplayer-7.10.7.zip -d node_modules ; rm -rf node_modules/jwplayer ; mv node_modules/jwplayer-7.10.7 node_modules/jwplayer ; rm jwplayer-7.10.7.zip"
+    "preinstall": "pwd; curl -OL https://ssl.p.jwpcdn.com/player/download/jwplayer-7.12.13.zip; unzip -uo jwplayer-7.12.13.zip -d node_modules ; rm -rf node_modules/jwplayer ; mv node_modules/jwplayer-7.12.13 node_modules/jwplayer ; rm jwplayer-7.12.13.zip"
   },
   "author": "",
   "license": "Apache-2.0"

@@ -486,7 +486,26 @@ $.extend(xgds_video,{
 		jwplayer(source).load(myplaylist);
 	},
 
+	speedCallBack: function() {
+		/**
+		 * Updates the playback speed
+		 */
+		var speedStr = $('#playbackSpeed').val();
+		if (_.isNull(speedStr) ||
+				(Object.keys(xgds_video.options.displaySegments).length < 1)) {
+			return;
+		}
 
+		var speed = parseFloat(speedStr);
+		if (speed > 0) {
+			for (var source in xgds_video.options.displaySegments) {
+				var player = jwplayer(source);
+				if (player != undefined) {
+					player.setPlaybackRate(speed);
+				}
+			}
+		}
+	},
 
 	seekCallBack: function() {
 		/**

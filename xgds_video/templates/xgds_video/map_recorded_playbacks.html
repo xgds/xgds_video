@@ -160,14 +160,14 @@
     {% if segmentsJson %}
         {% block jumpto %}
         <div id="seekTimeBox" class="d-flex flex-row align-items-center">
+            <label for="playbackSpeed">Speed:</label> <input id="playbackSpeed" onkeyup="xgds_video.speedCallBack()" type="text" name="text-input" value="1" style="max-width:40px"/>
             <label for="seekTime">Jump to:</label>
             <input  id="seekTime" type="text" name="text-input" placeholder="HH:MM:SS" class="stylish" style="max-width:140px"/>
-            <button type="submit" class="btn btn-primary ml-1" id="seekButton" onclick='xgds_video.seekCallBack()'> Go </button>
+            <button type="submit" class="btn btn-primary ml-1" id="seekButton" onclick="xgds_video.seekCallBack()">Go</button>
         </div>
         {% endblock jumpto %}
     {% endif %}
 {% endblock buttonrowRight %}
-
 
 
 {% block searchResultsDiv %}
