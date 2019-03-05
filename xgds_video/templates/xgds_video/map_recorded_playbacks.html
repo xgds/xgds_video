@@ -59,14 +59,10 @@
     {% endblock ribbonSlider %}
 
      {% block preSearchDiv %}
-        <!-- presearchdiv -->
         {% block videodivs %}
-            <!-- videodivs -->
         {% if segmentsJson %}
                 {% block videoSources %}
-                    <!-- VIDEO SOURCES -->
                 {% for source in sources %}
-                    <!-- {{ source }} -->
                 <div id="source{{forloop.counter}}-gridstack-item" class="grid-stack-item"
                     data-gs-x="{% if forloop.counter|modulo:2 == 0 %}6{% else %}0{% endif %}" data-gs-y="0"
                     data-gs-width="{% if sources|length > 1 %}6{% else %}12{% endif %}" data-gs-height="{% if sources|length > 1 %}17{% else %}34{% endif %}" >
@@ -108,8 +104,6 @@
                  </div><!--  gridstack item -->
                 {% endfor %}
                 {% endblock videoSources %}
-            {% else %}
-            <!-- NO SEGMENTS JSON? -->
         {% endif %}
         {% endblock videodivs %}
     {% endblock preSearchDiv %}
@@ -249,7 +243,7 @@ var indexFileUrl = null;
                        		   seekFlag: false,
 		                       initialState: false,
 		                       seekOffsetList: {},
-		                       episode: {{ episodeJson|safe }},
+		                       episode: {{ episode|safe }},
 		                       displaySegments: {{ segmentsJson|safe }},
 		                       firstSegment: null,
 		                       lastSegment: null,

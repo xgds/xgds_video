@@ -451,7 +451,7 @@ def getEpisodeSegmentsJson(request, flightName=None, sourceShortName=None):
     if not episode:
         return HttpResponse(json.dumps({'error': 'No episode found'}), content_type='application/json', status=406)
     
-    active = (episode.endTime == None)
+    active = episode.endTime is None
     if not flightName:
         flightName = episode.shortName
 
@@ -476,13 +476,7 @@ def getEpisodeSegmentsJson(request, flightName=None, sourceShortName=None):
     return HttpResponse(json.dumps(result, sort_keys=True, indent=4, cls=DatetimeJsonEncoder), content_type='application/json')
 
 
-def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=None):
-    """ TODO flightName is actually groupName """
-    """
-    Returns first segment of all sources that are part of a given episode.
-    Used for both playing back videos from active episode and also
-    for playing videos associated with each note.
-    """
+def getVideoContext(request, flightName=None, sourceShortName=None, time=None):
     requestedTime = ""
     active = False
     episode = {}
@@ -493,7 +487,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         try:
             requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
         except:
-            try: 
+            try:
                 requestedTime = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S+00:00")
             except:
                 requestedTime = dateparse.parse_datetime(time)
@@ -554,7 +548,7 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         sourceVehicle[source.shortName] = source.vehicleName
         sourceSegments = segments.filter(source=source)
         segmentsDict[source.shortName] = [seg.getDict() for seg in sourceSegments]
-        form = buildNoteForm([episode], source, request, {'index':index})
+        form = buildNoteForm([episode], source, request, {'index': index})
         source.form = form
         index = index + 1
 
@@ -573,18 +567,13 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     segmentsJson = json.dumps(segmentsDict, sort_keys=True, indent=4, cls=DatetimeJsonEncoder)
     episodeJson = json.dumps(episode.getDict(), cls=DatetimeJsonEncoder)
 
-    theTemplate = 'xgds_video/map_recorded_playbacks.html'
-    if active:
-        theTemplate = 'xgds_video/map_active_playbacks.html'
-
     noteModelName = str(NOTE_MODEL.get().cls_type())
     noteForm = getClassByName(settings.XGDS_NOTES_BUILD_NOTES_FORM)({'vehicle__name':sourceShortName,
                                                                      'flight__group_name':episode.shortName})  #TODO this assumes the episode short name and group flight name are the same
     ctx = {
         'segmentsJson': segmentsJson,
-        'episode': episode,
         'isLive': active,
-        'episodeJson': episodeJson,
+        'episode': episodeJson,
         'noteTimeStamp': requestedTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
         'sources': sources,
         'flightName': flightName,
@@ -592,8 +581,8 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
         'sourceVehicle': json.dumps(sourceVehicle),
         'SSE': settings.XGDS_SSE,
         'modelName': noteModelName,
-        'searchModelDict': {noteModelName:settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]},
-        'searchForms': {noteModelName: [noteForm,settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]] },
+        'searchModelDict': {noteModelName: settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]},
+        'searchForms': {noteModelName: [noteForm, settings.XGDS_MAP_SERVER_JS_MAP[noteModelName]]},
         'app': 'xgds_video/js/mapVideoApp.js',
         'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
     }
@@ -601,6 +590,24 @@ def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=No
     if settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT:
         extraVideoContextFn = getClassByName(settings.XGDS_VIDEO_EXTRA_VIDEO_CONTEXT)
         extraVideoContextFn(ctx)
+
+    return ctx
+
+
+def displayRecordedVideo(request, flightName=None, sourceShortName=None, time=None):
+    """ TODO flightName is actually groupName """
+    """
+    Returns first segment of all sources that are part of a given episode.
+    Used for both playing back videos from active episode and also
+    for playing videos associated with each note.
+    """
+
+    ctx = getVideoContext(request, flightName, sourceShortName, time)
+    active = ctx['isLive']
+
+    theTemplate = 'xgds_video/map_recorded_playbacks.html'
+    if active:
+        theTemplate = 'xgds_video/map_active_playbacks.html'
 
     return render(request,
                   theTemplate,
