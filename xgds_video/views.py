@@ -570,10 +570,12 @@ def getVideoContext(request, flightName=None, sourceShortName=None, time=None):
     noteModelName = str(NOTE_MODEL.get().cls_type())
     noteForm = getClassByName(settings.XGDS_NOTES_BUILD_NOTES_FORM)({'vehicle__name':sourceShortName,
                                                                      'flight__group_name':episode.shortName})  #TODO this assumes the episode short name and group flight name are the same
+
     ctx = {
         'segmentsJson': segmentsJson,
         'isLive': active,
-        'episode': episodeJson,
+        'episode': episode,
+        'episodeJson': episodeJson,
         'noteTimeStamp': requestedTime,  # in string format yy-mm-dd hh:mm:ss (in utc. converted to local time in js)
         'sources': sources,
         'flightName': flightName,

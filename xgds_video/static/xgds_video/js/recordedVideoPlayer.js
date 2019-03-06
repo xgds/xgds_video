@@ -88,7 +88,7 @@ $.extend(xgds_video,{
 					}
 				}
 				xgds_video.startPlayer(this);
-				xgds_video.audioController();
+				xgds_video.audioController(this);
 			},
 //			onSeek: function(data) {
 //				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
@@ -350,17 +350,24 @@ $.extend(xgds_video,{
 //		xgds_video.seekHelper(timestr);
 //	},
 
-	audioController: function() {
-		for (var source in xgds_video.options.displaySegments) {
+	audioController: function(player) {
+		var source = player.id;
+		var cookie_key = 'volume_' + source;
+		var cookied_level = Cookies.get(cookie_key);
+		if (_.isUndefined(cookied_level)) {
 			//TODO potentially onMeta can give us some info
 			if (xgds_video.nameMatch(source, DEFAULT_AUDIO_SOURCE)) {
 				//if no other player sounds are on, unmute this player
-				jwplayer(source).setMute(false);
-				jwplayer(source).setVolume(100); //todo use cookie
+				cookied_level = 100;
 			} else {
-				jwplayer(source).setMute(true);
+				cookied_level = 0;
 			}
+			Cookies.set(cookie_key, cookied_level);
+		} else {
+			cookied_level = parseInt(cookied_level);
 		}
+		player.setMute(_.isEqual(cookied_level, 0));
+		player.setVolume(cookied_level);
 	},
 
 	nameMatch: function(name, compareTo) {
@@ -402,12 +409,8 @@ $.extend(xgds_video,{
 		var source_id = event.target.id.substring(6, event.target.id.length);
 		var cookie_key = 'volume_' + source_id;
 		Cookies.set(cookie_key, new_value);
-		if (new_value == 0){
-			jwplayer(source_id).setMute(true);
-		} else {
-			jwplayer(source_id).setMute(false);
-			jwplayer(source_id).setVolume(new_value);
-		}
+		jwplayer(source_id).setMute(_.isEqual(new_value, 0));
+		jwplayer(source_id).setVolume(new_value);
 	},
 
 	getWidthHeight: function(){
