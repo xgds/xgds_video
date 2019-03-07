@@ -67,7 +67,7 @@
                     data-gs-x="{% if forloop.counter|modulo:2 == 0 %}6{% else %}0{% endif %}" data-gs-y="0"
                     data-gs-width="{% if sources|length > 1 %}6{% else %}12{% endif %}" data-gs-height="{% if sources|length > 1 %}17{% else %}34{% endif %}" >
                     <div class="grid-stack-item-content video-div" id="item{{forloop.counter}}" style="background-color:{{ source.displayColor }};">
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between video-head">
                              <div class="nav justify-content-lg-start">
                                  <b>{{ source.name }}&nbsp;&nbsp;</b>
                                  <i class="audioIcon fa fa-volume-off fa-lg"></i><div id="audio_{{ source.shortName }}" class="audioSlider"></div><i class="audioIcon fa fa-volume-up fa-lg"></i>
@@ -75,7 +75,6 @@
                             <div class="nav justify-content-end">
                              <a class="btn btn-primary small frame-grab-button" href="#" onclick="xgds_video.handleFrameGrab('{{ episode.shortName }}', '{{ source.shortName }}')">Frame Grab</a>
                              <a class="btn btn-primary small" href="{% url 'xgds_video_recorded' flightName source.shortName %}" target="{% if sources|length > 1 %}{{flightName}}_{{source.shortName}}{% else %}_blank{% endif %}" style="width:130px">New Window</a>
-                             <!-- <a class="btn btn-primary toprow-right small" href="#" onClick="showStillViewer('{{flightName}}', '{{source.shortName}}', getUrlFormatPlayerTime('{{source.shortName}}'));">Still</a> -->
                              {% with feed=source.feed_set.all.0.shortName %}
                              {% if feed %}
                                  <a class="btn btn-primary" id=toprow href="{% url 'xgds_video_live' feed %}">Live</a>
@@ -269,7 +268,7 @@ var indexFileUrl = null;
     if (xgds_video.options.hasMasterSlider){
     	xgds_video.setupSlider();
     }
-    xgds_video.setupJWplayer({"mute":true}, "95%");
+    xgds_video.setupJWplayer({}, "95%");
     {% endif %}
     {% endblock hookControls %}
     

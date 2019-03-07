@@ -1,13 +1,4 @@
 /* css for xgds_video */
-.player_container {
-	height: 100%;
-	width: 100%;
-}
-
-#player_container {
-	margin-left:-10px;
-	margin-right:-10px;
-}
 
 .mt-negative-1rem {
 	margin-bottom: -5px;
@@ -18,11 +9,7 @@
 	font-size: .8em;
 }
 
-.player {
-	height: 100%;
-	width: 100%;
-	min-height: 200px;
-}
+
 
 .locomote-player {
         height: 100%;
@@ -66,10 +53,6 @@ controller_div div {
 	display: table-cell;
 }
 
-.sourceLabel {
-	margin-right: 3px;
-}
-
 #masterSlider {
 	margin-left: 35px;
 	float: left;
@@ -94,36 +77,6 @@ controller_div div {
 
 div.ui-slider-range.ui-widget-header {
     background: #505050;
-}
-
-.frame-grab-button {
-	margin-right: 4px;
-}
-
-.audioIcon {
-	margin-top: 2px;
-	color:black !important;
-}
-
-.audioSlider {
-    width: 100px;
-    height: 8px;
-	margin-left:4px;
-	margin-right: 4px;
-	margin-top: 3px;
-	margin-bottom: 3px;
-}
-
-.audioSlider .ui-slider {
-    border-radius: 2px;
-}
-.audioSlider .ui-slider-handle {
-    border-radius: 4px;
-    width: 0.4em;
-    margin-left: -0.2em;
-    background: black;
-    color: black;
-    border-color: black;
 }
 
 #legend {

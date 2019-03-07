@@ -1,0 +1,59 @@
+/*
+This css is safe to use when the video is included on other replay pages like group flight replay
+*/
+
+.sourceLabel {
+	margin-right: 3px;
+}
+
+.video-head {
+	margin-top: -5px;
+}
+
+.player_container {
+	height: 100%;
+	width: 100%;
+}
+
+#player_container {
+	margin-left:-10px;
+	margin-right:-10px;
+}
+
+.player {
+	height: 100%;
+	width: 100%;
+	min-height: 200px;
+}
+
+.frame-grab-button {
+	margin-right: 4px;
+}
+
+.audioIcon {
+	margin-top: 2px;
+	color:black !important;
+}
+
+.audioSlider {
+    width: 100px;
+    height: 8px;
+	margin-left:4px;
+	margin-right: 4px;
+	margin-top: 3px;
+	margin-bottom: 3px;
+	background: white !important;
+}
+
+.audioSlider .ui-slider {
+    border-radius: 2px;
+}
+
+.audioSlider .ui-slider-handle {
+    border-radius: 4px;
+    width: 0.4em;
+    margin-left: -0.2em;
+    background: black;
+    color: black;
+    border-color: black;
+}

@@ -523,7 +523,7 @@ $.extend(xgds_video,{
 		xgds_video.seekHelper(seekTimeStr);
 	},
 
-	playButtonCallback: function() {
+	playButtonCallback: function(currentTime) {
 		if (xgds_video.options.playFlag){
 			return;
 		}
@@ -532,8 +532,10 @@ $.extend(xgds_video,{
 		$('#playbuttonLink').addClass("active");
 		$('#pausebutton').removeClass("active");
 		$('#pausebuttonLink').removeClass("active");
-		if (xgds_video.options.hasMasterSlider){
-			var currTime = xgds_video.getSliderTime();
+
+		var currTime = currentTime;
+		if (_.isUndefined(currentTime) && xgds_video.options.hasMasterSlider){
+			currTime = xgds_video.getSliderTime();
 		}
 		for (var source in xgds_video.options.displaySegments) {
 			var segments = xgds_video.options.displaySegments[source];
@@ -554,7 +556,7 @@ $.extend(xgds_video,{
 				jwplayer(source).playlistItem(theplaylist.length - 1);
 			}
 		}
-		if (xgds_video.options.hasMasterSlider){
+		if (_.isUndefined(currentTime) && xgds_video.options.hasMasterSlider){
 			xgds_video.setSliderTime(currTime);
 		}
 	},
