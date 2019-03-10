@@ -25,7 +25,7 @@ jQuery(function($) {
 
 var xgds_video = xgds_video || {};
 $.extend(xgds_video,{
-	defaultTimeFormat: "HH:mm:ss z",
+	defaultTimeFormat: "MM/DD/YY HH:mm:ss z",
 	seekHelper: function(seekTimeStr) {
 		/**
 		 * Used by both seekCallBack and seekFromUrlOffset

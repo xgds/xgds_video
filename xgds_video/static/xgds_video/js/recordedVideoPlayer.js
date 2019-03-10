@@ -14,6 +14,9 @@
 //specific language governing permissions and limitations under the License.
 //__END_LICENSE__
 
+var JWPLAYER_MIN_SPEED = 0.25;
+var JWPLAYER_MAX_SPEED = 4.0;
+
 var xgds_video = xgds_video || {};
 $.extend(xgds_video,{
 	initialize: function(options){
@@ -179,6 +182,11 @@ $.extend(xgds_video,{
 							if (!(_.isUndefined(updateTime))) {
 								xgds_video.awakenIdlePlayers(updateTime, this.id);
 								xgds_video.setSliderTime(updateTime);
+								try {
+									playback.timerWorker.postMessage(['setCurrentTime', updateTime.toISOString()]);
+								} catch (e) {
+									//pass
+								}
 							}
 						}
 					}
@@ -500,7 +508,17 @@ $.extend(xgds_video,{
 		}
 
 		var speed = parseFloat(speedStr);
+		if (isNaN(speed)){
+			return;
+		}
 		if (speed > 0) {
+			if (speed < JWPLAYER_MIN_SPEED) {
+				speed = JWPLAYER_MIN_SPEED;
+				$('#playbackSpeed').val(JWPLAYER_MIN_SPEED);
+			} else if (speed > JWPLAYER_MAX_SPEED) {
+				speed = JWPLAYER_MAX_SPEED;
+				$('#playbackSpeed').val(JWPLAYER_MAX_SPEED);
+			}
 			for (var source in xgds_video.options.displaySegments) {
 				var player = jwplayer(source);
 				if (player != undefined) {
