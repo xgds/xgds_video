@@ -42,9 +42,6 @@ setTimeoutDelay = function(initTimeoutDelay){
 }
 
 runTime = function() {
-	var timeoutDelaySeconds = timeoutDelay/1000;
-    var addSeconds = playbackSpeed * timeoutDelaySeconds;
-
     postMessage(self.currentTime.toISOString());
     if (!paused){
     	setTimeout("self.runTime()", timeoutDelay);
