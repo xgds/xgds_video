@@ -24,21 +24,16 @@ $.extend(xgds_video,{
 		doSetTime: function(currentTime){
 		},
 		start: function(currentTime){
-			for (var source in xgds_video.options.displaySegments) {
-				xgds_video.jumpToPosition(currentTime, source);
-			}
+			xgds_video.jumpToPosition(currentTime);
 		    xgds_video.playButtonCallback(currentTime);
 		},
 		update: function(currentTime){
-
 		},
 		pause: function() {
 			xgds_video.pauseButtonCallback();
 		}
 	},
 	sliderStopListener: function(currentTime) {
-    	for (var source in xgds_video.options.displaySegments) {
-			xgds_video.jumpToPosition(currentTime, source);
-		}
+    	xgds_video.jumpToPosition(currentTime);
 	}
 });

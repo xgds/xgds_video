@@ -153,11 +153,9 @@ $.extend(xgds_video,{
 		xgds_video.options.seekFlag = true;
 		var currTime = xgds_video.masterSlider.slider('value'); //in seconds
 		currTime = new moment(currTime * 1000).tz(xgds_video.options.timeZone); // why this did not use the default time zone I do not know
-		for (var source in xgds_video.options.displaySegments) {
-			xgds_video.jumpToPosition(currTime, source);
-			//XXX take care of the case where seek time is not within playable range.
-			//then go to the nearest available segment and play from there.
-		}
+		xgds_video.jumpToPosition(currTime);
+		//XXX take care of the case where seek time is not within playable range.
+		//then go to the nearest available segment and play from there.
 		xgds_video.options.movingSlider = false;
 	},
 	setupSlider: function() {

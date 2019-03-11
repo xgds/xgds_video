@@ -32,21 +32,27 @@ $.extend(xgds_video,{
 		 * to seek all players to given time.
 		 */
 		var seekTime = xgds_video.seekTimeParser(seekTimeStr);
-		var seekDateTime = null;
-		//XXX for now assume seek time's date is same as first segment's end date
-		seekDateTime = moment(xgds_video.options.firstSegment.endTime);
-		seekDateTime.hours(parseInt(seekTime[0]));
-		if (seekTime.length >= 2){
-			seekDateTime.minutes(parseInt(seekTime[1]));
-		} else {
-			seekDateTime.minutes(0);
+
+		if (seekTime != null){
+			var newTime = moment(playback.currentTime); // start with the current date
+
+			// update the time
+			newTime.hour(seekTime.hour());
+			newTime.minute(seekTime.minute());
+			newTime.second(seekTime.second());
+
+			// check the time is within range
+			if (xgds_video.options.episode.endTime != undefined){
+				var range = new DateRange(xgds_video.options.episode.startTime,
+					xgds_video.options.episode.endTime);
+				if (range.contains(newTime)) {
+					xgds_video.seekAllPlayersToTime(newTime);
+					return;
+				}
+			}
+			alert("Invalid jump to time.");
 		}
-		if (seekTime.length == 3){
-			seekDateTime.seconds(parseInt(seekTime[2]));
-		} else {
-			seekDateTime.seconds(0);
-		}
-		xgds_video.seekAllPlayersToTime(seekDateTime);
+
 	},
 
 	initializeEpisodeTimes: function(episode) {
@@ -64,12 +70,15 @@ $.extend(xgds_video,{
 		}
 	},
 
-	seekTimeParser: function(str) {
+	seekTimeParser: function(input) {
 		/**
 		 * Helper to parse seektime into hours, minutes, seconds
 		 */
-		var hmsArray = str.split(':');
-		return hmsArray;
+		var parsedMoment = moment(input,'MM/DD/YY HH:mm:ss');
+		if (!parsedMoment.isValid()){
+			parsedMoment = moment(input,'HH:mm:ss');
+		}
+		return parsedMoment;
 	},
 
 	padNum: function(num, size) {
@@ -223,6 +232,15 @@ $.extend(xgds_video,{
 		 * Given current time in javascript datetime,
 		 * find the playlist item and the offset (seconds) and seek to there.
 		 */
+		if (_.isUndefined(source)){
+			for (var source in xgds_video.options.displaySegments) {
+				var player = jwplayer(source);
+				if (player != undefined) {
+					xgds_video.jumpToPosition(currentTime, source, seekValues);
+				}
+			}
+			return;
+		}
 		if (xgds_video.jumpLocks.has(source)) {
 			return;
 		}
@@ -348,13 +366,8 @@ $.extend(xgds_video,{
 
 
 	seekAllPlayersToTime: function(datetime) {
-		for (var source in xgds_video.options.displaySegments) {
-			var player = jwplayer(source);
-			if (player != undefined) {
-				xgds_video.jumpToPosition(datetime, source, undefined);
-			}
-		}
-		if (datetime != null) {
+		if (!_.isNull(datetime)) {
+			xgds_video.jumpToPosition(datetime);
 			xgds_video.setSliderTime(datetime);
 		} else {
 			console.log('Seek all players to time: DATETIME IS NULL?');
