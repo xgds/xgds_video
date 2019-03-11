@@ -252,10 +252,8 @@ $.extend(xgds_video,{
 		//currentTime falls in one of the segments.
 		if (!_.isUndefined(seekValues) && seekValues != false) {
 			xgds_video.setPlaylistAndSeek(source, seekValues.index, seekValues.offset);
-			console.log('telling player to play');
 			player.play(true);
 			if (!xgds_video.options.playFlag) {
-				console.log('telling player to pause');
 				player.pause(true);
 			}
 		} else { //current time is not in the playable range.
