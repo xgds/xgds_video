@@ -108,3 +108,5 @@ XGDS_VIDEO_FRAME_GRAB_DIR = "addendum/xgds/capture_pngs"
 
 # You MUST override this to include the name of the default audio source
 XGDS_VIDEO_DEFAULT_AUDIO_SOURCE = ""
+
+XGDS_VIDEO_RECORDING_LAG_SECONDS = 30

@@ -31,6 +31,7 @@ from django.shortcuts import redirect
 from django.template import RequestContext
 # from django.views.generic.list_detail import object_list
 from django.contrib import messages
+from django.contrib.auth.models import User
 
 from geocamUtil import dateparse
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
@@ -48,7 +49,7 @@ from django.core.urlresolvers import reverse
 from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfRunning
 from dateutil.parser import parse as dateparser
 from frame_grab import grab_frame
-from xgds_video.defaultSettings import XGDS_VIDEO_FRAME_GRAB_DIR
+from xgds_core.flightUtils import getFlight
 
 # introducting a dependency on xgds_image
 
@@ -58,7 +59,7 @@ FEED_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_FEED_MODEL)
 SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 NOTE_MODEL = LazyGetModelByName(getattr(settings, 'XGDS_NOTES_NOTE_MODEL'))
-
+CAMERA_MODEL = LazyGetModelByName(settings.XGDS_IMAGE_CAMERA_MODEL)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -88,6 +89,58 @@ def grabFrame(request):
     return response
 
 
+def prepare_grab_frame(episode_name, source_short_name, grab_time):
+    """
+    Prepare to grab a frame returning a dictionary of useful info
+    :param episode_name:
+    :param source_short_name:
+    :param grab_time:
+    :return:
+    """
+    result = {}
+    found_segment = getSegmentForTimeFromSource(episode_name, source_short_name, grab_time)
+    if found_segment:
+        index_file_path, seg = util.getIndexFilePath(episode_name, source_short_name, found_segment.segNumber)
+        file_path = os.path.join(settings.DATA_ROOT, os.path.dirname(index_file_path))
+        return {'segment': found_segment,
+                'file_path': file_path}
+
+    return None
+
+
+def grab_frame_from_time(grab_time, vehicle, author=None, prefix=settings.XGDS_IMAGE_FRAME_GRAB_FILENAME_PREFIX):
+    """
+    Direct method to grab the frame given a time, without requests
+    :param grab_time: the grab time datetime
+    :param vehicle: the vehicle model
+    :return: the ImageSet that was created
+    """
+
+    flight = getFlight(grab_time, vehicle)
+    if not flight:
+        raise Exception("No flight for time %s" % str(grab_time))
+
+    # TODO we currently name episodes after group flights this may change.
+    # Ideally have a link
+    source = SOURCE_MODEL.get().objects.get(vehicle=vehicle)
+    grab_info = prepare_grab_frame(flight.group.name, source.shortName, grab_time)
+    if grab_info:
+        SAVE_IMAGE_FUNCTION = getClassByName('xgds_image.views.do_grab_frame')
+
+        # TODO we are assuming there is a camera named for the vehicle
+        camera = CAMERA_MODEL.get().objects.get(name=vehicle.name)
+        if not author:
+            # TODO assuming there is a user named camera
+            author = User.objects.get(username='camera')
+        return SAVE_IMAGE_FUNCTION(grab_info['segment'].startTime,
+                                   grab_time,
+                                   grab_info['file_path'],
+                                   prefix,
+                                   camera,
+                                   author,
+                                   vehicle)
+
+
 def grabFrameFromSource(request, episode, source):
     """
     Look up the path and start time given a source and grab time.  Pass this to xgds_image to grab frame and save image set.
@@ -104,21 +157,15 @@ def grabFrameFromSource(request, episode, source):
         return JsonResponse(json.dumps(result_dict),
                             status=httplib.NOT_ACCEPTABLE, safe=False)
 
-    grabtime = dateparser(grab)
+    grab_time = dateparser(grab)
+    grab_info = prepare_grab_frame(str(episode), str(source), grab_time)
 
-    episode = str(episode)
-    source = str(source)
-    found_segment = getSegmentForTimeFromSource(episode, source, grabtime)
-
-    if found_segment:
-        index_file_path, seg = util.getIndexFilePath(episode, source, found_segment.segNumber)
-        file_path = os.path.join(settings.DATA_ROOT, os.path.dirname(index_file_path))
-        
+    if grab_info:
         # modify request to have new information
         request.POST._mutable = True
-        request.POST['path'] = file_path
-        request.POST['vehicle'] = seg.source.name
-        request.POST['start_time'] = found_segment.startTime.isoformat()
+        request.POST['path'] = grab_info['file_path']
+        request.POST['vehicle'] = grab_info['segment'].source.name
+        request.POST['start_time'] = grab_info['segment'].startTime.isoformat()
         request.POST._mutable = False
 
         SAVE_IMAGE_FUNCTION = getClassByName('xgds_image.views.grab_frame_save_image')

@@ -47,6 +47,8 @@ if settings.XGDS_CORE_REDIS:
 #  incase settings is shadowed
 # videoSettings = settings
 
+DEFAULT_VEHICLE_FIELD = lambda: models.ForeignKey('xgds_core.Vehicle', null=True, blank=True)
+
 
 class AbstractVideoSource(models.Model):
     # name: human-readable title
@@ -59,12 +61,18 @@ class AbstractVideoSource(models.Model):
     displayColor = models.CharField(max_length=56, blank=True, null=True,
                                     help_text='in html format. i.e. #7B3221')
 
+    order = models.PositiveIntegerField(default=0)  # default to handle migrations
+    vehicle = DEFAULT_VEHICLE_FIELD()
+
     @property
     def vehicleName(self):
+        if self.vehicle:
+            return self.vehicle.name
         return None
 
     class Meta:
         abstract = True
+        ordering = ['order']
 
     def __unicode__(self):
         return u"%s(%s, name='%s')" % (self.__class__.__name__, self.pk, self.name)

@@ -154,7 +154,8 @@ def getIndexFilePath(flightName, sourceShortName, segmentNumber):
                                                       source__shortName=sourceShortName)
         # should only be one
         indexFileName = segments[0].indexFileName
-        return os.path.join(getSegmentPath(flightName, sourceShortName, segmentNumber), indexFileName), segments[0]
+        index_file_path = os.path.join(getSegmentPath(flightName, sourceShortName, segmentNumber), indexFileName)
+        return index_file_path, segments[0]
     except:
         raise Exception('Segments not found for %s: %s: %s' % (episode_shortName, sourceShortName, segmentNumber))
 
@@ -293,7 +294,11 @@ def calculate_ts_file(folder_name, seconds_int, index_file_name='prog_index.m3u8
     :return: tsfile name and offset seconds into the file
     """
     # open the prog_index.m3u8
-    m3u8_obj = m3u8.load(os.path.join(folder_name, index_file_name))
+    if folder_name.endswith('.m3u8'):
+        m3u8_filename = folder_name
+    else:
+        m3u8_filename = os.path.join(folder_name, index_file_name)
+    m3u8_obj = m3u8.load(m3u8_filename)
 
     acc_time = 0
     num_segs = len(m3u8_obj.segments)
