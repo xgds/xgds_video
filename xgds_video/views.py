@@ -60,6 +60,7 @@ SEGMENT_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_SEGMENT_MODEL)
 EPISODE_MODEL = LazyGetModelByName(settings.XGDS_VIDEO_EPISODE_MODEL)
 NOTE_MODEL = LazyGetModelByName(getattr(settings, 'XGDS_NOTES_NOTE_MODEL'))
 CAMERA_MODEL = LazyGetModelByName(settings.XGDS_IMAGE_CAMERA_MODEL)
+ACTIVE_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_CORE_ACTIVE_FLIGHT_MODEL)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -189,22 +190,22 @@ def buildNoteForm(episodes, source, request, initial={}):
     return NoteForm(initial=initial)
     
     
-def liveImageStream(request):
-    # note forms
-    currentEpisodes = EPISODE_MODEL.get().objects.filter(endTime=None)
-    sources = SOURCE_MODEL.get().objects.all()
-    for source in sources:
-        source.form = buildNoteForm(currentEpisodes, source, request)
-    socketUrl = settings.XGDS_ZMQ_WEB_SOCKET_URL
-    if request.META['wsgi.url_scheme'] == 'https':
-        # must use secure WebSockets if web site is secure
-        socketUrl = re.sub(r'^ws:', 'wss:', socketUrl)
-
-    return render(request,
-                  "xgds_video/LiveImageStream.html",
-                  {'zmqURL': json.dumps(socketUrl),
-                   'sources': sources},
-                  )
+# def liveImageStream(request):
+#     # note forms
+#     currentEpisodes = EPISODE_MODEL.get().objects.filter(endTime=None)
+#     sources = SOURCE_MODEL.get().objects.all()
+#     for source in sources:
+#         source.form = buildNoteForm(currentEpisodes, source, request)
+#     socketUrl = settings.XGDS_ZMQ_WEB_SOCKET_URL
+#     if request.META['wsgi.url_scheme'] == 'https':
+#         # must use secure WebSockets if web site is secure
+#         socketUrl = re.sub(r'^ws:', 'wss:', socketUrl)
+#
+#     return render(request,
+#                   "xgds_video/LiveImageStream.html",
+#                   {'zmqURL': json.dumps(socketUrl),
+#                    'sources': sources},
+#                   )
 
 
 # put a setting for the name of the function to call to generate extra text to insert in the form
@@ -240,7 +241,10 @@ def getEpisodeFromName(flightName):
     Point to site settings to see real implementation of this function
     GET_EPISODE_FROM_NAME_METHOD
     """
-    return EPISODE_MODEL.get().objects.get(shortName=flightName)
+    try:
+        return EPISODE_MODEL.get().objects.get(shortName=flightName)
+    except:
+        return None
 
 
 def getActiveEpisode():
@@ -248,6 +252,14 @@ def getActiveEpisode():
     Point to site settings to see real implementation of this function
     GET_ACTIVE_EPISODE
     """
+    active_flights = ACTIVE_FLIGHT_MODEL.get().objects.all()
+    for active in active_flights:
+        if active.flight.group:
+            try:
+                episode = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)(active.flight.group.name)
+                return episode
+            except:
+                pass
     return None
 
 
@@ -489,13 +501,15 @@ def getEpisodeSegmentsJson(request, flightName=None, sourceShortName=None):
     Used for both playing back videos from active episode and also
     for playing videos associated with each note.
     """
-    episode = None
-    if flightName:
-        episode = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)(flightName)
-    else:
-        episode = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)()
-    
-    if not episode:
+    try:
+        episode = None
+        if flightName:
+            episode = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)(flightName)
+        else:
+            episode = getClassByName(settings.XGDS_VIDEO_GET_ACTIVE_EPISODE)()
+        if not episode:
+            raise Exception('no episode')
+    except:
         return HttpResponse(json.dumps({'error': 'No episode found'}), content_type='application/json', status=406)
     
     active = episode.endTime is None
@@ -544,10 +558,16 @@ def getVideoContext(request, flightName=None, sourceShortName=None, time=None):
 
     # this happens when user clicks on a flight name to view video
     if flightName:
-        GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
-        episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
-        if episode != None and episode == activeepisode:
-            active = True
+        try:
+            GET_EPISODE_FROM_NAME_METHOD = getClassByName(settings.XGDS_VIDEO_GET_EPISODE_FROM_NAME)
+            episode = GET_EPISODE_FROM_NAME_METHOD(flightName)
+            if not episode:
+                raise Exception('no episode')
+
+            if episode and episode == activeepisode:
+                active = True
+        except:
+            return {}
 
     # this happens when user looks for live recorded
     if not episode:

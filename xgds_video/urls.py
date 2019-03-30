@@ -34,7 +34,7 @@ urlpatterns = [url(r'^liveVideo/$', views.displayLiveVideo, {}, 'xgds_video_live
                url(r'^recorded/(?P<flightName>\w+)/$', views.displayRecordedVideo, {}, 'xgds_video_recorded'),  # active live recorded video
                url(r'^recorded/(?P<flightName>\w+)/(?P<sourceShortName>\w+)/$', views.displayRecordedVideo, {}, 'xgds_video_recorded'),  # active live recorded video
                
-               url(r'^liveImageStream/$', views.liveImageStream, {}, 'live_image_stream'),  # shows image stream from rover.
+               # url(r'^liveImageStream/$', views.liveImageStream, {}, 'live_image_stream'),  # shows image stream from rover.
     
                url(r'^test/$', views.test, {}, 'test'),  # debug only
                url(r'^testHLS$', TemplateView.as_view(template_name='xgds_video/testHLS.html'), {}, 'testHLS'),
