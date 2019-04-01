@@ -21,15 +21,11 @@ import logging
 import os
 import datetime
 import calendar
-import re
 import m3u8
 import zmq
-import textwrap
 
 from django.shortcuts import render
 from django.shortcuts import redirect
-from django.template import RequestContext
-# from django.views.generic.list_detail import object_list
 from django.contrib import messages
 from django.contrib.auth.models import User
 
@@ -519,7 +515,7 @@ def getEpisodeSegmentsJson(request, flightName=None, sourceShortName=None):
     # get the segments
     segments = {}
     if sourceShortName:
-        segments[sourceShortName] = [ s.getDict() for s in episode.videosegment_set.filter(source__shortName=sourceShortName)]
+        segments[sourceShortName] = [s.getDict() for s in episode.videosegment_set.filter(source__shortName=sourceShortName)]
     else:
         distinctSources = episode.videosegment_set.values('source__shortName').distinct()
         for theSource in distinctSources:
@@ -532,7 +528,7 @@ def getEpisodeSegmentsJson(request, flightName=None, sourceShortName=None):
     result = []
     result.append({'active': active})
     result.append({'episode': episode.getDict()})
-    result.append({'segments': segments })
+    result.append({'segments': segments})
     
     return HttpResponse(json.dumps(result, sort_keys=True, indent=4, cls=DatetimeJsonEncoder), content_type='application/json')
 
