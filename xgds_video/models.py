@@ -218,9 +218,6 @@ class AbstractVideoSegment(models.Model):
                 "timeZone": settings.XGDS_VIDEO_TIME_ZONE['name'],
                 "settings": self.settings.getDict(),
                 "episode": self.episode.getDict()}
-    
-    def getSseType(self):
-        return self.__class__.__name__.lower()
 
     def broadcast(self, status):
         # By the time you call this you know that this instance has been newly inserted into the database and needs to broadcast itself
