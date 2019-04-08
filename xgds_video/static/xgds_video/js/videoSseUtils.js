@@ -20,7 +20,7 @@ $.extend(videoSse, {
 	initialize: function() {
 		if (isLive) {
 			videoSse.allChannels(videoSse.subscribeSegment);
-			sse.subscribe('videoepisode', videoSse.handleEpisodeEvent, 'sse');
+			sse.subscribe('videoepisode', videoSse.handleEpisodeEvent, "handleEpisodeEvent", 'sse');
 		}
 	},
 	allChannels: function(theFunction){
@@ -33,7 +33,7 @@ $.extend(videoSse, {
 		}
 	},
 	subscribeSegment: function(channel) {
-		sse.subscribe('videosegment', videoSse.handleSegmentEvent, channel);
+		sse.subscribe('videosegment', videoSse.handleSegmentEvent, "handleSegmentEvent", channel);
 	},
 	handleSegmentEvent: function(event){
 		var data = JSON.parse(event.data);
