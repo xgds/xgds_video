@@ -623,7 +623,7 @@ $.extend(xgds_video,{
 			// use the current time
 			grab_time = playback.getCurrentTime();
 			async function delay_grab() {
-			  await xgds_video.sleep(delay_seconds*1000);
+			  await xgds_video.sleep(delay_seconds*1000 + 1000);
 			  xgds_video.doHandleFrameGrab(episode, source, grab_time);
 			}
 
