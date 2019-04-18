@@ -594,9 +594,7 @@ $.extend(xgds_video,{
 		}
 	},
 
-	handleFrameGrab: function(episode, source) {
-		var grab_time = xgds_video.getPlayerVideoTime(source);
-
+	doHandleFrameGrab: function(episode, source, grab_time) {
 		$.ajax({
             type: "POST",
             url: '/xgds_video/grabImage/' + episode + '/' + source,
@@ -612,20 +610,25 @@ $.extend(xgds_video,{
                 alert('Error with frame grab.');
             }
         });
-		// var player = jwplayer(source);
+	},
+	sleep: function(ms) {
+  		return new Promise(resolve => setTimeout(resolve, ms));
+	},
+	handleFrameGrab: function(episode, source, delay_seconds) {
+		var grab_time = undefined;
+		if (_.isUndefined(delay_seconds)) {
+			grab_time = xgds_video.getPlayerVideoTime(source);
+			xgds_video.doHandleFrameGrab(episode, source, grab_time);
+		} else {
+			// use the current time
+			grab_time = playback.getCurrentTime();
+			async function delay_grab() {
+			  await xgds_video.sleep(delay_seconds*1000);
+			  xgds_video.doHandleFrameGrab(episode, source, grab_time);
+			}
 
-		// pause the player if it is playing
-		// var player_state = player.getState();
-		// if (player_state != 'paused'){
-		// 	player.pause();
-		// }
-
-
-
-		// if (player_state != 'paused'){
-		// 	player.play();
-		// }
-
+			delay_grab();
+		}
 
 	}
 
