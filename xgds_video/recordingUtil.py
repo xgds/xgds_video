@@ -76,8 +76,8 @@ def getVideoSource(sourceName):
     return videoSource
 
 def splitFlightName(flightName):
-    #this assumes flight name of episodeName_sourceName
-    splits = flightName.split('_')
+    #this assumes flight name of episodeName_sourceName - source cannot have underscores in name.
+    splits = flightName.rsplit("_", 1)
     episodeName = splits[0]
     sourceName = splits[1]
     return (episodeName, sourceName)
