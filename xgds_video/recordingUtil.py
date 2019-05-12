@@ -82,7 +82,7 @@ def splitFlightName(flightName):
     sourceName = splits[1]
     return (episodeName, sourceName)
 
-def startFlightRecording(request, flightName):
+def startFlightRecording(flightName):
     (episodeName, sourceName) = splitFlightName(flightName)
     startTime=timezone.now()   #TODO: This is not true - we should lookup timecode from Wowza playlist
     try:
@@ -90,12 +90,12 @@ def startFlightRecording(request, flightName):
         if videoEpisode.endTime:
             videoEpisode.endTime = None
             videoEpisode.save()
-            messages.info(request, 'Cleared end time for episode ' + episodeName)
+            print '*** startFlightRecording(): Cleared end time for episode ' + episodeName
     except:
         videoEpisode = EPISODE_MODEL.get()(shortName=episodeName, startTime=startTime)
         videoEpisode.save()
-        messages.info(request, 'Created video episode ' + episodeName)
-    
+        print '*** startFlightRecording(): Created video episode ' + episodeName
+
     videoEpisode.broadcast('start')
 
     recordingDir = getRecordedVideoDir(flightName)
@@ -104,11 +104,11 @@ def startFlightRecording(request, flightName):
     commands = startRecording(videoSource, recordingDir,
                               recordingUrl, startTime,
                               episode=videoEpisode)
-    messages.info(request, commands)
-    return redirect(reverse('error'))
+#    messages.info(request, commands)
+    return True
 
 
-def stopFlightRecording(request, flightName, endEpisode = False):
+def stopFlightRecording(flightName, endEpisode = False):
     (episodeName, sourceName) = splitFlightName(flightName)
     stopTime = timezone.now()
     commands = stopRecording(getVideoSource(sourceName), stopTime)
@@ -119,8 +119,8 @@ def stopFlightRecording(request, flightName, endEpisode = False):
         videoEpisode.save()
         videoEpisode.broadcast('end')
         commands = commands + ' & set episode end time ' + str(stopTime)
-    messages.info(request, commands)
-    return redirect(reverse('error'))
+#    messages.info(request, commands)
+    return True
 
 
 def makeNewSegment(source, recordingDir, recordingUrl, startTime, episode):
