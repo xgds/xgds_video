@@ -595,6 +595,7 @@ $.extend(xgds_video,{
 	},
 
 	doHandleFrameGrab: function(episode, source, grab_time) {
+		analytics.trackAction('playback', 'frame_grab', episode + ':' + source);
 		$.ajax({
             type: "POST",
             url: '/xgds_video/grabImage/' + episode + '/' + source,
