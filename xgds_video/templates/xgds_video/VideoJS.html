@@ -6,8 +6,6 @@
         var submitNoteUrl = "{% url 'record_simple' %}";
 		var videoStillViewerUrl = "{% url 'videoStillViewer' %}";
         var isLive = {% if isLive %} true {% else %} false {% endif %};
-        image_model_name = '{{ settings.XGDS_IMAGE_IMAGE_MODEL_NAME }}';
-
         DEFAULT_AUDIO_SOURCE = '{{ settings.XGDS_VIDEO_DEFAULT_AUDIO_SOURCE }}';
     </script>
     <script type="text/javascript" src="{% static 'xgds_video/js/video_size_utils.js' %}"  ></script>

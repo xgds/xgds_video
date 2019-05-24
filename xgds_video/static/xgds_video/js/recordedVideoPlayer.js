@@ -623,12 +623,22 @@ $.extend(xgds_video,{
 		} else {
 			// use the current time
 			grab_time = playback.getCurrentTime();
-			async function delay_grab() {
-			  await xgds_video.sleep(delay_seconds*1000 + 1000);
-			  xgds_video.doHandleFrameGrab(episode, source, grab_time);
-			}
 
-			delay_grab();
+			// compare it with now
+			var now_moment = moment()
+
+			// difference
+			var diff = now_moment.diff(grab_time, 'seconds');
+
+			if (diff < delay_seconds) {
+				async function delay_grab() {
+					await xgds_video.sleep(delay_seconds * 1000 + 1000);
+					xgds_video.doHandleFrameGrab(episode, source, grab_time);
+				}
+				delay_grab();
+			} else {
+				xgds_video.doHandleFrameGrab(episode, source, grab_time);
+			}
 		}
 
 	}
