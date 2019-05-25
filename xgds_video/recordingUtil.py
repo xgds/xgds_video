@@ -72,7 +72,10 @@ def emptySegmentDir(recordedVideoDir):
 
 
 def getVideoSource(sourceName):
-    videoSource = VIDEO_SOURCE_MODEL.get().objects.get(shortName=sourceName)
+    try:
+        videoSource = VIDEO_SOURCE_MODEL.get().objects.get(shortName=sourceName)
+    except VIDEO_SOURCE_MODEL.get().DoesNotExist:
+        return None
     return videoSource
 
 def splitFlightName(flightName):
@@ -84,6 +87,11 @@ def splitFlightName(flightName):
 
 def startFlightRecording(flightName):
     (episodeName, sourceName) = splitFlightName(flightName)
+    videoSource = getVideoSource(sourceName)
+    if not videoSource:
+        print "*** No video source for: %s. Not recording it." % sourceName
+        return False
+
     startTime=timezone.now()   #TODO: This is not true - we should lookup timecode from Wowza playlist
     try:
         videoEpisode = EPISODE_MODEL.get().objects.get(shortName=episodeName)
@@ -100,7 +108,6 @@ def startFlightRecording(flightName):
 
     recordingDir = getRecordedVideoDir(flightName)
     recordingUrl = getRecordedVideoUrl(flightName)
-    videoSource = getVideoSource(sourceName)
     commands = startRecording(videoSource, recordingDir,
                               recordingUrl, startTime,
                               episode=videoEpisode)
@@ -110,6 +117,10 @@ def startFlightRecording(flightName):
 
 def stopFlightRecording(flightName, endEpisode = False):
     (episodeName, sourceName) = splitFlightName(flightName)
+    videoSource = getVideoSource(sourceName)
+    if not videoSource:
+        print "*** No video source for: %s. Not stopping recording." % sourceName
+        return False
     stopTime = timezone.now()
     commands = stopRecording(getVideoSource(sourceName), stopTime)
 
