@@ -356,8 +356,14 @@ $.extend(xgds_video,{
 		var player = jwplayer(source);
 		var index = player.getPlaylistIndex();
 		var offset = player.getPosition();
+		var currentTime = undefined;
+		if (offset < 0){
+			// we are in delayed live mode, subtract the time from real world now time)
+			currentTime = moment();
+		} else {
+			currentTime = moment(segments[index].startTime);
+		}
 
-		var currentTime = moment(segments[index].startTime);
 		currentTime.add(offset, 's');
 		return currentTime;
 	},
