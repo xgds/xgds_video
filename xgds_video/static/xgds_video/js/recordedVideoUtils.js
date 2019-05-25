@@ -125,7 +125,7 @@ $.extend(xgds_video,{
 		 * Set test site time of the player
 		 */
 		var timeString = getLocalTimeString(moment(datetime), xgds_video.options.timeZone, xgds_video.defaultTimeFormat);
-		$('#testSiteTime' + sourceName).html(timeString);
+		$('#' + sourceName + 'Label').html(timeString);
 	},
 
 	withinRange:function(position, offset) {
@@ -387,3 +387,4 @@ $.extend(xgds_video,{
 	}
 
 });
+
