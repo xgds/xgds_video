@@ -641,6 +641,12 @@ $.extend(xgds_video,{
 			}
 		}
 
+	},
+	jumpToLive: function() {
+		// seek all players to the latest live
+		for (var source in xgds_video.options.displaySegments) {
+			jwplayer(source).seek(-2.0*jwplayer(source).getDuration());
+		}
 	}
 
 });
