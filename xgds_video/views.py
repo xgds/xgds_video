@@ -98,9 +98,11 @@ def prepare_grab_frame(episode_name, source_short_name, grab_time):
     if found_segment:
         index_file_path, seg = util.getIndexFilePath(episode_name, source_short_name, found_segment.segNumber)
         file_path = os.path.join(settings.DATA_ROOT, os.path.dirname(index_file_path))
-        print('FILE PATH %s' % file_path)
+        full_index_file_path = os.path.join(settings.DATA_ROOT, index_file_path)
+        print('FILE PATH %s' % full_index_file_path)
         return {'segment': found_segment,
-                'file_path': file_path}
+                'file_path': file_path,
+                'index_file_path': full_index_file_path}
 
     return None
 
@@ -163,7 +165,9 @@ def grabFrameFromSource(request, episode, source):
     if grab_info:
         # modify request to have new information
         request.POST._mutable = True
-        request.POST['path'] = grab_info['file_path']
+        request.POST['path'] = grab_info['file_path'] # index file path
+        request.POST['index_file_path'] = grab_info['index_file_path']  # index file path
+
         request.POST['vehicle'] = grab_info['segment'].source.name
         request.POST['start_time'] = grab_info['segment'].startTime.isoformat()
         request.POST._mutable = False
