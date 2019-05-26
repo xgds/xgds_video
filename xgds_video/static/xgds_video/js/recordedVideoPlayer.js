@@ -337,6 +337,11 @@ $.extend(xgds_video,{
 			if (xgds_video.options.delayed_live) {
 				xgds_video.options.playFlag = true;
 				xgds_video.jumpToLive(true, player);
+				$('#pausebutton').removeClass("active");
+				$('#pausebuttonLink').removeClass("active");
+				$('#playbutton').addClass("active");
+				$('#playbuttonLink').addClass("active");
+				$('#nowbutton').addClass("active");
 			} else {
 				var startTime = xgds_video.options.firstSegment.startTime;
 				var segments = xgds_video.options.displaySegments[player.id];
