@@ -334,16 +334,18 @@ $.extend(xgds_video,{
 
 		//find the  segment and play it.
 		if (xgds_video.options.hasMasterSlider){
-			var startTime = xgds_video.options.firstSegment.startTime;
-			var segments = xgds_video.options.displaySegments[player.id];
-			if (startTime >= segments[0].startTime) {
-				//            player.pause(true);
+			if (xgds_video.options.delayed_live) {
+				xgds_video.options.playFlag = true;
+				xgds_video.jumpToLive(true, player);
 			} else {
-				player.pause(true);
+				var startTime = xgds_video.options.firstSegment.startTime;
+				var segments = xgds_video.options.displaySegments[player.id];
+				if (startTime >= segments[0].startTime) {
+					//            player.pause(true);
+				} else {
+					player.pause(true);
+				}
 			}
-		} else if (xgds_video.options.delayed_live) {
-			xgds_video.options.playFlag = true;
-			xgds_video.jumpToLive(true);
 		} else {
 			xgds_video.options.playFlag = true;
 			player.play(true);
@@ -645,7 +647,7 @@ $.extend(xgds_video,{
 		}
 
 	},
-	jumpToLive: function(play) {
+	jumpToLive: function(play, player) {
 		// seek all players to the latest live
 		if (_.isUndefined(play)){
 			play = false;
@@ -661,10 +663,14 @@ $.extend(xgds_video,{
 				j.play();
 			}
 		}
-         		
-		for (var source in xgds_video.options.displaySegments) {
-			var j = jwplayer(source);
-			do_jump(j, play);
+
+		if (!_.isUndefined(player)){
+			do_jump(player, play);
+		} else {
+			for (var source in xgds_video.options.displaySegments) {
+				var j = jwplayer(source);
+				do_jump(j, play);
+			}
 		}
 	}
 
