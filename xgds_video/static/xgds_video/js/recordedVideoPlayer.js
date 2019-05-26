@@ -660,7 +660,7 @@ $.extend(xgds_video,{
 			   j.seek(-j.getDuration());
 			}
 			if (play) {
-				j.play();
+				j.play(true);
 			}
 		}
 
