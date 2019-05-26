@@ -49,7 +49,7 @@ $.extend(xgds_video,{
 		player.play(true);
 	},
 	endSegment: function(segment){
-		jwplayer(segment.source.shortName).play(false);
+		jwplayer(segment.source.shortName).pause(true);
 	},
 	startEpisode: function(episode){
 		var currentEpisode = xgds_video.options.episode;

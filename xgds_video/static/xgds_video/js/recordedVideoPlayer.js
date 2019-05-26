@@ -286,7 +286,7 @@ $.extend(xgds_video,{
 				} else {
                 	if (xgds_video.options.displaySegments[source][xgds_video.options.displaySegments[source].length - 1].endTime.isValid()){
 						// IF we are in the error state of an 'active' flight with an ended last segment, DO NOT PLAY.
-						jwplayer(source).pause();
+						jwplayer(source).pause(true);
 					}  else {
 						jwplayer(source).playlistItem(xgds_video.options.displaySegments[source].length - 1);
 					}
