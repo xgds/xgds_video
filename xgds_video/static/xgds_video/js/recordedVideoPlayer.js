@@ -341,6 +341,9 @@ $.extend(xgds_video,{
 			} else {
 				player.pause(true);
 			}
+		} else if (xgds_video.options.delayed_live) {
+			xgds_video.options.playFlag = true;
+			xgds_video.jumpToLive(true);
 		} else {
 			xgds_video.options.playFlag = true;
 			player.play(true);
