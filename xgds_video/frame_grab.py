@@ -23,6 +23,7 @@ from dateutil.parser import parse as dateparser
 
 import django
 django.setup()
+from django.conf import settings
 
 from geocamUtil.TimeUtil import hms_to_total_s
 from xgds_video.util import calculate_ts_file
@@ -49,7 +50,8 @@ def take_screenshot(input_file, seconds_into):
         raise e
 
 
-def grab_frame(path=None, start_time=None, grab_time=None, file=None, hms=None, index_file_name='prog_index.m3u8'):
+def grab_frame(path=None, start_time=None, grab_time=None, file=None, hms=None,
+               index_file_name=settings.XGDS_VIDEO_INDEX_FILE_NAME):  # 'prog_index.m3u8'):
     """
     Grab a frame from a given video, return as buffer
     :param path: path to folder containing .ts files
@@ -90,7 +92,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--start', help='start date/time of video')
     parser.add_argument('-g', '--grab', help='date/time of desired frame')
     parser.add_argument('-o', help='prefix of output file', default='Screenshot')
-    parser.add_argument('-i', '--index', help='name of index file listing ts file durations', default='prog_index.m3u8')
+    parser.add_argument('-i', '--index', help='name of index file listing ts file durations', default=settings.XGDS_VIDEO_INDEX_FILE_NAME)
     parser.add_argument('-f', '--file', help='video from which to take screenshot', default='input.mov')
     parser.add_argument('-hms', help='HH:mm:ss into video to take screenshot')
 

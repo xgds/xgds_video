@@ -285,7 +285,7 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
         return (None, None)
 
 
-def calculate_ts_file(folder_name, seconds_int, index_file_name='prog_index.m3u8'):
+def calculate_ts_file(folder_name, seconds_int, index_file_name=settings.XGDS_VIDEO_INDEX_FILE_NAME):
     """
     Find the ts file that is s_int seconds into the recording
     :param folder_name: that holds ts files

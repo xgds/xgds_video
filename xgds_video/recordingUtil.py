@@ -215,6 +215,7 @@ def startRecording(source, recordingDir, recordingUrl, startTime, episode):
     recorderService = '%s_recorder' % assetName
     recorderCommand = ''
     if settings.XGDS_VIDEO_RECORDING_METHOD == 'VLC':
+        # this is very obsolete
         recorderCommand = ("%s %s --sout='#duplicate{dst=std{access=livehttp{seglen=6,splitanywhere=false,delsegs=false,numsegs=0,index=prog_index.m3u8,index-url=prog_index-#####.ts},mux=ts,dst=prog_index-#####.ts}}'"
                            % (settings.XGDS_VIDEO_VLC_PATH,
                               segmentInfo['videoFeed'].url))

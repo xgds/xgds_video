@@ -29,11 +29,11 @@ XGDS_VIDEO_FEED_MODEL = 'xgds_video.VideoFeed'
 XGDS_VIDEO_SEGMENT_MODEL = 'xgds_video.VideoSegment'
 XGDS_VIDEO_EPISODE_MODEL = 'xgds_video.VideoEpisode'
 
-XGDS_VIDEO_INDEX_FILE_NAME = "playlist.m3u8" # for vlc use prog_index.m3u8"
+XGDS_VIDEO_INDEX_FILE_NAME = "playlist.m3u8"  # for vlc use prog_index.m3u8"
 if platform.system() == 'Linux':
     XGDS_VIDEO_VLC_PATH = '/usr/bin/vlc'
     XGDS_VIDEO_SEGMENTER_PATH = '/usr/bin/avconv'
-    XGDS_VIDEO_SEGMENTER_ARGS = '-i pipe:0 -strict experimental -codec copy -map 0 -g 30 -f hls -hls_time 5 -hls_list_size 99999 prog_index.m3u8'
+    XGDS_VIDEO_SEGMENTER_ARGS = '-i pipe:0 -strict experimental -codec copy -map 0 -g 30 -f hls -hls_time 5 -hls_list_size 99999 ' + XGDS_VIDEO_INDEX_FILE_NAME
 else:
     XGDS_VIDEO_VLC_PATH = "/Applications/VLC.app/Contents/MacOS/VLC"
     XGDS_VIDEO_SEGMENTER_PATH = "/usr/bin/mediastreamsegmenter"
