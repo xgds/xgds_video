@@ -133,7 +133,6 @@ def getSegmentPath(flightName, sourceName, number):
 
 
 def getIndexFilePath(flightName, sourceShortName, segmentNumber):
-    indexFileName = settings.XGDS_VIDEO_INDEX_FILE_NAME
     if '_' in flightName:
         splits = flightName.split('_')
     else:
@@ -158,7 +157,6 @@ def getIndexFilePath(flightName, sourceShortName, segmentNumber):
         return index_file_path, segments[0]
     except:
         raise Exception('Segments not found for %s: %s: %s' % (episode_shortName, sourceShortName, segmentNumber))
-
 
 
 def getNumChunksFromEndForDelay(delayTime, indexPath):

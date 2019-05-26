@@ -94,7 +94,6 @@ def prepare_grab_frame(episode_name, source_short_name, grab_time):
     :param grab_time:
     :return:
     """
-    result = {}
     found_segment = getSegmentForTimeFromSource(episode_name, source_short_name, grab_time)
     if found_segment:
         index_file_path, seg = util.getIndexFilePath(episode_name, source_short_name, found_segment.segNumber)
@@ -121,6 +120,8 @@ def grab_frame_from_time(grab_time, vehicle, author=None, prefix=settings.XGDS_I
     # Ideally have a link
     source = SOURCE_MODEL.get().objects.get(vehicle=vehicle)
     grab_info = prepare_grab_frame(flight.group.name, source.shortName, grab_time)
+    print('grab info is ')
+    print(grab_info)
     if grab_info:
         SAVE_IMAGE_FUNCTION = getClassByName('xgds_image.views.do_grab_frame')
 
