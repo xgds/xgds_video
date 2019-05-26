@@ -99,7 +99,7 @@ def prepare_grab_frame(episode_name, source_short_name, grab_time):
         index_file_path, seg = util.getIndexFilePath(episode_name, source_short_name, found_segment.segNumber)
         file_path = os.path.join(settings.DATA_ROOT, os.path.dirname(index_file_path))
         full_index_file_path = os.path.join(settings.DATA_ROOT, index_file_path)
-        print('FILE PATH %s' % full_index_file_path)
+        # print('FILE PATH %s' % full_index_file_path)
         return {'segment': found_segment,
                 'file_path': file_path,
                 'index_file_path': full_index_file_path}
@@ -123,7 +123,7 @@ def grab_frame_from_time(grab_time, vehicle, author=None, prefix=settings.XGDS_I
     # Ideally have a link
     source = SOURCE_MODEL.get().objects.get(vehicle=vehicle)
     grab_info = prepare_grab_frame(flight.group.name, source.shortName, grab_time)
-    print('grab info is ')
+    # print('grab info is ')
     print(grab_info)
     if grab_info:
         SAVE_IMAGE_FUNCTION = getClassByName('xgds_image.views.do_grab_frame')
@@ -160,7 +160,7 @@ def grabFrameFromSource(request, episode, source):
 
     grab_time = dateparser(grab)
     grab_info = prepare_grab_frame(str(episode), str(source), grab_time)
-    print('GRAB FRAME FROM SOURCE %s' % grab_info)
+    # print('GRAB FRAME FROM SOURCE %s' % grab_info)
 
     if grab_info:
         # modify request to have new information

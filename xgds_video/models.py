@@ -312,8 +312,8 @@ class AbstractVideoEpisode(models.Model):
                 result = {'status': status,
                           'data': self.getDict()}
                 json_string = json.dumps(result, cls=DatetimeJsonEncoder)
-                print 'epi:broadcast (delay)'
-                print json_string
+                # print 'epi:broadcast (delay)'
+                # print json_string
                 t = Timer(getDelay(), publishRedisSSE, ['sse', self.getSseType(), json_string])
                 t.start()
                 return json_string

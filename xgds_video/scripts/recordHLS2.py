@@ -146,7 +146,7 @@ class HLSRecorder:
         self.xgdsSegment = getCurrentSegmentForSource(self.sourcePK, self.episodePK)
         try:
             firstm3u8 = self.getM3U8()
-            print "got first playlist"
+            # print "got first playlist"
             if firstm3u8 and firstm3u8.segments:
                 self.updateFudgeFactor(self.segmentNumber(firstm3u8.segments[-1]))
                 #setVideoRecorderStatusCache(self.episodePK, self.sourcePK)

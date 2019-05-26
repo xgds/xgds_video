@@ -154,7 +154,7 @@ def getIndexFilePath(flightName, sourceShortName, segmentNumber):
         # should only be one
         indexFileName = segments[0].indexFileName
         index_file_path = os.path.join(getSegmentPath(flightName, sourceShortName, segmentNumber), indexFileName)
-        print('GOT INDEX FILE PATH %s' % index_file_path)
+        # print('GOT INDEX FILE PATH %s' % index_file_path)
         return index_file_path, segments[0]
     except:
         raise Exception('Segments not found for %s: %s: %s' % (episode_shortName, sourceShortName, segmentNumber))
