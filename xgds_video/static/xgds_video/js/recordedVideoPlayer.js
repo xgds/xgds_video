@@ -642,26 +642,27 @@ $.extend(xgds_video,{
 		}
 
 	},
-	jumpToLive: function() {
+	jumpToLive: function(play) {
 		// seek all players to the latest live
-                
-		async function do_jump(j) {
+		if (_.isUndefined(play)){
+			play = false;
+		}
+		async function do_jump(j, play) {
 			j.seek(-j.getDuration());
 			await xgds_video.sleep(5 * 1000);
 			var pos = j.getPosition();
 			if (pos < -60) {
 			   j.seek(-j.getDuration());
 			}
+			if (play) {
+				j.play();
+			}
 		}
          		
 		for (var source in xgds_video.options.displaySegments) {
-                    var j = jwplayer(source);
-                    do_jump(j);
+			var j = jwplayer(source);
+			do_jump(j, play);
 		}
-	},
-	playLive: function() {
-		xgds_video.addPendingPlayAction();
-		xgds_video.jumpToLive();
 	}
 
 });
