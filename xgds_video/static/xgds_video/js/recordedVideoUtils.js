@@ -117,6 +117,7 @@ $.extend(xgds_video,{
 
 	setSliderTimeLabel:function(datetimeMoment) {
 		var timeString = getLocalTimeString(datetimeMoment, xgds_video.options.timeZone, xgds_video.defaultTimeFormat);
+                //console.log(timeString);
 		$('#sliderTimeLabel').text(timeString);
 	},
 
@@ -373,7 +374,7 @@ $.extend(xgds_video,{
 			currentTime = moment(segments[index].startTime);
 		}
 
-		currentTime.add(offset, 's');
+		currentTime.add(offset, 'seconds');
 		return currentTime;
 	},
 
