@@ -98,6 +98,7 @@ def prepare_grab_frame(episode_name, source_short_name, grab_time):
     if found_segment:
         index_file_path, seg = util.getIndexFilePath(episode_name, source_short_name, found_segment.segNumber)
         file_path = os.path.join(settings.DATA_ROOT, os.path.dirname(index_file_path))
+        print('FILE PATH %s' % file_path)
         return {'segment': found_segment,
                 'file_path': file_path}
 
@@ -157,6 +158,7 @@ def grabFrameFromSource(request, episode, source):
 
     grab_time = dateparser(grab)
     grab_info = prepare_grab_frame(str(episode), str(source), grab_time)
+    print('GRAB FRAME FROM SOURCE %s' % grab_info)
 
     if grab_info:
         # modify request to have new information
