@@ -18,6 +18,7 @@ import socket
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 django.setup()
 from django.conf import settings
+from django.db import connection
 from django.core.cache import caches
 _cache = caches['default']
 
@@ -28,6 +29,12 @@ MAX_DUP_PLAYLISTS_DEFAULT = 3
 
 TIMEOUT_CONNECT = 3
 TIMEOUT_READ = 8
+
+def reconnect_db():
+    print 'Refreshing DB connection...'
+    # reset db connection
+    connection.close()
+    connection.connect()
 
 class HLSRecorder:
     def __init__(self, sourceUrl, m3u8DirPath, recorderId, episodePK, sourcePK):
@@ -204,6 +211,7 @@ class HLSRecorder:
             print "*** Segment not ended - writing end time now..."
             self.saveM3U8ToFile(addEndTag=True)
             endTime = datetime.datetime.now(pytz.utc)
+            reconnect_db()
             endSegment(self.xgdsSegment, endTime)
             self.xgdsSegment = None
             self.forceMakeNewSegment = True
@@ -227,6 +235,7 @@ class HLSRecorder:
         # construct the new segment object
         self.httpSession.close()   # Close session and re-establish link to video feed
         parentDirectory = os.path.dirname(self.m3u8DirPath)
+        reconnect_db()  # We may be running a long time, so make sure the DB connection is alive.
         segmentInfo = invokeMakeNewSegment(self.sourcePK, parentDirectory, self.sourceUrl, startTime, self.episodePK)
         self.sourceUrl = segmentInfo['videoFeed'].url
         self.m3u8DirPath = segmentInfo['recordedVideoDir']
