@@ -192,6 +192,15 @@ $.extend(xgds_video,{
 			xgds_video.pendingPlayerActions[source].push(actionObj);
 		}
 	},
+	addPendingPlayAction: function(source, player) {
+		var actionObj = {action: player.play,
+						 arg: true };
+		if (xgds_video.pendingPlayerActions[source] == undefined){
+			xgds_video.pendingPlayerActions[source] = [actionObj];
+		} else {
+			xgds_video.pendingPlayerActions[source].push(actionObj);
+		}
+	},
 	setPlaylistAndSeek:function(source, index, offset) {
 		/**
 		 * Ensures that seeking to a playlist item and offset works on both
