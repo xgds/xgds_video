@@ -93,10 +93,10 @@ $.extend(xgds_video,{
 				xgds_video.startPlayer(this);
 				xgds_video.audioController(this);
 			},
-//			onSeek: function(data) {
-//				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
-//				console.log('POSITION IS NOW ' + this.getPosition());
-//			},
+			onSeek: function(data) {
+				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
+				console.log('POSITION IS NOW ' + this.getPosition());
+			},
 //			onSeeked: function(data) {
 //				console.log('ON SEEKED: ' + data.startPosition + " | " + data.offset);
 //				console.log('POSITION IS NOW ' + this.getPosition());
@@ -644,8 +644,19 @@ $.extend(xgds_video,{
 	},
 	jumpToLive: function() {
 		// seek all players to the latest live
+                
+                async function do_jump(j) {
+                    j.seek(-j.getDuration());
+                    await xgds_video.sleep(5 * 1000);
+                    var pos = j.getPosition();
+                    if (pos < -60) {
+                       j.seek(-j.getDuration());
+                    }
+                }
+         		
 		for (var source in xgds_video.options.displaySegments) {
-			jwplayer(source).seek(-2.0*jwplayer(source).getDuration());
+                    var j = jwplayer(source);
+                    do_jump(j);
 		}
 	}
 
