@@ -96,6 +96,8 @@ $.extend(xgds_video,{
 			onSeek: function(data) {
 				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
 				console.log('POSITION IS NOW ' + this.getPosition());
+				var updateTime = xgds_video.getPlayerVideoTime(this.id);
+				xgds_video.setPlayerTimeLabel(updateTime, this.id);
 			},
 //			onSeeked: function(data) {
 //				console.log('ON SEEKED: ' + data.startPosition + " | " + data.offset);
