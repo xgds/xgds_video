@@ -376,8 +376,10 @@ $.extend(xgds_video,{
 			// we are in delayed live mode, subtract the time from real world now time)
 			currentTime = moment();
 			// the video chunks are different sizes so we won't know the lag from the jwplayer.
-			// instead use our setting.
-			offset = - xgds_video.options.video_lag_seconds;
+			// instead use our setting IF we are playing the live video
+			if (xgds_video.options.playing_live) {
+				offset = -xgds_video.options.video_lag_seconds;
+			}
 		} else {
 			currentTime = moment(segments[index].startTime);
 		}
