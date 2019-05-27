@@ -335,7 +335,8 @@ $.extend(xgds_video,{
 		//find the  segment and play it.
 		if (xgds_video.options.hasMasterSlider){
 			if (xgds_video.options.delayed_live) {
-				xgds_video.nowButtonCallback();
+				xgds_video.nowButtonCallback(true);
+                                xgds_video.jumpToLive(true, player);
 			} else {
 				var startTime = xgds_video.options.firstSegment.startTime;
 				var segments = xgds_video.options.displaySegments[player.id];
@@ -606,7 +607,7 @@ $.extend(xgds_video,{
 		}
 	},
 
-	nowButtonCallback: function() {
+	nowButtonCallback: function(do_not_play) {
 		$("#nowbutton").addClass("active");
 		$('#playbutton').addClass("active");
 		$('#playbuttonLink').addClass("active");
@@ -614,7 +615,10 @@ $.extend(xgds_video,{
 		$('#pausebuttonLink').removeClass("active");
 
 		xgds_video.options.playFlag = true;
-		xgds_video.jumpToLive(true, player);
+                if (!_.isUndefined(do_not_play) && do_not_play) {
+			return;
+                }
+		xgds_video.jumpToLive(true);
 	},
 
 	doHandleFrameGrab: function(episode, source, grab_time) {
