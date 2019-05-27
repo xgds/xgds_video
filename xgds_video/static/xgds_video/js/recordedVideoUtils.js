@@ -157,7 +157,7 @@ $.extend(xgds_video,{
 				offset = Math.round(nowMoment.diff(segment.startTime, 'seconds'));
 				break;
 			} else if (nowMoment.isAfter(segment.startTime)){
-				if (_.isUndefined(segment.endTime)){
+				if (_.isUndefined(segment.endTime) || !segment.endTime.isValid()){
 					playlistIdx = i;
 					offset = Math.round(nowMoment.diff(segment.startTime, 'seconds'));
 					break;

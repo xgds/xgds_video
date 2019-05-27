@@ -171,14 +171,13 @@ $.extend(xgds_video,{
 
 				// update test site time (all sources that are 'playing')
 				if (!xgds_video.options.seekFlag && !xgds_video.options.movingSlider) {
-					var testSiteTime = xgds_video.getPlayerVideoTime(this.id);
-					xgds_video.setPlayerTimeLabel(testSiteTime, this.id);
+					var updateTime = xgds_video.getPlayerVideoTime(this.id);
+					xgds_video.setPlayerTimeLabel(updateTime, this.id);
 
 					if (!xgds_video.initialState) {
 						//if this call is from the current 'onTimePlayer'
 						if (xgds_video.options.onTimePlayer == this.id) {
 							// update the slider here.
-							var updateTime = xgds_video.getPlayerVideoTime(this.id);
 							if (!(_.isUndefined(updateTime))) {
 								xgds_video.awakenIdlePlayers(updateTime, this.id);
 								xgds_video.setSliderTime(updateTime);
