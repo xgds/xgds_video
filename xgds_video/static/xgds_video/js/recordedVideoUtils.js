@@ -372,6 +372,9 @@ $.extend(xgds_video,{
 		var segments = xgds_video.options.displaySegments[source];
 		var player = jwplayer(source);
 		var index = player.getPlaylistIndex();
+		if (_.isUndefined(index)) {
+			index = 0;
+		}
 		var offset = player.getPosition();
 		var currentTime = undefined;
 		if (offset < 0){
