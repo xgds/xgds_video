@@ -221,6 +221,13 @@ $.extend(xgds_video,{
 		var seconds = Math.round(datetime.unix());
 		xgds_video.getSlider().slider('value', seconds);
 		xgds_video.setSliderTimeLabel(datetime);
+		// if we are in delayed live we also want to update playback current time
+		if (xgds_video.options.delayed_live){
+			// we don't want to have a callback loop
+			//playback.setCurrentTime(datetime);
+
+			playback.currentTime = moment(datetime).tz(playback.displayTZ);
+		}
 	}
 
 });
