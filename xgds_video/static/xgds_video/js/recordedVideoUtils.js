@@ -242,17 +242,18 @@ $.extend(xgds_video,{
 		 * Given current time in javascript datetime,
 		 * find the playlist item and the offset (seconds) and seek to there.
 		 */
+		var result = false;
 		if (_.isUndefined(source)){
 			for (var source in xgds_video.options.displaySegments) {
 				var player = jwplayer(source);
 				if (player != undefined) {
-					xgds_video.jumpToPosition(currentTime, source, seekValues);
+					result |= xgds_video.jumpToPosition(currentTime, source, seekValues);
 				}
 			}
-			return;
+			return result;
 		}
 		if (xgds_video.jumpLocks.has(source)) {
-			return;
+			return result;
 		}
 		xgds_video.jumpLocks.add(source);
 		if (_.isUndefined(seekValues)) {
@@ -266,13 +267,19 @@ $.extend(xgds_video,{
 			if (!xgds_video.options.playFlag) {
 				player.pause(true);
 			}
+			var updateTime = xgds_video.getPlayerVideoTime(source);
+			xgds_video.setPlayerTimeLabel(updateTime, source);
+			result = true;
+
 		} else { //current time is not in the playable range.
 			//pause the player
 			if ((player.getState() == 'playing') || (player.getState() == 'idle')) {
 				player.pause(true);
 			}
+			result = 'unplayable';
 		}
 		xgds_video.jumpLocks.delete(source);
+		return result;
 	},
 
 	getNextAvailableSegment:function(currentTime) {
