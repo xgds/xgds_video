@@ -335,13 +335,7 @@ $.extend(xgds_video,{
 		//find the  segment and play it.
 		if (xgds_video.options.hasMasterSlider){
 			if (xgds_video.options.delayed_live) {
-				xgds_video.options.playFlag = true;
-				xgds_video.jumpToLive(true, player);
-				$('#pausebutton').removeClass("active");
-				$('#pausebuttonLink').removeClass("active");
-				$('#playbutton').addClass("active");
-				$('#playbuttonLink').addClass("active");
-				$('#nowbutton').addClass("active");
+				xgds_video.nowButtonCallback();
 			} else {
 				var startTime = xgds_video.options.firstSegment.startTime;
 				var segments = xgds_video.options.displaySegments[player.id];
@@ -560,6 +554,7 @@ $.extend(xgds_video,{
 		$('#playbuttonLink').addClass("active");
 		$('#pausebutton').removeClass("active");
 		$('#pausebuttonLink').removeClass("active");
+		
 
 		var currTime = currentTime;
 		if (_.isUndefined(currentTime) && xgds_video.options.hasMasterSlider){
@@ -599,9 +594,27 @@ $.extend(xgds_video,{
 		$('#pausebutton').addClass("active");
 		$('#pausebuttonLink').addClass("active");
 
+		try {
+			$("#nowbutton").removeClass("active");
+		} catch (e) {
+			// may not have a now button
+		}
+
+
 		for (var source in xgds_video.options.displaySegments) {
 			jwplayer(source).pause(true);
 		}
+	},
+
+	nowButtonCallback: function() {
+		$("#nowbutton").addClass("active");
+		$('#playbutton').addClass("active");
+		$('#playbuttonLink').addClass("active");
+		$('#pausebutton').removeClass("active");
+		$('#pausebuttonLink').removeClass("active");
+
+		xgds_video.options.playFlag = true;
+		xgds_video.jumpToLive(true, player);
 	},
 
 	doHandleFrameGrab: function(episode, source, grab_time) {
