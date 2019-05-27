@@ -94,8 +94,8 @@ $.extend(xgds_video,{
 				xgds_video.audioController(this);
 			},
 			onSeek: function(data) {
-				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
-				console.log('POSITION IS NOW ' + this.getPosition());
+				// console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
+				// console.log('POSITION IS NOW ' + this.getPosition());
 				var updateTime = xgds_video.getPlayerVideoTime(this.id);
 				xgds_video.setPlayerTimeLabel(updateTime, this.id);
 			},
