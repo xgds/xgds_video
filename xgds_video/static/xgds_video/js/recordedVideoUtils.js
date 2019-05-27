@@ -372,7 +372,7 @@ $.extend(xgds_video,{
 			currentTime = moment();
 			// the video chunks are different sizes so we won't know the lag from the jwplayer.
 			// instead use our setting.
-			offset = xgds_video.options.video_lag_seconds;
+			offset = - xgds_video.options.video_lag_seconds;
 		} else {
 			currentTime = moment(segments[index].startTime);
 		}

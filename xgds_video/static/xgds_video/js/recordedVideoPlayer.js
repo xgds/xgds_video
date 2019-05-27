@@ -615,9 +615,10 @@ $.extend(xgds_video,{
 		$('#pausebuttonLink').removeClass("active");
 
 		xgds_video.options.playFlag = true;
-                if (!_.isUndefined(do_not_play) && do_not_play) {
+		playback.playFlag = true;
+		if (!_.isUndefined(do_not_play) && do_not_play) {
 			return;
-                }
+		}
 		xgds_video.jumpToLive(true);
 	},
 
