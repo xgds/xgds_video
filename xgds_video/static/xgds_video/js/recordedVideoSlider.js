@@ -141,7 +141,13 @@ $.extend(xgds_video,{
 		xgds_video.setSliderTimeLabel(moment.unix(ui.value));
 	},
 
-	uponSliderStopCallBack: function(event, ui) {
+	getSlider: function() {
+              if ($(xgds_video.masterSlider).length == 0) {
+                 xgds_video.masterSlider = $("#masterSlider");
+              }
+              return $(xgds_video.masterSlider);
+        },
+        uponSliderStopCallBack: function(event, ui) {
 		/**
 		 * Slider Callback:
 		 *    get the current slider position and do
@@ -151,7 +157,7 @@ $.extend(xgds_video,{
 		 *    update the test site times to equal slider position.
 		 */
 		xgds_video.options.seekFlag = true;
-		var currTime = xgds_video.masterSlider.slider('value'); //in seconds
+		var currTime = xgds_video.getSlider().slider('value'); //in seconds
 		currTime = new moment(currTime * 1000).tz(xgds_video.options.timeZone); // why this did not use the default time zone I do not know
 		xgds_video.jumpToPosition(currTime);
 		//XXX take care of the case where seek time is not within playable range.
@@ -184,18 +190,22 @@ $.extend(xgds_video,{
 			endMoment = moment(endTime);
 		}
 		//var duration = endMoment.diff(startMoment, 'seconds');
-		if (endTime !== undefined) {
-			xgds_video.masterSlider = $('#masterSlider').slider({
-				step: 1,
-				min: startMoment.unix(), //moment(xgds_video.options.firstSegment.startTime).unix(),
-				max: endMoment.unix(), 
-				stop: xgds_video.uponSliderStopCallBack,
-				slide: xgds_video.uponSliderMoveCallBack,
-				range: 'min'
-			});
-			xgds_video.setSliderTimeLabel(startMoment);
-			xgds_video.createSliderLegend(false);
-		} else {
+                if (xgds_video.options.delayed_live) {
+                       xgds_video.masterSlider = playback.masterSlider;
+                       xgds_video.masterSlider.on("slidestop", xgds_video.uponSliderStopCallBack);
+                       xgds_video.masterSlider.on("slide", xgds_video.uponSliderMoveCallBack);
+                }	else if (endTime !== undefined) {
+                        xgds_video.masterSlider = $('#masterSlider').slider({
+                                step: 1,
+                                min: startMoment.unix(), //moment(xgds_video.options.firstSegment.startTime).unix(),
+                                max: endMoment.unix(),
+                                stop: xgds_video.uponSliderStopCallBack,
+                                slide: xgds_video.uponSliderMoveCallBack,
+                                range: 'min'
+                        });
+                        xgds_video.setSliderTimeLabel(startMoment);
+                        xgds_video.createSliderLegend(false);
+                } else {
 			alert('The end time of a video segment is not available.' +
 			'Cannot setup slider');
 		}
@@ -203,7 +213,7 @@ $.extend(xgds_video,{
 	setSliderTime:function(datetime) {
 		//update the slider
 		var seconds = Math.round(datetime.unix());
-		$(xgds_video.masterSlider).slider('value', seconds);
+		xgds_video.getSlider().slider('value', seconds);
 		xgds_video.setSliderTimeLabel(datetime);
 	}
 
