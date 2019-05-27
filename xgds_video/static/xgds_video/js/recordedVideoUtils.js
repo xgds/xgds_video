@@ -267,8 +267,6 @@ $.extend(xgds_video,{
 			if (!xgds_video.options.playFlag) {
 				player.pause(true);
 			}
-			var updateTime = xgds_video.getPlayerVideoTime(source);
-			xgds_video.setPlayerTimeLabel(updateTime, source);
 			result = true;
 
 		} else { //current time is not in the playable range.
