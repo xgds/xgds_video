@@ -228,9 +228,10 @@ $.extend(xgds_video,{
 		// if we are in delayed live we also want to update playback current time
 		if (xgds_video.options.delayed_live){
 			// we don't want to have a callback loop
-			//playback.setCurrentTime(datetime);
+			playback.setCurrentTime(datetime);
 
-			playback.currentTime = moment(datetime).tz(playback.displayTZ);
+			//TODO heretamar risky testing in progress
+			//playback.currentTime = moment(datetime).tz(playback.displayTZ);
 		}
 	}
 
