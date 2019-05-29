@@ -201,16 +201,20 @@ $.extend(xgds_video,{
                        xgds_video.masterSlider.on("slidestop", xgds_video.uponSliderStopCallBack);
                        xgds_video.masterSlider.on("slide", xgds_video.uponSliderMoveCallBack);
                 }	else if (endTime !== undefined) {
-                        xgds_video.masterSlider = $('#masterSlider').slider({
-                                step: 1,
-                                min: startMoment.unix(), //moment(xgds_video.options.firstSegment.startTime).unix(),
-                                max: endMoment.unix(),
-                                stop: xgds_video.uponSliderStopCallBack,
-                                slide: xgds_video.uponSliderMoveCallBack,
-                                range: 'min'
-                        });
-                        xgds_video.setSliderTimeLabel(startMoment);
-                        xgds_video.createSliderLegend(false);
+                		if (!_.isUndefined(playback.masterSlider)) {
+                			xgds_video.masterSlider = playback.masterSlider;
+						} else {
+							xgds_video.masterSlider = $('#masterSlider').slider({
+								step: 1,
+								min: startMoment.unix(), //moment(xgds_video.options.firstSegment.startTime).unix(),
+								max: endMoment.unix(),
+								stop: xgds_video.uponSliderStopCallBack,
+								slide: xgds_video.uponSliderMoveCallBack,
+								range: 'min'
+							});
+							xgds_video.setSliderTimeLabel(startMoment);
+							xgds_video.createSliderLegend(false);
+						}
                 } else {
 			alert('The end time of a video segment is not available.' +
 			'Cannot setup slider');
