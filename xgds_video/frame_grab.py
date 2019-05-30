@@ -78,7 +78,7 @@ def grab_frame(path=None, start_time=None, grab_time=None, file=None, hms=None,
         if path:
             ts_file, offset = calculate_ts_file(path, seconds, index_file_name)
             # if you don't cast the offset time to an int, resulting screenshot is wavy gray
-            img_bytes = take_screenshot(os.path.join(path, ts_file), offset)
+            img_bytes = take_screenshot(os.path.join(path, ts_file), int(offset))
         else:
             img_bytes = take_screenshot(file, seconds)
     except Exception as e:
