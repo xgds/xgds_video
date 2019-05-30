@@ -67,7 +67,7 @@ def grab_frame(path=None, start_time=None, grab_time=None, file=None, hms=None,
             msg = '**** You must specify the start time of the video ****'
             raise Exception(msg)
         time_diff = grab_time - start_time
-        seconds = int(time_diff.seconds)
+        seconds = time_diff.total_seconds()
     elif hms:
         seconds = hms_to_total_s(hms)
     else:
@@ -78,7 +78,7 @@ def grab_frame(path=None, start_time=None, grab_time=None, file=None, hms=None,
         if path:
             ts_file, offset = calculate_ts_file(path, seconds, index_file_name)
             # if you don't cast the offset time to an int, resulting screenshot is wavy gray
-            img_bytes = take_screenshot(os.path.join(path, ts_file), int(offset))
+            img_bytes = take_screenshot(os.path.join(path, ts_file), offset)
         else:
             img_bytes = take_screenshot(file, seconds)
     except Exception as e:
@@ -125,4 +125,5 @@ if __name__ == '__main__':
     with open(outfile_name, 'wb') as f:
         f.write(img_bytes)
         f.close()
+
 
