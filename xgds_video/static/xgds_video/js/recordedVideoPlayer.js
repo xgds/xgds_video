@@ -94,8 +94,10 @@ $.extend(xgds_video,{
 				xgds_video.audioController(this);
 			},
 			onSeek: function(data) {
-				console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
-				console.log('POSITION IS NOW ' + this.getPosition());
+				// console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
+				// console.log('POSITION IS NOW ' + this.getPosition());
+				var updateTime = xgds_video.getPlayerVideoTime(this.id);
+				xgds_video.setPlayerTimeLabel(updateTime, this.id);
 			},
 //			onSeeked: function(data) {
 //				console.log('ON SEEKED: ' + data.startPosition + " | " + data.offset);
@@ -171,14 +173,13 @@ $.extend(xgds_video,{
 
 				// update test site time (all sources that are 'playing')
 				if (!xgds_video.options.seekFlag && !xgds_video.options.movingSlider) {
-					var testSiteTime = xgds_video.getPlayerVideoTime(this.id);
-					xgds_video.setPlayerTimeLabel(testSiteTime, this.id);
+					var updateTime = xgds_video.getPlayerVideoTime(this.id);
+					xgds_video.setPlayerTimeLabel(updateTime, this.id);
 
 					if (!xgds_video.initialState) {
 						//if this call is from the current 'onTimePlayer'
 						if (xgds_video.options.onTimePlayer == this.id) {
 							// update the slider here.
-							var updateTime = xgds_video.getPlayerVideoTime(this.id);
 							if (!(_.isUndefined(updateTime))) {
 								xgds_video.awakenIdlePlayers(updateTime, this.id);
 								xgds_video.setSliderTime(updateTime);
@@ -336,7 +337,7 @@ $.extend(xgds_video,{
 		if (xgds_video.options.hasMasterSlider){
 			if (xgds_video.options.delayed_live) {
 				xgds_video.nowButtonCallback(true);
-                                xgds_video.jumpToLive(true, player);
+				xgds_video.jumpToLive(true, player);
 			} else {
 				var startTime = xgds_video.options.firstSegment.startTime;
 				var segments = xgds_video.options.displaySegments[player.id];
@@ -551,6 +552,7 @@ $.extend(xgds_video,{
 			return;
 		}
 		xgds_video.options.playFlag = true;
+
 		$('#playbutton').addClass("active");
 		$('#playbuttonLink').addClass("active");
 		$('#pausebutton').removeClass("active");
@@ -590,6 +592,8 @@ $.extend(xgds_video,{
 			return;
 		}
 		xgds_video.options.playFlag = false;
+		xgds_video.options.playing_live = false;
+
 		$('#playbutton').removeClass("active");
 		$('#playbuttonLink').removeClass("active");
 		$('#pausebutton').addClass("active");
@@ -615,6 +619,7 @@ $.extend(xgds_video,{
 		$('#pausebuttonLink').removeClass("active");
 
 		xgds_video.options.playFlag = true;
+		xgds_video.options.playing_live = true;
 		playback.playFlag = true;
 		if (!_.isUndefined(do_not_play) && do_not_play) {
 			return;

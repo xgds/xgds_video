@@ -139,7 +139,8 @@ def grab_frame_from_time(grab_time, vehicle, author=None, prefix=settings.XGDS_I
                                    prefix,
                                    camera,
                                    author,
-                                   vehicle)
+                                   vehicle,
+                                   grab_info['index_file_path'])
 
 
 def grabFrameFromSource(request, episode, source):

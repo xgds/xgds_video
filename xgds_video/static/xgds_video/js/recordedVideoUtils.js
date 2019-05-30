@@ -157,7 +157,7 @@ $.extend(xgds_video,{
 				offset = Math.round(nowMoment.diff(segment.startTime, 'seconds'));
 				break;
 			} else if (nowMoment.isAfter(segment.startTime)){
-				if (_.isUndefined(segment.endTime)){
+				if (_.isUndefined(segment.endTime) || !segment.endTime.isValid()){
 					playlistIdx = i;
 					offset = Math.round(nowMoment.diff(segment.startTime, 'seconds'));
 					break;
@@ -242,17 +242,18 @@ $.extend(xgds_video,{
 		 * Given current time in javascript datetime,
 		 * find the playlist item and the offset (seconds) and seek to there.
 		 */
+		var result = false;
 		if (_.isUndefined(source)){
 			for (var source in xgds_video.options.displaySegments) {
 				var player = jwplayer(source);
 				if (player != undefined) {
-					xgds_video.jumpToPosition(currentTime, source, seekValues);
+					result |= xgds_video.jumpToPosition(currentTime, source, seekValues);
 				}
 			}
-			return;
+			return result;
 		}
 		if (xgds_video.jumpLocks.has(source)) {
-			return;
+			return result;
 		}
 		xgds_video.jumpLocks.add(source);
 		if (_.isUndefined(seekValues)) {
@@ -266,13 +267,17 @@ $.extend(xgds_video,{
 			if (!xgds_video.options.playFlag) {
 				player.pause(true);
 			}
+			result = true;
+
 		} else { //current time is not in the playable range.
 			//pause the player
 			if ((player.getState() == 'playing') || (player.getState() == 'idle')) {
 				player.pause(true);
 			}
+			result = 'unplayable';
 		}
 		xgds_video.jumpLocks.delete(source);
+		return result;
 	},
 
 	getNextAvailableSegment:function(currentTime) {
@@ -365,14 +370,19 @@ $.extend(xgds_video,{
 		var segments = xgds_video.options.displaySegments[source];
 		var player = jwplayer(source);
 		var index = player.getPlaylistIndex();
+		if (_.isUndefined(index)) {
+			index = 0;
+		}
 		var offset = player.getPosition();
 		var currentTime = undefined;
 		if (offset < 0){
 			// we are in delayed live mode, subtract the time from real world now time)
 			currentTime = moment();
 			// the video chunks are different sizes so we won't know the lag from the jwplayer.
-			// instead use our setting.
-			offset = - xgds_video.options.video_lag_seconds;
+			// instead use our setting IF we are playing the live video
+			if (xgds_video.options.playing_live) {
+				offset = -xgds_video.options.video_lag_seconds;
+			}
 		} else {
 			currentTime = moment(segments[index].startTime);
 		}
