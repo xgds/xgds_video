@@ -93,16 +93,19 @@ $.extend(xgds_video,{
 				xgds_video.startPlayer(this);
 				xgds_video.audioController(this);
 			},
-			onSeek: function(data) {
-				// console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
-				// console.log('POSITION IS NOW ' + this.getPosition());
-				var updateTime = xgds_video.getPlayerVideoTime(this.id);
-				xgds_video.setPlayerTimeLabel(updateTime, this.id);
+			// onSeek: function(data) {
+			// 	// console.log('ON SEEK: ' + data.startPosition + " | " + data.offset);
+			// 	// console.log('POSITION IS NOW ' + this.getPosition());
+			// 	var updateTime = xgds_video.getPlayerVideoTime(this.id, this);
+			// 	xgds_video.setPlayerTimeLabel(updateTime, this.id);
+			// },
+			onSeeked: function(data) {
+				console.log('ON SEEKED: ');
+				console.log(data);
+				console.log('POSITION IS NOW ' + this.getPosition());
+				var updateTime = xgds_video.getPlayerVideoTime(this.id, this);
+			    xgds_video.setPlayerTimeLabel(updateTime, this.id);
 			},
-//			onSeeked: function(data) {
-//				console.log('ON SEEKED: ' + data.startPosition + " | " + data.offset);
-//				console.log('POSITION IS NOW ' + this.getPosition());
-//			},
 			onComplete: function() {
 				console.log('onComplete ' + this.id + ' ' + this.getState());
 				//stop until start of the next segment.
@@ -156,7 +159,7 @@ $.extend(xgds_video,{
 				}
 				//xgds_video.onTimeController(this);
 			},
-			onTime: function(object) {
+			onTime: function(time_data) {
 				//console.log('ON TIME POSITION IS: ' + this.getPosition());
 				if (!xgds_video.options.hasMasterSlider){
 					return;
@@ -173,7 +176,8 @@ $.extend(xgds_video,{
 
 				// update test site time (all sources that are 'playing')
 				if (!xgds_video.options.seekFlag && !xgds_video.options.movingSlider) {
-					var updateTime = xgds_video.getPlayerVideoTime(this.id);
+					// time_data has position and duration
+					var updateTime = xgds_video.getPlayerVideoTime(this.id, this, time_data.position);
 					xgds_video.setPlayerTimeLabel(updateTime, this.id);
 
 					if (!xgds_video.initialState) {
@@ -182,6 +186,8 @@ $.extend(xgds_video,{
 							// update the slider here.
 							if (!(_.isUndefined(updateTime))) {
 								xgds_video.awakenIdlePlayers(updateTime, this.id);
+
+
 								xgds_video.setSliderTime(updateTime);
 								try {
 									playback.timerWorker.postMessage(['setCurrentTime', updateTime.toISOString()]);
