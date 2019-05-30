@@ -769,7 +769,10 @@ def videoIndexFile(request, flightName=None, sourceShortName=None, segmentNumber
     """
 
     # use regex substitution to replace hostname, etc.
-    (indexFileContents, indexFilePath) = util.getIndexFileContents(flightName, sourceShortName, segmentNumber)
+    forceEndlistArg = request.GET.get('forceEndlist', None)
+    forceEndlist = True if forceEndlistArg else False
+    (indexFileContents, indexFilePath) = util.getIndexFileContents(flightName, sourceShortName,
+                                                                   segmentNumber, forceEndlist=forceEndlist)
     if not indexFileContents:
         return JsonResponse({'status': 'fail', 'exception': 'NO INDEX FILE CONTENTS'}, status=406)
     # return modified file in next line

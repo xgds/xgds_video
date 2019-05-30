@@ -197,7 +197,7 @@ def getSegmentNumber(segmentObj):
     return int(segNum)
 
 
-def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=None):
+def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=None, forceEndlist=False):
     """ This is truncating the last n rows from the m3u8 file and reappending the end and the metadata at the top.
     This fakes our delay
     """
@@ -240,6 +240,8 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
         else:
             try: 
                 m3u8_index = m3u8.load(indexFilePath)
+                if forceEndlist:
+                    m3u8_index.is_endlist = True
                 videoDelayInChunks = 0
                 valid = True
             except:
