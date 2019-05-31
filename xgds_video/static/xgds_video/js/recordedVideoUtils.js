@@ -319,7 +319,7 @@ $.extend(xgds_video,{
 		xgds_video.onTimeController(player);
 		// if all other players are paused, go the the next available segment and play.
 		if (xgds_video.allPaused()) {
-			var time = xgds_video.getPlayerVideoTime(player.id);
+			var time = xgds_video.getPlayerVideoTime(player.id, player);
 			var seekTime = xgds_video.getNextAvailableSegment(time);
 			xgds_video.seekAllPlayersToTime(seekTime['time']);
 		}
@@ -363,34 +363,40 @@ $.extend(xgds_video,{
 		return urlFormatTimestamp
 	},
 
-	getPlayerVideoTime:function(source) {
+	getPlayerVideoTime:function(source, player, position, duration) {
 		/**
 		 * Helper for returning current test site time from the jwplayer.
 		 */
+		if (_.isUndefined(player)){
+			player = jwplayer(source);
+		}
+
 		var segments = xgds_video.options.displaySegments[source];
-		var player = jwplayer(source);
 		var index = player.getPlaylistIndex();
 		if (_.isUndefined(index)) {
 			index = 0;
 		}
-		var offset = player.getPosition();
-		var currentTime = undefined;
-		if (offset < 0){
-			// we are in delayed live mode, subtract the time from real world now time)
-			currentTime = moment();
-			// the video chunks are different sizes so we won't know the lag from the jwplayer.
-			// instead use our setting IF we are playing the live video
-			if (xgds_video.options.playing_live) {
-				offset = -xgds_video.options.video_lag_seconds;
+
+		var current_time = moment(segments[index].startTime);
+
+		if (_.isUndefined(position)) {
+			position = player.getPosition();
+		}
+		var offset = position;
+
+		if (position < 0){
+			// we are in delayed live mode
+			if (_.isUndefined(duration)) {
+				duration = player.getDuration();
 			}
-		} else {
-			currentTime = moment(segments[index].startTime);
+
+			duration = Math.abs(duration);
+			offset = duration + position;
 		}
 
-		currentTime.add(offset, 'seconds');
-		return currentTime;
+		current_time.add(offset, 'seconds');
+		return current_time;
 	},
-
 
 	seekAllPlayersToTime: function(datetime) {
 		if (!_.isNull(datetime)) {

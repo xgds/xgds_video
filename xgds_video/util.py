@@ -286,11 +286,11 @@ def getIndexFileContents(flightName=None, sourceShortName=None, segmentNumber=No
         return (None, None)
 
 
-def calculate_ts_file(folder_name, seconds_int, index_file_name=settings.XGDS_VIDEO_INDEX_FILE_NAME):
+def calculate_ts_file(folder_name, seconds, index_file_name=settings.XGDS_VIDEO_INDEX_FILE_NAME):
     """
     Find the ts file that is s_int seconds into the recording
     :param folder_name: that holds ts files
-    :param seconds_int: seconds into the recording
+    :param seconds: seconds into the recording
     :param index_file_name: usually prog_index.m3u8
     :return: tsfile name and offset seconds into the file
     """
@@ -301,22 +301,26 @@ def calculate_ts_file(folder_name, seconds_int, index_file_name=settings.XGDS_VI
         m3u8_filename = os.path.join(folder_name, index_file_name)
     m3u8_obj = m3u8.load(m3u8_filename)
 
-    acc_time = 0
-    num_segs = len(m3u8_obj.segments)
-    s_float = float(seconds_int)
+    accumulated_time = 0
+    segment_count = len(m3u8_obj.segments)
+    seconds_float = float(seconds)
+    found = False
     file_number = 0
-    for seg_num in range(0, num_segs):
+    for seg_num in range(segment_count):
         next_delta = m3u8_obj.segments[seg_num].duration
-        if acc_time + next_delta > float(s_float):
-            # save file number
-            # (if you subtract 1, you're off by one. not sure why.)
+        if accumulated_time + next_delta >= seconds_float:
+            # save segment number
             file_number = seg_num
+            found = True
             break
-        acc_time = acc_time + next_delta
+        accumulated_time = accumulated_time + next_delta
 
-    if seconds_int > int(acc_time + next_delta):
-        msg = "Requested time " + str(seconds_int) + "s is outside range of " + index_file_name + ", " \
-              + str(int(acc_time + next_delta)) + 's'
+    if not found:
+        msg = "Requested time %f is outside range of %s, %f " % (seconds, index_file_name, accumulated_time)
         raise Exception(msg)
 
-    return m3u8_obj.segments[file_number].uri, s_float - acc_time
+    # if seconds > accumulated_time + next_delta:
+    #     msg = "Requested time %f is outside range of %s, %f " % (seconds,  index_file_name, accumulated_time + next_delta)
+    #     raise Exception(msg)
+
+    return m3u8_obj.segments[file_number].uri, seconds_float - accumulated_time
