@@ -312,6 +312,7 @@ class HLSRecorder:
         endTime = datetime.datetime.now(pytz.utc)
         self.saveM3U8ToFile(addEndTag=True)
         print 'CALLING END SEGMENT'
+        reconnect_db() # Make sure we have an active MySQL connection
         endSegment(self.xgdsSegment, endTime)
         print 'DONE CALLING END SEGMENT'
         
